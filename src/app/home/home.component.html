@@ -1,0 +1,54 @@
+<app-header></app-header>
+<app-menu [selectedRoute]="'home'"></app-menu>
+<div [ngClass]="{'dark-theme': isDarkTheme | async}">
+<div fxLayout="row" fxLayout.xs="column" fxLayoutWrap fxLayoutGap="0.5%" ngClass.gt-sm="desktop-content">
+  <!-- INFOS DE TOUR -->
+  <mat-card class="home-card" ngClass.xs="home-card-mobile">
+      <mat-card-header>
+          <mat-card-title>Tour n°3</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+          <div [style.display]="showSpinner ? 'none' : 'block'">
+              Fin de tour le 29/05 à 18h00
+          </div>
+          <mat-spinner class="full-width" [style.display]="showSpinner ? 'block' : 'none'"></mat-spinner>
+      </mat-card-content>
+    </mat-card>
+    <!-- INFOS DE JOUEUR -->
+    <mat-card class="home-card" ngClass.xs="home-card-mobile">
+      <mat-card-header>
+        <mat-card-title>Kitsuki Hisao</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+          <div [style.display]="showSpinner ? 'none' : 'block'">
+              <mat-list role="list">
+                  <mat-list-item>Gloire : <span class='value'>29</span><br></mat-list-item>
+                  <mat-list-item>Infamie : <span class='value'>2</span><br></mat-list-item>
+                  <mat-list-item>Influence : <span class='value'>1</span><br></mat-list-item>
+                  <mat-list-item>Stratégie : <span class='value'>9</span><br></mat-list-item>
+                  <mat-list-item>Armées : <span class='value'>3</span></mat-list-item>
+              </mat-list>
+          </div>
+        <mat-spinner class="full-width" [style.display]="showSpinner ? 'block' : 'none'"></mat-spinner>
+      </mat-card-content>
+    </mat-card>
+
+      <!-- CLASSEMENT -->
+      <mat-card class="home-card" ngClass.xs="home-card-mobile">
+          <mat-card-header>
+            <mat-card-title>Classement de Gloire</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+              <div [style.display]="showSpinner ? 'none' : 'block'">
+                  <mat-list role="list">
+    <mat-list-item>1 - Doji Misao</mat-list-item>
+    <mat-list-item>2 - Hida Kataki</mat-list-item>
+    <mat-list-item>3 - Kitsuki Hisao</mat-list-item>
+    <mat-list-item>4 - Ikoma Kiyoshi</mat-list-item>
+    </mat-list>
+    </div>
+    <mat-spinner class="full-width" [style.display]="showSpinner ? 'block' : 'none'"></mat-spinner>
+  </mat-card-content>
+</mat-card>
+</div>
+</div>

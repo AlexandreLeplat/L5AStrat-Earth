@@ -1,0 +1,56 @@
+<app-header></app-header>
+<app-menu [selectedRoute]="'orders'"></app-menu>
+<div ngClass.gt-sm="desktop-content">
+  <mat-card style="margin-bottom: 60px;">
+  <mat-card>
+    <strong style="width: 20%;">Tour 3</strong>
+    <span style="width: 60%;">
+      Points de priorité :
+    <mat-slider max="5" min="0" thumbLabel tickInterval="1" value="2"></mat-slider></span>
+  </mat-card>
+
+  <mat-accordion cdkDropList [cdkDropListData]="orders" (cdkDropListDropped)="drop($event)">
+    <mat-expansion-panel *ngFor="let order of orders" cdkDrag>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>drag_indicator</mat-icon>
+          &nbsp;{{order.type.label}}
+        </mat-panel-title>
+        <mat-panel-description>
+          {{order.summary}}
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <p>{{order.type.description}}</p>
+      <mat-list>
+        <mat-list-item *ngFor="let orderInput of order.type.form">
+            <mat-checkbox *ngIf="orderInput.type == 'checkbox'"><strong>{{orderInput.label}} :</strong> {{orderInput.description}}</mat-checkbox>
+            <div *ngIf="orderInput.type == 'opponent'">
+              <mat-form-field appearance="fill">
+              <mat-label>{{orderInput.label}}</mat-label>
+              <mat-select>
+                <mat-option *ngIf="!orderInput.required" value="none">Aucune</mat-option>
+                <mat-option value="option1">Doji Misao</mat-option>
+                <mat-option value="option2">Hida Kataki</mat-option>
+                <mat-option value="option3">Ikoma Kiyoshi</mat-option>
+              </mat-select>
+            </mat-form-field> &nbsp; {{orderInput.description}}
+          </div>
+        </mat-list-item>
+      </mat-list>
+      <mat-action-row>
+        <button mat-button color="primary" (click)="remove(order)"><mat-icon>clear</mat-icon>&nbsp;Retirer</button>
+      </mat-action-row>
+    </mat-expansion-panel>
+    <mat-card *ngIf="orders.length < 5">
+          <mat-icon>add</mat-icon>
+          &nbsp;<strong>Ajouter un ordre</strong>
+          <mat-form-field appearance="fill" style="width: 50%;">
+            <mat-select [(value)]="selectedActionType" (selectionChange)="addOrder()">
+              <mat-option *ngFor="let actionType of actionTypes | keyvalue" value="{{actionType.key}}" >{{actionType.value.label}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          &nbsp;{{5 - orders.length}} restants
+    </mat-card>
+  </mat-accordion>
+</mat-card>
+</div>

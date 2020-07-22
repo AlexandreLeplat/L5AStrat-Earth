@@ -1,0 +1,7 @@
+.desktop-content {
+  margin-left: 300px;
+}
+.mat-expansion-panel-header-title,
+.mat-expansion-panel-header-description {
+  flex-basis: 0;
+}

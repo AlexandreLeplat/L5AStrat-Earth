@@ -1,0 +1,9 @@
+h3 {
+    text-decoration: underline;
+}
+
+.main-card {
+    margin: 20px auto;
+    max-width: 800px;
+    width: 90%;
+}

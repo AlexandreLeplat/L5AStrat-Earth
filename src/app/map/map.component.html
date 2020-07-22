@@ -1,0 +1,23 @@
+<app-header></app-header>
+<app-menu [selectedRoute]="'map'"></app-menu>
+<div ngClass.gt-sm="desktop-content">
+<div class="description">Carte générale</div>
+    <div class="mapContainer">
+        <div #map style="transition: all 1s;">
+        <table style="width: max-content; border-spacing: 3px;">
+            <tr *ngFor="let row of tiles">
+                <td class="mapTile" *ngFor="let tile of row" [style.background]="tile.color" (click)="onTileClick(tile)">
+                    {{tile.text}}
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div *ngIf="!zoomedIn" class="zoom">
+    Cliquez sur la carte pour zoomer
+</div>
+<div *ngIf="zoomedIn" class="zoom" (click)="zoomOut()">
+    Cliquez ici pour dézoomer
+</div>
+</div>
+  

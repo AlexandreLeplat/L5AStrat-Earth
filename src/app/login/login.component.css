@@ -1,0 +1,15 @@
+.login-card {
+    width: 400px;
+    margin: 10% auto;
+  }
+.login-card-mobile {
+    width: 90%;
+    margin: 10% auto;
+    text-align: center;
+  }
+.mat-card-title {
+    font-size: 16px;
+  }
+.full-width {
+    width: 100%;
+  }
