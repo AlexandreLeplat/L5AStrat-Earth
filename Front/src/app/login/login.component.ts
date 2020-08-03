@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ThemeService } from '../services/theme.service';
 import { Observable } from 'rxjs';
+import { TokenService } from '../services/token.service';
 
 @Component({
   selector: 'app-login',
@@ -13,9 +14,10 @@ export class LoginComponent implements OnInit {
   isDarkTheme: Observable<boolean>;
   username: string;
   password: string;
+  errorMessage: string;
   showSpinner: boolean;
 
-  constructor(private router: Router, private themeService: ThemeService) { }
+  constructor(private router: Router, private themeService: ThemeService, private tokenService: TokenService) { }
 
     ngOnInit() {  
       this.isDarkTheme = this.themeService.isDarkTheme;
@@ -26,17 +28,25 @@ export class LoginComponent implements OnInit {
     }
   
     login() : void {  
-      if(this.username == 'admin' && this.password == 'admin'){  
         this.showSpinner = true;
-        localStorage.setItem("userToken", "token");
-        setTimeout(x => { this.router.navigate(['/','home']).then(nav => {
-          console.log(nav); // true if navigation is successful
-        }, err => {
-          console.log(err) // when there's an error
-        });; }, 1000);
-      } else {  
-        alert("Informations de connexion incorrectes");  
-      }
-  
+        var token = this.tokenService.login(this.username, this.password);
+        token.subscribe({
+          next: data => { 
+            localStorage.setItem("userToken", data.jwt);
+            localStorage.setItem("expiresAt", data.expiration.toString());
+            this.router.navigate(['/','home']);
+          },
+          error: error => {
+            this.showSpinner = false;
+            if (error.status == 401)
+            {
+              this.errorMessage = "Informations de connexion incorrectes";
+            }
+            else
+            {
+              this.errorMessage = "Erreur technique à l'authentification";
+            }
+          } 
+      });
     }
   }

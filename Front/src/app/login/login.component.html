@@ -9,14 +9,15 @@
         <table class="full-width" cellspacing="0">
           <tr>
             <td>
-              <mat-form-field class="full-width">
+              <mat-form-field class="full-width login-field">
               <input matInput placeholder="Username" [(ngModel)]="username" name="username" required>
               </mat-form-field>
             </td>
           </tr>
           <tr>
-          <td><mat-form-field class="full-width">
+          <td><mat-form-field class="full-width login-field">
             <input matInput placeholder="Password" [(ngModel)]="password" type="password" name="password" required>
+            <mat-error>{{errorMessage}}</mat-error>
           </mat-form-field></td>
         </tr></table>
       </form>

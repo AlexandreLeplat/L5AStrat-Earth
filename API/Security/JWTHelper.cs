@@ -23,10 +23,11 @@ namespace API.Security
             _tokenLifeTime = config.GetSection("JwtConfig").GetSection("expirationInMinutes").Value;
         }
 
-        public string GenerateSecurityToken(User user)
+        public Token GenerateSecurityToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_secret);
+            var expiration = DateTime.UtcNow.AddMinutes(double.Parse(_tokenLifeTime));
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
@@ -35,14 +36,16 @@ namespace API.Security
                     new Claim(ClaimTypes.Name, user.Name),
                     new Claim(ClaimTypes.Role, user.Role.ToString())
                 }),
-                Expires = DateTime.UtcNow.AddMinutes(double.Parse(_tokenLifeTime)),
+                Expires = expiration,
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            return tokenHandler.WriteToken(token);
-
+            return new Token() { 
+                Jwt = tokenHandler.WriteToken(token), 
+                Expiration = expiration 
+            };
         }
     }
 }

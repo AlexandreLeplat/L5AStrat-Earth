@@ -17,8 +17,9 @@ import { MenuComponent } from './menu/menu.component';
 import { OrdersFormComponent } from './ordersform/ordersform.component';
 import { InfoComponent } from './info/info.component';
 import { RulesComponent } from './rules/rules.component';
-import { ThemeService } from './services/theme.service'
 import { AuthenticationService } from './services/authentication.service';
+import { ThemeService } from './services/theme.service'
+import { TokenService } from './services/token.service'
 import { JwtHelperService, JWT_OPTIONS } from '@auth0/angular-jwt';
 
 @NgModule({
@@ -45,10 +46,11 @@ import { JwtHelperService, JWT_OPTIONS } from '@auth0/angular-jwt';
     HttpClientModule
   ],
   providers: [
-    ThemeService, 
     AuthenticationService, 
     { provide: JWT_OPTIONS, useValue: JWT_OPTIONS },
-    JwtHelperService
+    JwtHelperService,
+    ThemeService, 
+    TokenService
   ],
   bootstrap: [AppComponent]
 })
