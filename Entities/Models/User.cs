@@ -1,4 +1,6 @@
 ﻿using Entities.Enums;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Entities.Models
 {
@@ -11,5 +13,8 @@ namespace Entities.Models
         public string Password { get; set; }
 
         public UserRole Role { get; set; }
+
+        [JsonIgnore]
+        public List<Player> Players { get; set; }
     }
 }

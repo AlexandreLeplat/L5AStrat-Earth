@@ -1,5 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import { NgModule, LOCALE_ID } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -18,9 +18,15 @@ import { OrdersFormComponent } from './ordersform/ordersform.component';
 import { InfoComponent } from './info/info.component';
 import { RulesComponent } from './rules/rules.component';
 import { AuthenticationService } from './services/authentication.service';
+import { CampaignsService } from './services/campaigns.service'
+import { GamesService } from './services/games.service'
+import { PlayersService } from './services/players.service'
 import { ThemeService } from './services/theme.service'
 import { TokenService } from './services/token.service'
 import { JwtHelperService, JWT_OPTIONS } from '@auth0/angular-jwt';
+import { registerLocaleData } from '@angular/common';
+import localeFr from '@angular/common/locales/fr';
+registerLocaleData(localeFr, 'fr');
 
 @NgModule({
   declarations: [
@@ -46,9 +52,13 @@ import { JwtHelperService, JWT_OPTIONS } from '@auth0/angular-jwt';
     HttpClientModule
   ],
   providers: [
-    AuthenticationService, 
     { provide: JWT_OPTIONS, useValue: JWT_OPTIONS },
+    { provide: LOCALE_ID, useValue: "fr" },
+    AuthenticationService, 
     JwtHelperService,
+    CampaignsService,
+    GamesService,
+    PlayersService,
     ThemeService, 
     TokenService
   ],

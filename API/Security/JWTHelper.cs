@@ -23,7 +23,8 @@ namespace API.Security
             _tokenLifeTime = config.GetSection("JwtConfig").GetSection("expirationInMinutes").Value;
         }
 
-        public Token GenerateSecurityToken(User user)
+        // Génère un token d'authentification pour un joueur
+        public Token GenerateSecurityToken(Player player)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_secret);
@@ -32,9 +33,8 @@ namespace API.Security
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.Sid, user.Id.ToString()),
-                    new Claim(ClaimTypes.Name, user.Name),
-                    new Claim(ClaimTypes.Role, user.Role.ToString())
+                    new Claim(ClaimTypes.Sid, player.Id.ToString()),
+                    new Claim(ClaimTypes.Name, player.Name)
                 }),
                 Expires = expiration,
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -42,9 +42,10 @@ namespace API.Security
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            return new Token() { 
-                Jwt = tokenHandler.WriteToken(token), 
-                Expiration = expiration 
+            return new Token()
+            {
+                Jwt = tokenHandler.WriteToken(token),
+                Expiration = expiration
             };
         }
     }

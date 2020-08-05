@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { ThemeService } from '../services/theme.service';
+import { RulesComponent } from '../rules/rules.component';
+import { InfoComponent } from '../info/info.component';
 
 @Component({
   selector: 'app-header',
@@ -12,7 +15,7 @@ export class HeaderComponent implements OnInit {
   loggedIn: boolean;
   isDarkTheme: boolean;
   
-  constructor(private router: Router, private themeService: ThemeService) { }
+  constructor(private router: Router, private themeService: ThemeService, public dialog: MatDialog) { }
 
   ngOnInit(): void {
     this.themeService.isDarkTheme.subscribe(b => this.isDarkTheme = b);
@@ -27,12 +30,12 @@ export class HeaderComponent implements OnInit {
     this.router.navigate(['/','login'])
   }
 
-  navigateToInfo(): void {
-    this.router.navigate(['/','info']);
+  openInfoDialog(): void {
+    this.dialog.open(InfoComponent);
   }
 
-  navigateToRules(): void {
-    this.router.navigate(['/','rules']);
+  openRulesDialog(): void {
+    this.dialog.open(RulesComponent);
   }
 
   switchBrightness(dark: boolean): void {

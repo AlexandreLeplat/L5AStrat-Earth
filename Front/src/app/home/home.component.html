@@ -1,54 +1,77 @@
 <app-header></app-header>
 <app-menu [selectedRoute]="'home'"></app-menu>
 <div [ngClass]="{'dark-theme': isDarkTheme | async}">
-<div fxLayout="row" fxLayout.xs="column" fxLayoutWrap fxLayoutGap="0.5%" ngClass.gt-sm="desktop-content">
-  <!-- INFOS DE TOUR -->
-  <mat-card class="home-card" ngClass.xs="home-card-mobile">
-      <mat-card-header>
-          <mat-card-title>Tour n°3</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-          <div [style.display]="showSpinner ? 'none' : 'block'">
-              Fin de tour le 29/05 à 18h00
-          </div>
-          <mat-spinner class="full-width" [style.display]="showSpinner ? 'block' : 'none'"></mat-spinner>
-      </mat-card-content>
-    </mat-card>
-    <!-- INFOS DE JOUEUR -->
-    <mat-card class="home-card" ngClass.xs="home-card-mobile">
-      <mat-card-header>
-        <mat-card-title>Kitsuki Hisao</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-          <div [style.display]="showSpinner ? 'none' : 'block'">
-              <mat-list role="list">
-                  <mat-list-item>Gloire : <span class='value'>29</span><br></mat-list-item>
-                  <mat-list-item>Infamie : <span class='value'>2</span><br></mat-list-item>
-                  <mat-list-item>Influence : <span class='value'>1</span><br></mat-list-item>
-                  <mat-list-item>Stratégie : <span class='value'>9</span><br></mat-list-item>
-                  <mat-list-item>Armées : <span class='value'>3</span></mat-list-item>
-              </mat-list>
-          </div>
-        <mat-spinner class="full-width" [style.display]="showSpinner ? 'block' : 'none'"></mat-spinner>
-      </mat-card-content>
-    </mat-card>
-
-      <!-- CLASSEMENT -->
-      <mat-card class="home-card" ngClass.xs="home-card-mobile">
+  <div *ngIf="!loadingGame" ngClass.gt-sm="desktop-content" fxLayout="row" fxLayout.lt-lg="column" fxLayoutWrap fxLayoutGap="0.5%">
+    <div *ngFor="let widget of (game | async).homeWidgets" style="width:100%">
+      <div [ngSwitch]="widget">
+        <!-- HORLOGE -->
+        <mat-card *ngSwitchCase="'Clock'" class="home-card" ngClass.xs="home-card-mobile">
           <mat-card-header>
-            <mat-card-title>Classement de Gloire</mat-card-title>
+            <mat-card-title>{{loadingCampaign ? 'Chargement...' : 'Tour n° ' + (campaign | async).currentTurn}}</mat-card-title>
           </mat-card-header>
           <mat-card-content>
-              <div [style.display]="showSpinner ? 'none' : 'block'">
-                  <mat-list role="list">
-    <mat-list-item>1 - Doji Misao</mat-list-item>
-    <mat-list-item>2 - Hida Kataki</mat-list-item>
-    <mat-list-item>3 - Kitsuki Hisao</mat-list-item>
-    <mat-list-item>4 - Ikoma Kiyoshi</mat-list-item>
-    </mat-list>
+              <div *ngIf="!loadingCampaign">
+                <br/>
+                <p [ngSwitch]="(campaign | async).currentPhase">
+                  <strong *ngSwitchCase="0">Pause</strong>
+                  <strong *ngSwitchCase="1">Lancement du tour</strong>
+                  <strong *ngSwitchCase="2">Phase de début de tour</strong>
+                  <strong *ngSwitchCase="3">Phase de milieu de tour</strong>
+                  <strong *ngSwitchCase="4">Phase de fin de tour</strong>
+                  <strong *ngSwitchCase="5">Conclusion du tour</strong>
+                </p>
+                <p *ngIf="(campaign | async).nextPhase">
+                  <mat-progress-bar mode="determinate" [value]="calculatePhaseProgress(campaign | async)"></mat-progress-bar>
+                  <br/>
+                  Prochaine phase : <strong>{{(campaign | async).nextPhase | date:'EEEE d MMMM, H:mm'}}</strong>
+                </p>
+              </div>
+            <mat-spinner class="full-width" [style.display]="loadingCampaign ? 'block' : 'none'"></mat-spinner>
+          </mat-card-content>
+        </mat-card>
+  
+        <!-- INFOS DE JOUEUR -->
+        <mat-card *ngSwitchCase="'PlayerInfo'" class="home-card" ngClass.xs="home-card-mobile">
+          <mat-card-header>
+            <mat-card-title>{{loadingPlayer ? 'Chargement...' : (player | async).name}}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+              <div *ngIf="!loadingPlayer">
+                  <mat-list *ngFor="let category of (player | async).assets | keyvalue">
+                    <strong>{{category.key}}</strong>
+                      <mat-list-item *ngFor="let asset of category.value | keyvalue">
+                        {{asset.key}} : <span class='value'>{{asset.value}}</span><br></mat-list-item>
+                  </mat-list>
+              </div>
+            <mat-spinner class="full-width" [style.display]="loadingPlayer ? 'block' : 'none'"></mat-spinner>
+          </mat-card-content>
+        </mat-card>
+  
+        <!-- INFOS DE CAMPAGNE -->
+        <mat-card *ngSwitchCase="'CampaignInfo'" class="home-card" ngClass.xs="home-card-mobile">
+          <mat-card-header>
+            <mat-card-title>{{loadingCampaign ? 'Chargement...' : (campaign | async).name}}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div *ngIf="!loadingCampaign">
+                <mat-list *ngFor="let category of (campaign | async).assets | keyvalue">
+                  <strong>{{category.key}}</strong>
+                    <mat-list-item *ngFor="let asset of category.value | keyvalue">
+                      {{asset.key}} : <span class='value'>{{asset.value}}</span><br></mat-list-item>
+                </mat-list>
+            </div>
+            <mat-spinner class="full-width" [style.display]="loadingCampaign ? 'block' : 'none'"></mat-spinner>
+          </mat-card-content>
+        </mat-card>
+      </div>
     </div>
-    <mat-spinner class="full-width" [style.display]="showSpinner ? 'block' : 'none'"></mat-spinner>
-  </mat-card-content>
-</mat-card>
 </div>
+  <mat-card *ngIf="loadingGame" class="home-card" ngClass.xs="home-card-mobile">
+    <mat-card-header>
+      <mat-card-title>Chargement...</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <mat-spinner class="full-width" [style.display]="'block'"></mat-spinner>
+    </mat-card-content>
+  </mat-card>
 </div>

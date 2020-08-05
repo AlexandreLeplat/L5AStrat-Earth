@@ -4,14 +4,16 @@ using API.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace API.Migrations
 {
     [DbContext(typeof(DAL))]
-    partial class DALModelSnapshot : ModelSnapshot
+    [Migration("20200805075426_initial-create")]
+    partial class initialcreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,8 +28,8 @@ namespace API.Migrations
                         .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("CurrentPhase")
-                        .HasColumnType("int");
+                    b.Property<string>("Assets")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("CurrentTurn")
                         .HasColumnType("int");
@@ -44,10 +46,6 @@ namespace API.Migrations
                     b.Property<int>("PhaseLength")
                         .HasColumnType("int");
 
-                    b.Property<string>("_jsonAssets")
-                        .HasColumnName("Assets")
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("GameId");
@@ -58,13 +56,12 @@ namespace API.Migrations
                         new
                         {
                             Id = 1L,
-                            CurrentPhase = 2,
+                            Assets = "{\"Classement\":{\"1er\":\"Doji Misao\",\"2ème\":\"Kitsuki Hisao\",\"3ème\":\"Yogo Rushi\",\"4ème\":\"Ikoma Kiyoshi\"},\"Prochain classement\":{\"\":\"Tour 6\"}}",
                             CurrentTurn = 3,
                             GameId = 1L,
                             Name = "La bataille des Quatre Vents",
-                            NextPhase = new DateTime(2020, 8, 6, 18, 37, 46, 216, DateTimeKind.Local).AddTicks(6031),
-                            PhaseLength = 24,
-                            _jsonAssets = "{\"Classement\":{\"1er\":\"Doji Misao\",\"2\\u00E8me\":\"Kitsuki Hisao\",\"3\\u00E8me\":\"Yogo Rushi\",\"4\\u00E8me\":\"Ikoma Kiyoshi\"},\"Prochain classement\":{\"\":\"Tour 6\"}}"
+                            NextPhase = new DateTime(2020, 8, 6, 9, 54, 26, 298, DateTimeKind.Local).AddTicks(4866),
+                            PhaseLength = 24
                         });
                 });
 
@@ -78,8 +75,7 @@ namespace API.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("_jsonHomeWidgets")
-                        .HasColumnName("HomeWidgets")
+                    b.Property<string>("Widgets")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -91,7 +87,7 @@ namespace API.Migrations
                         {
                             Id = 1L,
                             Name = "L5A Strat - TERRE",
-                            _jsonHomeWidgets = "[\"Clock\",\"PlayerInfo\",\"CampaignInfo\"]"
+                            Widgets = "[\"Clock\",\"PlayerInfo\",\"CampaignInfo\"]"
                         });
                 });
 
@@ -102,11 +98,11 @@ namespace API.Migrations
                         .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<string>("Assets")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<long>("CampaignId")
                         .HasColumnType("bigint");
-
-                    b.Property<string>("Color")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsCurrentPlayer")
                         .HasColumnType("bit");
@@ -116,10 +112,6 @@ namespace API.Migrations
 
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");
-
-                    b.Property<string>("_jsonAssets")
-                        .HasColumnName("Assets")
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -141,42 +133,38 @@ namespace API.Migrations
                         new
                         {
                             Id = 2L,
+                            Assets = "{\"Caractéristiques\":{\"Gloire\":\"5\",\"Infamie\":\"1\"},\"Ressources\":{\"Stratégie\":\"3\",\"Influence\":\"0\"}}",
                             CampaignId = 1L,
-                            Color = "green",
                             IsCurrentPlayer = true,
                             Name = "Kitsuki Hisao",
-                            UserId = 2L,
-                            _jsonAssets = "{\"Caract\\u00E9ristiques\":{\"Gloire\":\"5\",\"Infamie\":\"1\"},\"Ressources\":{\"Strat\\u00E9gie\":\"3\",\"Influence\":\"0\"}}"
+                            UserId = 2L
                         },
                         new
                         {
                             Id = 3L,
+                            Assets = "{\"Caractéristiques\":{\"Gloire\":\"5\",\"Infamie\":\"1\"},\"Ressources\":{\"Stratégie\":\"3\",\"Influence\":\"0\"}}",
                             CampaignId = 1L,
-                            Color = "cyan",
                             IsCurrentPlayer = true,
                             Name = "Doji Misao",
-                            UserId = 3L,
-                            _jsonAssets = "{\"Caract\\u00E9ristiques\":{\"Gloire\":\"5\",\"Infamie\":\"1\"},\"Ressources\":{\"Strat\\u00E9gie\":\"3\",\"Influence\":\"0\"}}"
+                            UserId = 3L
                         },
                         new
                         {
                             Id = 4L,
+                            Assets = "{\"Caractéristiques\":{\"Gloire\":\"5\",\"Infamie\":\"1\"},\"Ressources\":{\"Stratégie\":\"3\",\"Influence\":\"0\"}}",
                             CampaignId = 1L,
-                            Color = "yellow",
                             IsCurrentPlayer = true,
                             Name = "Ikoma Kiyoshi",
-                            UserId = 4L,
-                            _jsonAssets = "{\"Caract\\u00E9ristiques\":{\"Gloire\":\"5\",\"Infamie\":\"1\"},\"Ressources\":{\"Strat\\u00E9gie\":\"3\",\"Influence\":\"0\"}}"
+                            UserId = 4L
                         },
                         new
                         {
                             Id = 5L,
+                            Assets = "{\"Caractéristiques\":{\"Gloire\":\"5\",\"Infamie\":\"1\"},\"Ressources\":{\"Stratégie\":\"3\",\"Influence\":\"0\"}}",
                             CampaignId = 1L,
-                            Color = "red",
                             IsCurrentPlayer = true,
                             Name = "Yogo Rushi",
-                            UserId = 5L,
-                            _jsonAssets = "{\"Caract\\u00E9ristiques\":{\"Gloire\":\"5\",\"Infamie\":\"1\"},\"Ressources\":{\"Strat\\u00E9gie\":\"3\",\"Influence\":\"0\"}}"
+                            UserId = 5L
                         });
                 });
 

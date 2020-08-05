@@ -1,7 +1,6 @@
 ﻿using API.Database;
 using API.Models;
 using API.Security;
-using Entities.Enums;
 using Entities.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -53,7 +52,10 @@ namespace API.Controllers
                 // Si le mot de passe correspond, on récupère un token signé
                 if (BCrypt.Net.BCrypt.Verify(input.Password, user.Password))
                 {
-                    var token = jwt.GenerateSecurityToken(new User() { Id = 0, Name = input.Name, Role = UserRole.None });
+                    var mainPlayer = dal.Players.FirstOrDefault(p => p.UserId == user.Id && p.IsCurrentPlayer);
+                    if (mainPlayer == null) return NotFound();
+
+                    var token = jwt.GenerateSecurityToken(mainPlayer);
                     return Ok(token);
                 }
                 else
@@ -70,8 +72,9 @@ namespace API.Controllers
         public ActionResult Get()
         {
             var jwt = new JWTHelper(_config);
+            var id = long.Parse(User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault().Value);
             var name = User.Claims.Where(x => x.Type == ClaimTypes.Name).FirstOrDefault().Value;
-            var token = jwt.GenerateSecurityToken(new User() { Id = 0, Name = name, Role = UserRole.None });
+            var token = jwt.GenerateSecurityToken(new Player() { Id = id, Name = name });
             return Ok(token);
         }
     }

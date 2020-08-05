@@ -4,14 +4,16 @@ using API.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace API.Migrations
 {
     [DbContext(typeof(DAL))]
-    partial class DALModelSnapshot : ModelSnapshot
+    [Migration("20200805085609_json-column-rename")]
+    partial class jsoncolumnrename
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,9 +27,6 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("CurrentPhase")
-                        .HasColumnType("int");
 
                     b.Property<int>("CurrentTurn")
                         .HasColumnType("int");
@@ -58,11 +57,10 @@ namespace API.Migrations
                         new
                         {
                             Id = 1L,
-                            CurrentPhase = 2,
                             CurrentTurn = 3,
                             GameId = 1L,
                             Name = "La bataille des Quatre Vents",
-                            NextPhase = new DateTime(2020, 8, 6, 18, 37, 46, 216, DateTimeKind.Local).AddTicks(6031),
+                            NextPhase = new DateTime(2020, 8, 6, 10, 56, 8, 629, DateTimeKind.Local).AddTicks(9353),
                             PhaseLength = 24,
                             _jsonAssets = "{\"Classement\":{\"1er\":\"Doji Misao\",\"2\\u00E8me\":\"Kitsuki Hisao\",\"3\\u00E8me\":\"Yogo Rushi\",\"4\\u00E8me\":\"Ikoma Kiyoshi\"},\"Prochain classement\":{\"\":\"Tour 6\"}}"
                         });
@@ -105,9 +103,6 @@ namespace API.Migrations
                     b.Property<long>("CampaignId")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("Color")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsCurrentPlayer")
                         .HasColumnType("bit");
 
@@ -142,7 +137,6 @@ namespace API.Migrations
                         {
                             Id = 2L,
                             CampaignId = 1L,
-                            Color = "green",
                             IsCurrentPlayer = true,
                             Name = "Kitsuki Hisao",
                             UserId = 2L,
@@ -152,7 +146,6 @@ namespace API.Migrations
                         {
                             Id = 3L,
                             CampaignId = 1L,
-                            Color = "cyan",
                             IsCurrentPlayer = true,
                             Name = "Doji Misao",
                             UserId = 3L,
@@ -162,7 +155,6 @@ namespace API.Migrations
                         {
                             Id = 4L,
                             CampaignId = 1L,
-                            Color = "yellow",
                             IsCurrentPlayer = true,
                             Name = "Ikoma Kiyoshi",
                             UserId = 4L,
@@ -172,7 +164,6 @@ namespace API.Migrations
                         {
                             Id = 5L,
                             CampaignId = 1L,
-                            Color = "red",
                             IsCurrentPlayer = true,
                             Name = "Yogo Rushi",
                             UserId = 5L,
