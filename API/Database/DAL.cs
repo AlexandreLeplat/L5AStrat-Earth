@@ -30,7 +30,7 @@ namespace API.Database
                                             CurrentPhase = TurnPhase.Early, Assets = new Dictionary<string, Dictionary<string, string>>()
                                                 {
                                                     { "Classement", new Dictionary<string, string> () {{"1er", "Doji Misao"}, { "2ème", "Kitsuki Hisao" }, { "3ème", "Yogo Rushi" }, { "4ème", "Ikoma Kiyoshi" } } },
-                                                    { "Prochain classement", new Dictionary<string, string> () {{"", "Tour 6" } } }
+                                                    { "Prochain classement", new Dictionary<string, string> () {{"Tour 6", "" } } }
                                                 }});
 
             modelBuilder.Entity<User>().HasData(new User() { Id = 1, Name = "Admin", Password = "$2a$11$0cCo4Ciq8/0QZszDtAkP.eK969i/yEeK0bLIU3Tr8Zrut/BxkT5wS", Role = UserRole.Admin }
@@ -50,20 +50,20 @@ namespace API.Database
                                                 , new Player() { Id = 3, Name = "Doji Misao", UserId = 3, CampaignId = 1, IsCurrentPlayer = true, Color = "cyan",
                                                     Assets = new Dictionary<string, Dictionary<string, string>>()
                                                 {
-                                                    { "Caractéristiques", new Dictionary<string, string> () {{"Gloire", "5"}, { "Infamie", "1" } } },
-                                                    { "Ressources", new Dictionary<string, string> () {{"Stratégie", "3"}, { "Influence", "0" } } }
+                                                    { "Caractéristiques", new Dictionary<string, string> () {{"Gloire", "7"}, { "Infamie", "0" } } },
+                                                    { "Ressources", new Dictionary<string, string> () {{"Stratégie", "2"}, { "Influence", "1" } } }
                                                 }}
                                                 , new Player() { Id = 4, Name = "Ikoma Kiyoshi", UserId = 4, CampaignId = 1, IsCurrentPlayer = true, Color = "yellow",
                                                     Assets = new Dictionary<string, Dictionary<string, string>>()
                                                 {
-                                                    { "Caractéristiques", new Dictionary<string, string> () {{"Gloire", "5"}, { "Infamie", "1" } } },
-                                                    { "Ressources", new Dictionary<string, string> () {{"Stratégie", "3"}, { "Influence", "0" } } }
+                                                    { "Caractéristiques", new Dictionary<string, string> () {{"Gloire", "3"}, { "Infamie", "0" } } },
+                                                    { "Ressources", new Dictionary<string, string> () {{"Stratégie", "5"}, { "Influence", "0" } } }
                                                 }}
                                                 , new Player() { Id = 5, Name = "Yogo Rushi", UserId = 5, CampaignId = 1, IsCurrentPlayer = true, Color = "red",
                                                     Assets = new Dictionary<string, Dictionary<string, string>>()
                                                 {
-                                                    { "Caractéristiques", new Dictionary<string, string> () {{"Gloire", "5"}, { "Infamie", "1" } } },
-                                                    { "Ressources", new Dictionary<string, string> () {{"Stratégie", "3"}, { "Influence", "0" } } }
+                                                    { "Caractéristiques", new Dictionary<string, string> () {{"Gloire", "4"}, { "Infamie", "2" } } },
+                                                    { "Ressources", new Dictionary<string, string> () {{"Stratégie", "4"}, { "Influence", "0" } } }
                                                 }});
         }
     }
