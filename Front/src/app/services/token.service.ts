@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from 'src/environments/environment';
 
 export interface Token {
   jwt: string;
@@ -15,6 +16,6 @@ export class TokenService {
     }
       
     login(name:string, password:string ) {
-        return this.http.post<Token>('https://localhost:44332/token', {name, password});
+        return this.http.post<Token>(environment.apiURL + '/token', {name, password});
     }
 }

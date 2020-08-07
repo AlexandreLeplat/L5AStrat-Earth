@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { environment } from 'src/environments/environment';
 
 export interface Player {
   id: number;
@@ -26,6 +27,6 @@ export class PlayersService {
     }
     
     getCurrentPlayer() {
-        return this.http.get<Player>('https://localhost:44332/players/current', { headers : this.headers() });
+        return this.http.get<Player>(environment.apiURL + '/players/current', { headers : this.headers() });
     }
 }

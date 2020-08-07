@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { environment } from 'src/environments/environment';
 
 export interface Campaign {
   id: number;
@@ -28,6 +29,6 @@ export class CampaignsService {
     }
     
     getCurrentCampaign() {
-        return this.http.get<Campaign>('https://localhost:44332/campaigns/current', { headers : this.headers() });
+        return this.http.get<Campaign>(environment.apiURL + '/campaigns/current', { headers : this.headers() });
     }
 }
