@@ -23,5 +23,8 @@ namespace Entities.Models
 
         [JsonIgnore]
         public List<Campaign> Campaigns { get; set; }
+
+        [JsonIgnore]
+        public List<ActionType> ActionTypes { get; set; }
     }
 }

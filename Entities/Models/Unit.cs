@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Entities.Models
 {
-    class Unit
+    public class Unit
     {
     }
 }

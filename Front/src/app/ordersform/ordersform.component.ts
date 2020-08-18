@@ -1,23 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-
-export interface OrderInput {
-  id: number;
-  label: string;
-  type: string;
-  description: string;
-  required: boolean;
-}
-export interface ActionType {
-  label: string;
-  description: string;
-  form: OrderInput[];
-}
-export interface Order {
-  type: ActionType;
-  summary: string;
-  parameters: { [key: number]: string; };
-}
+import { OrdersService, ActionType, Order, OrdersSheet } from '../services/orders.service';
+import { Observable, Subject } from 'rxjs';
 
 @Component({
   selector: 'app-ordersform',
@@ -26,58 +10,27 @@ export interface Order {
 })
 export class OrdersFormComponent implements OnInit {
 
-  actionTypes: { [label: number]: ActionType } =
-  {
-    0:
-    { label: 'Déplacement', 
-      description: 'Déplacez une armée', 
-      form: [] },
-    1:
-      { label: 'Flatterie', 
-        description: 'Gagnez un point de Gloire', 
-        form: [ { id: 0,
-                  label: "Cible",
-                  type: 'opponent', 
-                  description: 'Ciblez un adversaire pour lui faire gagner 2 points de Gloire et gagner un point de Gloire supplémentaire',
-                  required: false },
-                { id: 1,
-                  label: "Augmentation", 
-                  type: 'checkbox', 
-                  description: 'Dépensez une Influence pour gagner 5 points de Gloire supplémentaires',
-                  required: false },
-             ] },
-    2:
-      { label: 'Planification', 
-        description: 'Gagnez un point de Stratégie', 
-        form: [ { id: 0,
-                  label: "Manoeuvre sournoise",
-                  type: 'checkbox', 
-                  description: 'Gagnez 2 points d\'Infamie pour gagner un point de Stratégie supplémentaire',
-                  required: false },
-                { id: 1,
-                  label: "Augmentation", 
-                  type: 'checkbox', 
-                  description: 'Dépensez une Influence pour gagner 5 points de Stratégie supplémentaires',
-                  required: false },
-             ] },
-    3:
-    { label: 'Renfort', 
-      description: 'Ajoutez une armée sur carte', 
-      form: [] }
-  };
-
+  actionTypes: { [id: number]: ActionType };
+  ordersSheet$: Observable<OrdersSheet>;
+  orders: Order[];
+  ordersSheetId: number;
   selectedActionType: number;
-
-  orders: Order[] =
-  [
-    { type: this.actionTypes[0], summary: 'A4 -> B3', parameters: {} },
-    { type: this.actionTypes[1], summary: '+2 Gloire', parameters: { 0:"Doji Misao", 1:"False" } },
-    { type: this.actionTypes[3], summary: '-> A3', parameters: {} }
-  ];
     
-  constructor() { }
+  constructor(private ordersService: OrdersService) { }
 
   ngOnInit(): void {
+    this.ordersService.getActionTypes().subscribe(a => {
+      this.actionTypes = {};
+      a.forEach(t => {
+        this.actionTypes[t.id] = t;
+      });
+    });
+    this.ordersSheet$ = this.ordersService.getCurrentOrdersSheet();
+    this.ordersSheet$.subscribe(s => 
+      {
+        this.ordersSheetId = s.id;
+        this.ordersService.getOrders(this.ordersSheetId).subscribe(o => this.orders = o);
+      });
   }
 
   drop(event: CdkDragDrop<Order[]>) {
@@ -85,13 +38,36 @@ export class OrdersFormComponent implements OnInit {
   }
 
   addOrder() {
-    var order: Order = { type: this.actionTypes[this.selectedActionType], summary:'', parameters: {}}
-    this.orders = this.orders.concat(order);
-    this.selectedActionType = null;
+    console.log(this.actionTypes[this.selectedActionType]);
+    var order: Order = { id:null, actionTypeId: this.actionTypes[this.selectedActionType].id, parameters: {}, comment: ''}
+    this.ordersService.createOrder(this.ordersSheetId, order).subscribe(o => {
+      this.orders.push(o);
+      this.selectedActionType = null;
+    });
   }
 
-  remove(order: Order) {
-    var index: number = this.orders.indexOf(order);
-    this.orders.splice(index, 1);
+  removeOrder(order: Order) {
+    this.ordersService.deleteOrder(this.ordersSheetId, order.id).subscribe(() => {
+        var index: number = this.orders.indexOf(order);
+        this.orders.splice(index, 1);
+      });
+  }
+
+  updateOrder(order: Order) {
+    console.log(order);
+    this.ordersService.upateOrder(this.ordersSheetId, order).subscribe(o => console.log(o));
+  }
+
+  inputType(type: string): number {
+    switch(type)
+    {
+      case 'checkbox': return 1;
+      case 'opponent': return 2;
+      case 'entryTile': return 3;
+      case 'unit': return 4;
+      case 'unitMove': return 5;
+      case 'formation': return 6;
+      default: return 0;
+    }
   }
 }

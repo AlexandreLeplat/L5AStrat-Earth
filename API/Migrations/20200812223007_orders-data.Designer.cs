@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(DAL))]
-    [Migration("20200807210127_small-data-change")]
-    partial class smalldatachange
+    [Migration("20200812223007_orders-data")]
+    partial class ordersdata
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -20,6 +20,91 @@ namespace API.Migrations
                 .HasAnnotation("ProductVersion", "3.1.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+            modelBuilder.Entity("Entities.Models.ActionType", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("GameId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Label")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("_jsonForm")
+                        .HasColumnName("Form")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameId");
+
+                    b.ToTable("ActionTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            Description = "Gagnez un point de Stratégie",
+                            GameId = 1L,
+                            Label = "Planification",
+                            _jsonForm = "[{\"Label\":\"Augmentation (Manoeuvre sournoise)\",\"Type\":1,\"Description\":\"Gagnez 2 points d\\u0027Infamie pour gagner un point de Strat\\u00E9gie suppl\\u00E9mentaire\"}]"
+                        },
+                        new
+                        {
+                            Id = 2L,
+                            Description = "Gagnez 2 points de Gloire et faites-en gagner 2 à un adversaire",
+                            GameId = 1L,
+                            Label = "Flatterie",
+                            _jsonForm = "[{\"Label\":\"Cible\",\"Type\":2,\"Description\":\"L\\u0027adversaire recevant 2 points de Gloire\"},{\"Label\":\"Augmentation (Faveur politique)\",\"Type\":1,\"Description\":\"D\\u00E9pensez un point d\\u2019Influence pour gagner 3 points de Gloire suppl\\u00E9mentaires et ne cibler personne\"}]"
+                        },
+                        new
+                        {
+                            Id = 3L,
+                            Description = "Infligez 3 points d’Infamie à un adversaire et gagnez-en vous-même un point",
+                            GameId = 1L,
+                            Label = "Médisance",
+                            _jsonForm = "[{\"Label\":\"Cible\",\"Type\":2,\"Description\":\"L\\u0027adversaire subissant la m\\u00E9disance\"},{\"Label\":\"Augmentation (Scandale)\",\"Type\":1,\"Description\":\"D\\u00E9pensez un point d\\u2019Influence pour ajouter 2 points d\\u2019Infamie \\u00E0 votre cible et remplacer votre gain d\\u0027Infamie par un gain de Gloire.\"}]"
+                        },
+                        new
+                        {
+                            Id = 4L,
+                            Description = "Déployez une armée pour 5 points de Stratégie",
+                            GameId = 1L,
+                            Label = "Renforts",
+                            _jsonForm = "[{\"Label\":\"Case\",\"Type\":3,\"Description\":\"La case de renfort cibl\\u00E9e\"},{\"Label\":\"Augmentation (Soutien militaire)\",\"Type\":1,\"Description\":\"D\\u00E9pensez un point d\\u0027Influence \\u00E0 la place des points de Strat\\u00E9gie.\"}]"
+                        },
+                        new
+                        {
+                            Id = 5L,
+                            Description = "Déplacez une armée d'une case",
+                            GameId = 1L,
+                            Label = "Déplacement",
+                            _jsonForm = "[{\"Label\":\"Arm\\u00E9e\",\"Type\":4,\"Description\":\"L\\u0027arm\\u00E9e \\u00E0 d\\u00E9placer\"},{\"Label\":\"Destination\",\"Type\":5,\"Description\":\"La destination de l\\u0027arm\\u00E9e\"},{\"Label\":\"Augmentation (Ligne de ravitaillement)\",\"Type\":1,\"Description\":\"D\\u00E9pensez un point d\\u0027Influence pour d\\u00E9placer l\\u0027arm\\u00E9e apr\\u00E8s un renfort ou un changement de formation.\"}]"
+                        },
+                        new
+                        {
+                            Id = 6L,
+                            Description = "Changez la formation de l'armée",
+                            GameId = 1L,
+                            Label = "Formation",
+                            _jsonForm = "[{\"Label\":\"Arm\\u00E9e\",\"Type\":4,\"Description\":\"L\\u0027arm\\u00E9e cibl\\u00E9e\"},{\"Label\":\"Formation\",\"Type\":6,\"Description\":\"La formation \\u00E0 adopter\"},{\"Label\":\"Augmentation (Discipline)\",\"Type\":1,\"Description\":\"D\\u00E9pensez un point de Strat\\u00E9gie pour changer de formation apr\\u00E8s un d\\u00E9placement.\"}]"
+                        },
+                        new
+                        {
+                            Id = 7L,
+                            Description = "Subissez un point d'Infamie pour espionner un adversaire",
+                            GameId = 1L,
+                            Label = "Renseignements",
+                            _jsonForm = "[{\"Label\":\"Cible\",\"Type\":2,\"Description\":\"L\\u0027adversaire \\u00E0 espionner\"},{\"Label\":\"Augmentation (R\\u00E9seau d\\u0027information)\",\"Type\":1,\"Description\":\"D\\u00E9pensez un point d\\u0027Influence pour annuler l\\u0027Infamie et cibler tous les adversaires.\"}]"
+                        });
+                });
 
             modelBuilder.Entity("Entities.Models.Campaign", b =>
                 {
@@ -64,7 +149,7 @@ namespace API.Migrations
                             CurrentTurn = 3,
                             GameId = 1L,
                             Name = "La bataille des Quatre Vents",
-                            NextPhase = new DateTime(2020, 8, 8, 23, 1, 26, 604, DateTimeKind.Local).AddTicks(8165),
+                            NextPhase = new DateTime(2020, 8, 14, 0, 30, 6, 585, DateTimeKind.Local).AddTicks(6039),
                             PhaseLength = 24,
                             _jsonAssets = "{\"Classement\":{\"1er\":\"Doji Misao\",\"2\\u00E8me\":\"Kitsuki Hisao\",\"3\\u00E8me\":\"Yogo Rushi\",\"4\\u00E8me\":\"Ikoma Kiyoshi\"},\"Prochain classement\":{\"Tour 6\":\"\"}}"
                         });
@@ -94,6 +179,94 @@ namespace API.Migrations
                             Id = 1L,
                             Name = "L5A Strat - TERRE",
                             _jsonHomeWidgets = "[\"Clock\",\"PlayerInfo\",\"CampaignInfo\"]"
+                        });
+                });
+
+            modelBuilder.Entity("Entities.Models.Order", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<long>("ActionTypeId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("OrdersSheetId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("_jsonParameters")
+                        .HasColumnName("Parameters")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActionTypeId");
+
+                    b.HasIndex("OrdersSheetId");
+
+                    b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("Entities.Models.OrdersSheet", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<long>("PlayerId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("SendDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Turn")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId");
+
+                    b.ToTable("OrdersSheets");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            PlayerId = 2L,
+                            Priority = 0,
+                            Turn = 3
+                        },
+                        new
+                        {
+                            Id = 2L,
+                            PlayerId = 3L,
+                            Priority = 0,
+                            Turn = 3
+                        },
+                        new
+                        {
+                            Id = 3L,
+                            PlayerId = 4L,
+                            Priority = 0,
+                            Turn = 3
+                        },
+                        new
+                        {
+                            Id = 4L,
+                            PlayerId = 5L,
+                            Priority = 0,
+                            Turn = 3
                         });
                 });
 
@@ -240,11 +413,44 @@ namespace API.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Entities.Models.ActionType", b =>
+                {
+                    b.HasOne("Entities.Models.Game", "Game")
+                        .WithMany("ActionTypes")
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Entities.Models.Campaign", b =>
                 {
                     b.HasOne("Entities.Models.Game", "Game")
                         .WithMany("Campaigns")
                         .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Entities.Models.Order", b =>
+                {
+                    b.HasOne("Entities.Models.ActionType", "ActionType")
+                        .WithMany("Orders")
+                        .HasForeignKey("ActionTypeId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Entities.Models.OrdersSheet", "OrdersSheet")
+                        .WithMany("Orders")
+                        .HasForeignKey("OrdersSheetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Entities.Models.OrdersSheet", b =>
+                {
+                    b.HasOne("Entities.Models.Player", "Player")
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
