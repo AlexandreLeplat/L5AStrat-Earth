@@ -2,9 +2,36 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 
+export enum OrderStatus {
+  None = 0,
+  Invalid = 1,
+  Valid = 2,
+  Completed = 3,
+  Failed = 4,
+  Error = 5
+}
+export enum OrdersSheetStatus {
+  None = 0,
+  Writing = 1,
+  Planned = 2,
+  Treating = 3,
+  Completed = 4,
+  Expired = 5,
+  Error = 6
+}
+export enum OrderInputType {
+  None = 0,
+  Checkbox = 1,
+  Opponent = 2,
+  EntryTile = 3,
+  Unit = 4,
+  UnitMove = 5,
+  Formation = 6
+}
+
 export interface OrderInput {
   label: string;
-  type: number;
+  type: OrderInputType;
   description: string;
 }
 export interface ActionType {
@@ -18,12 +45,14 @@ export interface Order {
   actionTypeId: number;
   comment: string;
   parameters: { [key: string]: string; };
+  status: OrderStatus;
 }
 export interface OrdersSheet {
   id: number;
   priority: number;
   turn: number;
   maxOrdersCount: number;
+  status: OrdersSheetStatus;
 }
 
 @Injectable({

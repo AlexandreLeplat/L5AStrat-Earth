@@ -3,11 +3,11 @@
 }
 .home-card {
     width: 300px;
-    margin: 10% auto;
+    margin: 10% auto auto;
   }
 .home-card-mobile {
     width: 90%;
-    margin: 10% auto;
+    margin: 15px auto auto;
     text-align: center;
   }
 .mat-card-title {

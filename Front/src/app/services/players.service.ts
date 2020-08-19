@@ -29,4 +29,9 @@ export class PlayersService {
     getCurrentPlayer() {
         return this.http.get<Player>(environment.apiURL + '/players/current', { headers : this.headers() });
     }
-}
+
+    getCampaignPlayers() {
+      return this.http.get<Player[]>(environment.apiURL + '/campaigns/current/players', { headers : this.headers() });
+  }
+
+  }

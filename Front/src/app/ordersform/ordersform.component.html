@@ -1,60 +1,64 @@
 <app-header></app-header>
 <app-menu [selectedRoute]="'orders'"></app-menu>
 <div ngClass.gt-sm="desktop-content" style="margin-bottom: 60px;">
-  <mat-card *ngIf="ordersSheet$ | async as ordersSheet else spinnerCard">
-    <strong style="width: 20%;">Tour {{ordersSheet.turn}}</strong>
-    <span style="width: 60%;">
-      Points de priorité :
-    <mat-slider max="5" min="0" thumbLabel tickInterval="1" value="{{ordersSheet.priority}}"></mat-slider></span>
-  </mat-card>
+  <div *ngIf="ordersSheet$ | async as ordersSheet else spinnerCard" style="width: 90%; margin: 20px auto;">
+    <mat-card>
+      <strong style="width: 20%;">Tour {{ordersSheet.turn}}</strong>
+      <p style="width: 60%;">
+        Points de priorité :
+      <mat-slider max="5" min="0" thumbLabel tickInterval="1" value="{{ordersSheet.priority}}"></mat-slider></p>
+    </mat-card>
 
-  <mat-accordion *ngIf="orders && actionTypes else spinnerCard" cdkDropList [cdkDropListData]="orders" (cdkDropListDropped)="drop($event)">
-    <mat-expansion-panel *ngFor="let order of orders" cdkDrag>
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          <mat-icon>drag_indicator</mat-icon>
-          &nbsp;{{actionTypes[order.actionTypeId].label}}
-        </mat-panel-title>
-        <mat-panel-description>
-          {{order.comment}}
-        </mat-panel-description>
-      </mat-expansion-panel-header>
-      <p>{{actionTypes[order.actionTypeId].description}}</p>
-      <mat-list>
-        <mat-list-item *ngFor="let orderInput of actionTypes[order.actionTypeId].form">
-            <mat-checkbox *ngIf="orderInput.type == inputType('checkbox')" [(value)]='order.parameters[orderInput.label]' (selectionChange)="updateOrder(order)">
+    <mat-accordion *ngIf="orders && actionTypes else spinnerCard" cdkDropList [cdkDropListData]="orders" (cdkDropListDropped)="drop($event)">
+      <mat-expansion-panel *ngFor="let order of orders" cdkDrag>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon>drag_indicator</mat-icon>
+            &nbsp;{{actionTypes[order.actionTypeId].label}}
+          </mat-panel-title>
+          <mat-panel-description>
+            {{order.comment}}
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+        <p>{{actionTypes[order.actionTypeId].description}}</p>
+        <mat-list>
+          <mat-list-item *ngFor="let orderInput of actionTypes[order.actionTypeId].form">
+            <mat-checkbox *ngIf="orderInput.type == inputType('checkbox')" [checked]='order.parameters[orderInput.label] == "true"' (change)="updateCheckbox(order, orderInput.label, $event)">
               <strong>{{orderInput.label}} :</strong> {{orderInput.description}}
             </mat-checkbox>
             <div *ngIf="orderInput.type == inputType('opponent')">
               <mat-form-field appearance="fill">
-              <mat-label>{{orderInput.label}}</mat-label>
-              <mat-select [(value)]='order.parameters[orderInput.label]' (selectionChange)="updateOrder(order)">
-                <mat-option *ngIf="!orderInput.required" value="none">Aucune</mat-option>
-                <mat-option value="option1">Doji Misao</mat-option>
-                <mat-option value="option2">Hida Kataki</mat-option>
-                <mat-option value="option3">Ikoma Kiyoshi</mat-option>
-              </mat-select>
-            </mat-form-field> &nbsp; {{orderInput.description}}
-          </div>
-        </mat-list-item>
-      </mat-list>
-      <mat-action-row>
-        <button mat-button color="primary" (click)="removeOrder(order)"><mat-icon>clear</mat-icon>&nbsp;Retirer</button>
-      </mat-action-row>
-    </mat-expansion-panel>
-    <div *ngIf="ordersSheet$ | async as ordersSheet else spinnerCard">
-    <mat-card *ngIf="orders.length < ordersSheet.maxOrdersCount">
-          <mat-icon>add</mat-icon>
-          &nbsp;<strong>Ajouter un ordre</strong>
-          <mat-form-field appearance="fill" style="width: 50%;">
-            <mat-select [(value)]="selectedActionType" (selectionChange)="addOrder()">
-              <mat-option *ngFor="let actionType of actionTypes | keyvalue" value="{{actionType.key}}" >{{actionType.value.label}}</mat-option>
-            </mat-select>
-          </mat-form-field>
-          &nbsp;{{ordersSheet.maxOrdersCount - orders.length}} restants
-    </mat-card>
+                <mat-label>{{orderInput.label}}</mat-label>
+                <mat-select *ngIf="opponents" [(value)]='order.parameters[orderInput.label]' (selectionChange)="updateOrder(order)">
+                  <mat-option *ngFor="let opponent of opponents" [value]="opponent.id.toString()">{{opponent.name}}</mat-option>
+                </mat-select>
+              </mat-form-field> &nbsp; {{orderInput.description}}
+            </div>
+          </mat-list-item>
+        </mat-list>
+        <mat-action-row>
+          <button mat-button color="primary" (click)="removeOrder(order)"><mat-icon>clear</mat-icon>&nbsp;Retirer</button>
+        </mat-action-row>
+      </mat-expansion-panel>
+      <mat-card *ngIf="orders.length < ordersSheet.maxOrdersCount else submitCard">
+        <mat-icon style="vertical-align: middle;">add</mat-icon>
+        &nbsp;<strong style="vertical-align: middle;">Ajouter un ordre</strong>&nbsp;
+        <mat-form-field appearance="fill" style="width: 50%;">
+          <mat-select [(value)]="selectedActionType" (selectionChange)="addOrder()">
+            <mat-option *ngFor="let actionType of actionTypes | keyvalue" value="{{actionType.key}}" >{{actionType.value.label}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        &nbsp;{{ordersSheet.maxOrdersCount - orders.length}} restants
+      </mat-card>
+      <ng-template #submitCard>
+        <mat-card>
+          <mat-card-content style="text-align: center;">
+            <button mat-button color="primary"><mat-icon>send</mat-icon>&nbsp;Envoyer</button>
+          </mat-card-content>
+        </mat-card>
+      </ng-template>
+    </mat-accordion>
   </div>
-  </mat-accordion>
   <ng-template #spinnerCard>
     <mat-card class="home-card" ngClass.xs="home-card-mobile">
       <mat-card-header>

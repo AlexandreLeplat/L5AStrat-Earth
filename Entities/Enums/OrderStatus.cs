@@ -6,6 +6,7 @@
         Invalid = 1,
         Valid = 2,
         Completed = 3,
-        Failed = 4
+        Failed = 4,
+        Error = 5
     }
 }

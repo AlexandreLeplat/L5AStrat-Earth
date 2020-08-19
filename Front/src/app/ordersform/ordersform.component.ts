@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { OrdersService, ActionType, Order, OrdersSheet } from '../services/orders.service';
-import { Observable, Subject } from 'rxjs';
+import { OrdersService, ActionType, Order, OrdersSheet, OrderStatus, OrderInputType } from '../services/orders.service';
+import { Observable } from 'rxjs';
+import { PlayersService, Player } from '../services/players.service';
+import { MatCheckboxChange } from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-ordersform',
@@ -14,9 +16,11 @@ export class OrdersFormComponent implements OnInit {
   ordersSheet$: Observable<OrdersSheet>;
   orders: Order[];
   ordersSheetId: number;
+  player: Player;
+  opponents: Player[];
   selectedActionType: number;
     
-  constructor(private ordersService: OrdersService) { }
+  constructor(private ordersService: OrdersService, private playersService: PlayersService) { }
 
   ngOnInit(): void {
     this.ordersService.getActionTypes().subscribe(a => {
@@ -31,6 +35,14 @@ export class OrdersFormComponent implements OnInit {
         this.ordersSheetId = s.id;
         this.ordersService.getOrders(this.ordersSheetId).subscribe(o => this.orders = o);
       });
+      this.playersService.getCurrentPlayer().subscribe(p => {
+        this.player = p;
+        this.playersService.getCampaignPlayers().subscribe(c => {
+          this.opponents = c;
+          var index: number = this.opponents.findIndex(f => f.id == p.id);
+          this.opponents.splice(index, 1);
+        });
+      })
   }
 
   drop(event: CdkDragDrop<Order[]>) {
@@ -39,7 +51,7 @@ export class OrdersFormComponent implements OnInit {
 
   addOrder() {
     console.log(this.actionTypes[this.selectedActionType]);
-    var order: Order = { id:null, actionTypeId: this.actionTypes[this.selectedActionType].id, parameters: {}, comment: ''}
+    var order: Order = { id:null, actionTypeId: this.actionTypes[this.selectedActionType].id, parameters: {}, comment: '', status: OrderStatus.None}
     this.ordersService.createOrder(this.ordersSheetId, order).subscribe(o => {
       this.orders.push(o);
       this.selectedActionType = null;
@@ -69,5 +81,10 @@ export class OrdersFormComponent implements OnInit {
       case 'formation': return 6;
       default: return 0;
     }
+  }
+
+  updateCheckbox(order: Order, label:string, event: MatCheckboxChange) {
+    order.parameters[label] = event.checked.toString();
+    this.updateOrder(order);
   }
 }

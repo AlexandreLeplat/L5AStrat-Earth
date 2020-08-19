@@ -221,10 +221,10 @@ namespace API.Database
                 });
 
             modelBuilder.Entity<OrdersSheet>().HasData(
-                new OrdersSheet() { Id = 1, PlayerId = 2, Turn = 3, Priority = 0, MaxOrdersCount = 5 },
-                new OrdersSheet() { Id = 2, PlayerId = 3, Turn = 3, Priority = 0, MaxOrdersCount = 5 },
-                new OrdersSheet() { Id = 3, PlayerId = 4, Turn = 3, Priority = 0, MaxOrdersCount = 5 },
-                new OrdersSheet() { Id = 4, PlayerId = 5, Turn = 3, Priority = 0, MaxOrdersCount = 5 });
+                new OrdersSheet() { Id = 1, PlayerId = 2, Turn = 3, Priority = 0, MaxOrdersCount = 5, Status = OrdersSheetStatus.Writing },
+                new OrdersSheet() { Id = 2, PlayerId = 3, Turn = 3, Priority = 0, MaxOrdersCount = 5, Status = OrdersSheetStatus.Writing },
+                new OrdersSheet() { Id = 3, PlayerId = 4, Turn = 3, Priority = 0, MaxOrdersCount = 5, Status = OrdersSheetStatus.Writing },
+                new OrdersSheet() { Id = 4, PlayerId = 5, Turn = 3, Priority = 0, MaxOrdersCount = 5, Status = OrdersSheetStatus.Writing });
 
             modelBuilder.Entity<Order>().Property(o => o._jsonParameters).HasColumnName("Parameters");
             modelBuilder.Entity<Order>().HasOne(e => e.ActionType).WithMany(e => e.Orders).OnDelete(DeleteBehavior.NoAction);

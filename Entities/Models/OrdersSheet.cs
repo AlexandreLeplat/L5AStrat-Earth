@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Entities.Enums;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -20,6 +21,8 @@ namespace Entities.Models
 
         // Date d'envoi de la feuille
         public DateTime? SendDate { get; set; }
+
+        public OrdersSheetStatus Status { get; set; }
 
         // Joueur auquel la feuille d'ordre appartient
         public long PlayerId { get; set; }
