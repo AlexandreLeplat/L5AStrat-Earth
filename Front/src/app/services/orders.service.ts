@@ -45,6 +45,7 @@ export interface Order {
   actionTypeId: number;
   comment: string;
   parameters: { [key: string]: string; };
+  rank: number;
   status: OrderStatus;
 }
 export interface OrdersSheet {
@@ -59,7 +60,7 @@ export interface OrdersSheet {
   providedIn: 'root'
 })
 export class OrdersService {
-     
+    
   constructor(private http: HttpClient) {
   }
   
@@ -78,6 +79,14 @@ export class OrdersService {
       return this.http.get<OrdersSheet>(environment.apiURL + '/orderssheets/current', { headers : this.headers() });
   }
 
+  updateOrdersSheet(ordersSheet: OrdersSheet) {
+    return this.http.put<OrdersSheet>(environment.apiURL + '/orderssheets/' + ordersSheet.id, ordersSheet, { headers : this.headers() });
+  }
+
+  submitOrdersSheet() {
+    return this.http.post<OrdersSheet>(environment.apiURL + '/orderssheets/submit', null, { headers : this.headers() });
+  }
+
   getOrders(idSheet: number) {
     return this.http.get<Order[]>(environment.apiURL + '/orderssheets/' + idSheet + '/orders', { headers : this.headers() });
   }
@@ -86,9 +95,12 @@ export class OrdersService {
     return this.http.post<Order>(environment.apiURL + '/orderssheets/' + idSheet + '/orders', order, { headers : this.headers() });
   }
 
-  upateOrder(idSheet: number, order: Order) {
-    console.log('update');
+  updateOrder(idSheet: number, order: Order) {
     return this.http.put<Order>(environment.apiURL + '/orderssheets/' + idSheet + '/orders/' + order.id, order, { headers : this.headers() });
+  }
+
+  updateAllOrders(idSheet: number, orders: Order[]) {
+    return this.http.put<Order[]>(environment.apiURL + '/orderssheets/' + idSheet + '/orders/', orders, { headers : this.headers() });
   }
 
   deleteOrder(idSheet: number, idOrder: number) {

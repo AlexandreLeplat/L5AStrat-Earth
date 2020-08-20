@@ -111,6 +111,42 @@ namespace API.Controllers
             }
         }
 
+        // PUT ordersSheets/{id} permet de modifier la feuille d'ordres
+        [HttpPut("{id}")]
+        [EnableCors]
+        [Authorize]
+        public ActionResult Put(OrdersSheet input)
+        {
+            try
+            {
+                using (var dal = new DAL())
+                {
+                    var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
+                    if (claim == null) return Unauthorized();
+
+                    // On récupère la feuille d'ordres concernée
+                    var idPlayer = long.Parse(claim.Value);
+                    var ordersSheet = (from s in dal.OrdersSheets
+                                       where s.PlayerId == idPlayer && s.Id == input.Id
+                                       select s).FirstOrDefault();
+                    if (ordersSheet == null) return NotFound();
+
+                    if (ordersSheet.Status != OrdersSheetStatus.Writing)
+                    {
+                        return StatusCode((int)HttpStatusCode.PreconditionFailed, "Statut incorrect de la feuille d'ordres");
+                    }
+                    ordersSheet.Priority = input.Priority;
+                    dal.SaveChanges();
+
+                    return Ok(ordersSheet);
+                }
+            }
+            catch (Exception e)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
         // POST ordersSheets/submit permet d'envoyer la feuille d'ordres actuelle du joueur courant
         [HttpPost("submit")]
         [EnableCors]
@@ -136,8 +172,13 @@ namespace API.Controllers
                     if (ordersSheet.SendDate.HasValue)
                     {
                         return StatusCode((int)HttpStatusCode.PreconditionFailed, "La feuille d'ordre a déjà été envoyée");
+                    } 
+                    else if (ordersSheet.Status != OrdersSheetStatus.Writing)
+                    {
+                        return StatusCode((int)HttpStatusCode.PreconditionFailed, "Statut incorrect de la feuille d'ordres");
                     }
                     ordersSheet.SendDate = DateTime.Now;
+                    ordersSheet.Status = OrdersSheetStatus.Planned;
                     dal.SaveChanges();
 
                     return Ok(ordersSheet);
@@ -167,6 +208,7 @@ namespace API.Controllers
                     var orders = (from o in dal.Orders
                                   join s in dal.OrdersSheets on o.OrdersSheetId equals s.Id
                                   where s.PlayerId == idPlayer && s.Id == id
+                                  orderby o.Rank
                                   select o).ToList();
                     if (orders == null) return NotFound();
 
@@ -209,6 +251,7 @@ namespace API.Controllers
                         ActionTypeId = input.ActionTypeId,
                         OrdersSheetId = ordersSheet.Id,
                         Parameters = input.Parameters,
+                        Rank = input.Rank,
                         Status = OrderStatus.None
                     };
 
@@ -226,7 +269,7 @@ namespace API.Controllers
 
         // PUT api/<OrderController>/5
         [HttpPut("{idSheet}/orders/{idOrder}")]
-        public ActionResult Put(long idSheet, long idOrder, [FromBody] OrderInputModel input)
+        public ActionResult PutOrder(long idSheet, long idOrder, [FromBody] OrderInputModel input)
         {
             try
             {
@@ -248,6 +291,7 @@ namespace API.Controllers
                     if (order == null) return NotFound();
 
                     order.Parameters = input.Parameters;
+                    order.Rank = input.Rank;
                     dal.SaveChanges();
 
                     return Ok(order);
@@ -259,6 +303,53 @@ namespace API.Controllers
             }
         }
 
+        // PUT api/<OrderController>/5
+        [HttpPut("{idSheet}/orders")]
+        public ActionResult PutOrders(long idSheet, [FromBody] OrderInputModel[] input)
+        {
+            try
+            {
+                if (input == null)
+                    return BadRequest("PUT Orders : body manquant");
+
+                using (var dal = new DAL())
+                {
+                    var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
+                    if (claim == null) return Unauthorized();
+
+                    // On récupère la feuille d'ordres ciblée
+                    var idPlayer = long.Parse(claim.Value);
+                    var ordersSheet = (from s in dal.OrdersSheets
+                                       where s.PlayerId == idPlayer && s.Id == idSheet
+                                       select s).FirstOrDefault();
+                    if (ordersSheet == null) return NotFound();
+
+                    var orders = (from o in dal.Orders
+                                    where o.OrdersSheetId == idSheet
+                                    select o).ToList();
+                    if (orders == null) return NotFound();
+
+                    foreach (var item in input)
+                    {
+                        var order = orders.FirstOrDefault(o => o.Id == item.Id);
+                        if (order == null)
+                        {
+                            return NotFound(string.Format("Ordre non trouvé : {0}", item.Id));
+                        }
+                        order.Parameters = item.Parameters;
+                        order.Rank = item.Rank;
+                    }
+                    dal.SaveChanges();
+
+                    return Ok(orders);
+                }
+            }
+            catch (Exception e)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
+        }
+        
         // DELETE api/<OrderController>/5
         [HttpDelete("{idSheet}/orders/{idOrder}")]
         public ActionResult Delete(long idSheet, long idOrder)

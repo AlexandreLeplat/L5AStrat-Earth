@@ -233,25 +233,25 @@ namespace API.Database
                 {
                     Id = 1, OrdersSheetId = 1, ActionTypeId = 1, Status = OrderStatus.Valid,
                     Parameters = new Dictionary<string, string>() { { "Augmentation", "false" } },
-                    Comment = "+ 1 Strat"
+                    Comment = "+ 1 Strat", Rank = 0
                 },
                 new Order()
                 {
                     Id = 2, OrdersSheetId = 2, ActionTypeId = 2, Status = OrderStatus.Valid,
                     Parameters = new Dictionary<string, string>() { { "Cible", "5" }, { "Augmentation", "false" } },
-                    Comment = "+ 2 Gloire, Yogo Rushi + 2 Gloire"
+                    Comment = "+ 2 Gloire, Yogo Rushi + 2 Gloire", Rank = 0
                 },
                 new Order()
                 {
                     Id = 3, OrdersSheetId = 3, ActionTypeId = 4, Status = OrderStatus.Valid,
                     Parameters = new Dictionary<string, string>() { { "Cible", "3" }, { "Augmentation", "false" } },
-                    Comment = "+ 1 Infamie, Doji Misao +3 Infamie"
+                    Comment = "+ 1 Infamie, Doji Misao +3 Infamie", Rank = 0
                 },
                 new Order()
                 {
                     Id = 4, OrdersSheetId = 4, ActionTypeId = 1, Status = OrderStatus.Valid,
                     Parameters = new Dictionary<string, string>() { { "Augmentation", "false" } },
-                    Comment = "+ 1 Strat"
+                    Comment = "+ 1 Strat", Rank = 0
                 });
         }
     }

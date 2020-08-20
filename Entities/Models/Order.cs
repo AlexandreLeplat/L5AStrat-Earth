@@ -22,6 +22,7 @@ namespace Entities.Models
         [JsonIgnore]
         public string _jsonParameters { get; set; }
 
+        public int Rank { get; set; }
         public OrderStatus Status { get; set; }
         public string Comment { get; set; }
 

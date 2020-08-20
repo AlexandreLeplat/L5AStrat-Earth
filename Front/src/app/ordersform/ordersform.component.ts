@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { OrdersService, ActionType, Order, OrdersSheet, OrderStatus, OrderInputType } from '../services/orders.service';
-import { Observable } from 'rxjs';
 import { PlayersService, Player } from '../services/players.service';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 
@@ -13,9 +12,8 @@ import { MatCheckboxChange } from '@angular/material/checkbox';
 export class OrdersFormComponent implements OnInit {
 
   actionTypes: { [id: number]: ActionType };
-  ordersSheet$: Observable<OrdersSheet>;
+  ordersSheet: OrdersSheet;
   orders: Order[];
-  ordersSheetId: number;
   player: Player;
   opponents: Player[];
   selectedActionType: number;
@@ -29,11 +27,10 @@ export class OrdersFormComponent implements OnInit {
         this.actionTypes[t.id] = t;
       });
     });
-    this.ordersSheet$ = this.ordersService.getCurrentOrdersSheet();
-    this.ordersSheet$.subscribe(s => 
+    this.ordersService.getCurrentOrdersSheet().subscribe(s => 
       {
-        this.ordersSheetId = s.id;
-        this.ordersService.getOrders(this.ordersSheetId).subscribe(o => this.orders = o);
+        this.ordersSheet = s;        
+        this.ordersService.getOrders(this.ordersSheet.id).subscribe(o => this.orders = o);
       });
       this.playersService.getCurrentPlayer().subscribe(p => {
         this.player = p;
@@ -47,27 +44,30 @@ export class OrdersFormComponent implements OnInit {
 
   drop(event: CdkDragDrop<Order[]>) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+      this.orders.forEach(order => {
+        order.rank = this.orders.indexOf(order);
+      });
+      this.ordersService.updateAllOrders(this.ordersSheet.id, this.orders).subscribe();
   }
 
   addOrder() {
-    console.log(this.actionTypes[this.selectedActionType]);
-    var order: Order = { id:null, actionTypeId: this.actionTypes[this.selectedActionType].id, parameters: {}, comment: '', status: OrderStatus.None}
-    this.ordersService.createOrder(this.ordersSheetId, order).subscribe(o => {
+    var order: Order = { id:null, actionTypeId: this.actionTypes[this.selectedActionType].id, parameters: {},  
+        comment: '', status: OrderStatus.None, rank: this.orders.length }
+    this.ordersService.createOrder(this.ordersSheet.id, order).subscribe(o => {
       this.orders.push(o);
       this.selectedActionType = null;
     });
   }
 
   removeOrder(order: Order) {
-    this.ordersService.deleteOrder(this.ordersSheetId, order.id).subscribe(() => {
+    this.ordersService.deleteOrder(this.ordersSheet.id, order.id).subscribe(() => {
         var index: number = this.orders.indexOf(order);
         this.orders.splice(index, 1);
       });
   }
 
   updateOrder(order: Order) {
-    console.log(order);
-    this.ordersService.upateOrder(this.ordersSheetId, order).subscribe(o => console.log(o));
+    this.ordersService.updateOrder(this.ordersSheet.id, order).subscribe();
   }
 
   inputType(type: string): number {
@@ -83,8 +83,16 @@ export class OrdersFormComponent implements OnInit {
     }
   }
 
+  updatePriority() {
+    this.ordersService.updateOrdersSheet(this.ordersSheet).subscribe(s => {});
+  }
+
   updateCheckbox(order: Order, label:string, event: MatCheckboxChange) {
     order.parameters[label] = event.checked.toString();
     this.updateOrder(order);
+  }
+
+  submitOrdersSheet() {
+    this.ordersService.submitOrdersSheet().subscribe(s => this.ordersSheet = s);
   }
 }
