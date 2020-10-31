@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>5ca350b6-1bee-4747-8d82-ad4f6d75dfb1</UserSecretsId>
+    <!--<AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>-->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Migrations\20201006202947_messages.cs" />
+    <Compile Remove="Migrations\20201006202947_messages.Designer.cs" />
+    <Compile Remove="Migrations\20201016142047_mapInit.cs" />
+    <Compile Remove="Migrations\20201016142047_mapInit.Designer.cs" />
+    <Compile Remove="Migrations\20201016143642_mapInit.cs" />
+    <Compile Remove="Migrations\20201016143642_mapInit.Designer.cs" />
+    <Compile Remove="Migrations\20201016143940_mapInit.cs" />
+    <Compile Remove="Migrations\20201016143940_mapInit.Designer.cs" />
+    <Compile Remove="Migrations\20201016144603_mapInit.cs" />
+    <Compile Remove="Migrations\20201016144603_mapInit.Designer.cs" />
+    <Compile Remove="Migrations\20201016144831_mapInit.cs" />
+    <Compile Remove="Migrations\20201016144831_mapInit.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.8" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices" Version="3.1.8" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.8">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.8">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.7.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.7.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Entities\Entities.csproj" />
+    <ProjectReference Include="..\GameEngine-L5aStrat-Earth\L5aStrat-Earth.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Front\dist\" />
+  </ItemGroup>
+
+
+</Project>

@@ -1,0 +1,14 @@
+<mat-toolbar color="primary" class="navbar" ngClass.lt-lg="horizontal" ngClass.xs="mobile">
+    <mat-toolbar-row fxLayout="column" fxLayout.lt-lg="row">
+        <div *ngFor="let item of menuItems" style="width: 100%;">
+            <button mat-flat-button color="accent" *ngIf="item.route == selectedRoute">
+                <mat-icon [svgIcon]="item.route"></mat-icon>
+                <span ngClass="menuLabel">{{item.label}}</span>
+            </button>
+            <button mat-flat-button color="primary" *ngIf="item.route != selectedRoute" (click)="navigateToRoute(item.route)">
+                <mat-icon [svgIcon]="item.route" [matBadge]="item.badge" matBadgeColor="warn" matBadgeSize="small"></mat-icon>
+                <span ngClass="menuLabel">{{item.label}}</span>
+            </button>
+        </div>
+    </mat-toolbar-row>
+</mat-toolbar>

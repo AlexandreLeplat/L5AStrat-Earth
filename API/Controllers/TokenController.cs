@@ -1,6 +1,6 @@
-﻿using API.Database;
-using API.Models;
-using API.Security;
+﻿using Entities.Database;
+using HostApp.Models;
+using HostApp.Security;
 using Entities.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -9,18 +9,21 @@ using Microsoft.Extensions.Configuration;
 using System.Linq;
 using System.Security.Claims;
 
-namespace API.Controllers
+namespace HostApp.Controllers
 {
     // Classe TOKEN : gère l'authentification à l'API via un token JWT
-    [Route("token")]
+    [Route("api/token")]
     [ApiController]
     public class TokenController : ControllerBase
     {
         private IConfiguration _config;
 
-        public TokenController(IConfiguration config)
+        private readonly DAL _dal;
+
+        public TokenController(IConfiguration config, DAL dal)
         {
             _config = config;
+            _dal = dal;
         }
 
         // POST token : Permet de se loguer avec un nom d'utilisateur et mot de passe, en récupérant un token JWT
@@ -29,21 +32,14 @@ namespace API.Controllers
         public ActionResult Post([FromBody] TokenInputModel input)
         {
             var jwt = new JWTHelper(_config);
-            /*
-             * Admin / admin
-             * Dragon / Togashi
-             * Grue / Ikebana
-             * Lion / Bagarre
-             * Scorpion / J3sa!5Pr0tég3Rme$SecR3ts
-            */
 
             // Ligne de test pour générer des passwords hashés
             // return Ok(BCrypt.Net.BCrypt.HashPassword(input.Password));
 
-            using (var dal = new DAL())
+            using (_dal)
             {
                 // On récupère l'utilisateur en fonction de son nom
-                var user = dal.Users.FirstOrDefault(u => u.Name == input.Name);
+                var user = _dal.Users.FirstOrDefault(u => u.Name == input.Name);
                 if (user == null)
                 {
                     return Unauthorized();
@@ -52,7 +48,7 @@ namespace API.Controllers
                 // Si le mot de passe correspond, on récupère un token signé
                 if (BCrypt.Net.BCrypt.Verify(input.Password, user.Password))
                 {
-                    var mainPlayer = dal.Players.FirstOrDefault(p => p.UserId == user.Id && p.IsCurrentPlayer);
+                    var mainPlayer = _dal.Players.FirstOrDefault(p => p.UserId == user.Id && p.IsCurrentPlayer);
                     if (mainPlayer == null) return NotFound();
 
                     var token = jwt.GenerateSecurityToken(mainPlayer);

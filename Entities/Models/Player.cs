@@ -24,9 +24,16 @@ namespace Entities.Models
         [JsonIgnore]
         public string _jsonAssets { get; set; }
 
+        // Flag indiquant si une nouvelle carte est disponible
+        public bool HasNewMap { get; set; }
+
         // Flag indiquant s'il s'agit du joueur actuellement utilisé par l'utilisateur (dans le cadre d'un utilisateur multi-comptes)
         [JsonIgnore]
         public bool IsCurrentPlayer { get; set; }
+
+        // Flag indiquant s'il s'agit d'un compte d'administration
+        [JsonIgnore]
+        public bool IsAdmin { get; set; }
 
         // L'utilisateur qui possède ce compte joueur
         public long UserId { get; set; }
@@ -37,5 +44,17 @@ namespace Entities.Models
         public long CampaignId { get; set; }
         [JsonIgnore]
         public Campaign Campaign { get; set; }
+
+        // Liste des cartes du joueur
+        [JsonIgnore]
+        public List<Map> Maps { get; set; }
+
+        // Liste des unités du joueur
+        [JsonIgnore]
+        public List<Unit> Units { get; set; }
+
+        // Liste des messages du joueur
+        [JsonIgnore] 
+        public List<Message> Messages { get; internal set; }
     }
 }

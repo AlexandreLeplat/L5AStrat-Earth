@@ -2,11 +2,10 @@
 {
     public enum TurnPhase
     {
-        Pause = 0,
-        Start = 1,
-        Early = 2,
-        Middle = 3,
-        Late = 4,
-        End = 5
+        Stop = 0,
+        Early = 1,
+        Middle = 2,
+        Late = 3,
+        End = 4
     }
 }

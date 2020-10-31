@@ -1,0 +1,46 @@
+<app-header></app-header>
+<app-menu [selectedRoute]="'inbox'"></app-menu>
+<div ngClass.gt-sm="desktop-content">
+  <mat-accordion *ngIf="messages else spinnerCard">
+    <mat-expansion-panel *ngFor="let message of messages" (opened)="setRead(message)">
+      <mat-expansion-panel-header>
+        <mat-panel-title *ngIf="playerNames && !message.isNotification">
+          <strong *ngIf="!message.isRead">{{playerNames[message.senderId]}}</strong>
+          <span *ngIf="message.isRead">{{playerNames[message.senderId]}}</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-icon *ngIf="message.isArchived">save</mat-icon>
+          <mat-icon *ngIf="!message.isArchived && message.isRead">chat_bubble_outline</mat-icon>              
+          <mat-icon *ngIf="!message.isArchived && !message.isRead && message.canAnswer">chat</mat-icon>
+          <mat-icon *ngIf="!message.isArchived && !message.isRead && !message.canAnswer">feedback</mat-icon>
+          <div style="width: 100%;">
+            &nbsp;
+          <strong *ngIf="!message.isRead">{{message.subject}}</strong>
+          <span *ngIf="message.isRead">{{message.subject}}</span>
+        </div>
+        <span style="width: 35%;text-align: right;">{{message.sendDate | date:'E d MMM H:mm'}}</span>
+      </mat-panel-description>
+      </mat-expansion-panel-header>
+      <p *ngFor="let par of message.body.split('\r\n')">{{par}}</p>
+      <mat-action-row>
+        <button mat-button color="primary" *ngIf="!message.isNotification"><mat-icon>reply</mat-icon>&nbsp;Répondre</button>
+        <button mat-button color="primary" *ngIf="!message.isNotification"><mat-icon>reply_all</mat-icon>&nbsp;Répondre à tous</button>
+        <!-- <button mat-button color="primary" (click)="archive(message)" *ngIf="!message.isArchived"><mat-icon>save</mat-icon>&nbsp;Archiver</button> -->
+        <button mat-button color="primary" (click)="remove(message)"><mat-icon>clear</mat-icon>&nbsp;Supprimer</button>
+      </mat-action-row>
+    </mat-expansion-panel>
+  </mat-accordion>
+  <ng-template #textLoader>
+    <p>Chargement...</p>
+  </ng-template>
+  <ng-template #spinnerCard>
+    <mat-card class="home-card" ngClass.xs="home-card-mobile">
+      <mat-card-header>
+        <mat-card-title>Chargement...</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-spinner class="full-width" [style.display]="'block'"></mat-spinner>
+      </mat-card-content>
+    </mat-card>
+  </ng-template>
+</div>

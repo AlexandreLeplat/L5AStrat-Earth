@@ -10,7 +10,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace API.Security
+namespace HostApp.Security
 {
     public class JWTHelper
     {

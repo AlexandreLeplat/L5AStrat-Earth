@@ -1,0 +1,31 @@
+<mat-toolbar color="primary">
+    <mat-toolbar-row>  
+    <span>L5A Strat Auto - [Terre]</span>  
+      <span class="fill-remaining-space"></span>  
+      <button mat-icon-button [matMenuTriggerFor]="menu">  
+      <mat-icon>more_vert</mat-icon>  
+    </button>  
+    <mat-menu #menu="matMenu">  
+      <!-- <button mat-menu-item *ngIf="isDarkTheme" (click)="switchBrightness(false)">
+        <mat-icon>brightness_5</mat-icon>  
+        <span>Mode jour</span>  
+      </button>
+      <button mat-menu-item *ngIf="!isDarkTheme" (click)="switchBrightness(true)">
+        <mat-icon>brightness_3</mat-icon>  
+        <span>Mode nuit</span>  
+      </button> -->
+      <button mat-menu-item (click)="openRulesDialog()">
+        <mat-icon>videogame_asset</mat-icon>  
+        <span>Règles du jeu</span>  
+      </button>
+      <button mat-menu-item (click)="openInfoDialog()">  
+        <mat-icon>info_outline</mat-icon>  
+        <span>Informations</span>  
+      </button>
+      <button mat-menu-item *ngIf="loggedIn" (click)="logOut()">
+        <mat-icon>logout</mat-icon>
+        <span>Déconnexion</span>  
+      </button>
+    </mat-menu>  
+  </mat-toolbar-row>
+</mat-toolbar>

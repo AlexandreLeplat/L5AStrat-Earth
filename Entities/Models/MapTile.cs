@@ -22,6 +22,7 @@ namespace Entities.Models
         public string Symbol { get; set; }
 
         public string Color { get; set; }
+        public string BorderColor { get; set; }
 
         // Contenu de la case, classé par catégorie
         [NotMapped]

@@ -1,0 +1,58 @@
+<app-header></app-header>
+<app-menu [selectedRoute]="'map'"></app-menu>
+<div ngClass.gt-sm="desktop-content"  ngClass.xs="mobile-content" fxLayout="row" fxLayoutWrap fxLayoutGap="0.5%">
+    <div style="width: 63%;">
+        <div class="mapContainer" *ngIf="currentMap && mapTiles else spinnerCard">
+            <div #map style="transition: all 1s;">
+                <table style="width: max-content; border-spacing: 3px;">
+                    <tr *ngFor="let row of mapTiles">
+                        <td class="mapTile" *ngFor="let tile of row" [style.border-color]="tile.borderColor" [ngClass]="{selected: selectedTile && tile.id == selectedTile.id}" 
+                                [style.background]="tile.color" (click)="onTileClick(tile)">
+                            <mat-icon [svgIcon]="tile.symbol"></mat-icon>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div *ngIf="!zoomedIn">
+            <mat-card *ngIf="currentMap else spinnerCard" class="title-card">
+                <mat-card-content *ngIf="mapsList">
+                    <strong>Carte :</strong>
+                    <mat-select [(value)]='currentMap' (selectionChange)="selectMap()">
+                        <mat-option *ngFor="let map of mapsList" 
+                            [value]="map"><b>{{map.name}}</b> [{{currentMap.creationDate | date:'E d MMM H:mm'}}]</mat-option>
+                    </mat-select>
+                </mat-card-content>
+            </mat-card>
+        </div>
+        <div *ngIf="zoomedIn" class="zoom">
+            <button mat-raised-button (click)="zoomOut()">Dézoomer</button>
+        </div>
+        <mat-card *ngIf="selectedTile" class="description-card">
+            <mat-card-header>
+                <mat-card-title>{{selectedTile.name}}</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <mat-list *ngFor="let category of selectedTile.assets | keyvalue">
+                    <strong>{{category.key}}</strong>
+                    <mat-list-item *ngFor="let asset of category.value | keyvalue">
+                      {{asset.key}}<span *ngIf="asset.value && asset.value != ''"> : <span class='value'>{{asset.value}}</span></span>
+                      <br>
+                    </mat-list-item>
+                </mat-list>
+            </mat-card-content>
+        </mat-card>
+    </div>
+</div>
+<ng-template #spinnerCard>
+    <mat-card class="home-card" ngClass.xs="home-card-mobile">
+    <mat-card-header>
+        <mat-card-title>Chargement...</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+        <mat-spinner class="full-width" [style.display]="'block'"></mat-spinner>
+    </mat-card-content>
+    </mat-card>
+</ng-template>  

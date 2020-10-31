@@ -16,13 +16,16 @@ namespace Entities.Models
         // Date de la prochaine phase
         public DateTime NextPhase { get; set; }
 
-        // Durée d'une phase en heures
+        // Durée d'une phase en minutes
         public int PhaseLength { get; set; }
 
         // Numéro de la phase en cours
         public TurnPhase CurrentPhase { get; set; }
         // Numéro du tour en cours
         public int CurrentTurn { get; set; }
+
+        // Statut de la campagne
+        public CampaignStatus Status { get; set; }
 
         // Liste des caractéristiques de la campagne regroupées par catégories
         [NotMapped]
@@ -40,5 +43,9 @@ namespace Entities.Models
 
         [JsonIgnore]
         public List<Player> Players { get; set; }
+
+        // Liste des cartes de la campagne
+        [JsonIgnore]
+        public List<Map> Maps { get; set; }
     }
 }

@@ -5,22 +5,41 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using API.Database;
-using API.Models;
+using HostApp.Models;
+using Entities.Database;
 using Entities.Enums;
 using Entities.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Entities.Interfaces;
+using L5aStrat_Earth;
 
-namespace API.Controllers
+namespace HostApp.Controllers
 {
     // Classe ORDERSSHEET : gère les feuilles d'ordres
-    [Route("orderssheets")]
+    [Route("api/orderssheets")]
     [ApiController]
     public class OrdersSheetController : ControllerBase
     {
+        private readonly DAL _dal;
+        private Dictionary<long, IGameEngine> _gameEngines;
+
+        public OrdersSheetController(DAL dal)
+        {
+            _dal = dal;
+            _gameEngines = new Dictionary<long, IGameEngine>();
+        }
+
+        private void InitializeGameEngine(long idGame)
+        {
+            if (!_gameEngines.ContainsKey(idGame))
+            {
+                _gameEngines.Add(idGame, new L5aStratEarthEngine(_dal)); // TODO : rendre l'initialisation du moteur de jeu dynamique
+            }
+        }
+
         // GET ordersSheets permet de récupérer la liste des feuilles d'ordres du joueur courant
         [HttpGet]
         [EnableCors]
@@ -29,14 +48,14 @@ namespace API.Controllers
         {
             try
             {
-                using (var dal = new DAL())
+                using (_dal)
                 {
                     var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                     if (claim == null) return Unauthorized();
 
                     // On récupère les feuilles d'ordres du joueur courant
                     var id = long.Parse(claim.Value);
-                    var ordersSheets = (from s in dal.OrdersSheets
+                    var ordersSheets = (from s in _dal.OrdersSheets
                                         where s.PlayerId == id
                                         select s).ToList();
                     if (ordersSheets == null) return NotFound();
@@ -44,7 +63,7 @@ namespace API.Controllers
                     return Ok(ordersSheets);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError);
             }
@@ -58,14 +77,14 @@ namespace API.Controllers
         {
             try
             {
-                using (var dal = new DAL())
+                using (_dal)
                 {
                     var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                     if (claim == null) return Unauthorized();
 
                     // On récupère la feuille d'ordres ciblée
                     var idPlayer = long.Parse(claim.Value);
-                    var ordersSheet = (from s in dal.OrdersSheets
+                    var ordersSheet = (from s in _dal.OrdersSheets
                                        where s.PlayerId == idPlayer && s.Id == id
                                        select s).FirstOrDefault();
                     if (ordersSheet == null) return NotFound();
@@ -73,7 +92,7 @@ namespace API.Controllers
                     return Ok(ordersSheet);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError);
             }
@@ -88,24 +107,24 @@ namespace API.Controllers
         {
             try
             {
-                using (var dal = new DAL())
+                using (_dal)
                 {
                     var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                     if (claim == null) return Unauthorized();
 
                     // On récupère la feuille d'ordres actuelle du joueur
                     var idPlayer = long.Parse(claim.Value);
-                    var ordersSheet = (from s in dal.OrdersSheets
-                                       join p in dal.Players on s.PlayerId equals p.Id
-                                       join c in dal.Campaigns on p.CampaignId equals c.Id
+                    var ordersSheet = (from s in _dal.OrdersSheets
+                                       join p in _dal.Players on s.PlayerId equals p.Id
+                                       join c in _dal.Campaigns on p.CampaignId equals c.Id
                                        where s.PlayerId == idPlayer && s.Turn == c.CurrentTurn
                                        select s).FirstOrDefault();
                     if (ordersSheet == null) return NotFound();
-
+                    
                     return Ok(ordersSheet);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError);
             }
@@ -119,14 +138,14 @@ namespace API.Controllers
         {
             try
             {
-                using (var dal = new DAL())
+                using (_dal)
                 {
                     var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                     if (claim == null) return Unauthorized();
 
                     // On récupère la feuille d'ordres concernée
                     var idPlayer = long.Parse(claim.Value);
-                    var ordersSheet = (from s in dal.OrdersSheets
+                    var ordersSheet = (from s in _dal.OrdersSheets
                                        where s.PlayerId == idPlayer && s.Id == input.Id
                                        select s).FirstOrDefault();
                     if (ordersSheet == null) return NotFound();
@@ -136,12 +155,12 @@ namespace API.Controllers
                         return StatusCode((int)HttpStatusCode.PreconditionFailed, "Statut incorrect de la feuille d'ordres");
                     }
                     ordersSheet.Priority = input.Priority;
-                    dal.SaveChanges();
+                    _dal.SaveChanges();
 
                     return Ok(ordersSheet);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError);
             }
@@ -155,16 +174,16 @@ namespace API.Controllers
         {
             try
             {
-                using (var dal = new DAL())
+                using (_dal)
                 {
                     var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                     if (claim == null) return Unauthorized();
 
                     // On récupère la feuille d'ordres actuelle du joueur
                     var idPlayer = long.Parse(claim.Value);
-                    var ordersSheet = (from s in dal.OrdersSheets
-                                       join p in dal.Players on s.PlayerId equals p.Id
-                                       join c in dal.Campaigns on p.CampaignId equals c.Id
+                    var ordersSheet = (from s in _dal.OrdersSheets
+                                       join p in _dal.Players on s.PlayerId equals p.Id
+                                       join c in _dal.Campaigns on p.CampaignId equals c.Id
                                        where s.PlayerId == idPlayer && s.Turn == c.CurrentTurn
                                        select s).FirstOrDefault();
                     if (ordersSheet == null) return NotFound();
@@ -179,9 +198,49 @@ namespace API.Controllers
                     }
                     ordersSheet.SendDate = DateTime.Now;
                     ordersSheet.Status = OrdersSheetStatus.Planned;
-                    dal.SaveChanges();
+                    _dal.SaveChanges();
 
                     return Ok(ordersSheet);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+        // POST ordersSheets/check permet de contrôler la validité de la feuille d'ordres courante
+        [HttpPost("check")]
+        [EnableCors]
+        [Authorize]
+        public ActionResult PostCheckOrders()
+        {
+            try
+            {
+                using (_dal)
+                {
+                    var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
+                    if (claim == null) return Unauthorized();
+
+                    // On récupère la feuille d'ordres actuelle du joueur
+                    var idPlayer = long.Parse(claim.Value);
+                    var ordersSheet = (from s in _dal.OrdersSheets
+                                       join p in _dal.Players on s.PlayerId equals p.Id
+                                       join c in _dal.Campaigns on p.CampaignId equals c.Id
+                                       where s.PlayerId == idPlayer && s.Turn == c.CurrentTurn
+                                       select s).FirstOrDefault();
+                    if (ordersSheet == null) return NotFound();
+
+                    var gameId = (from p in _dal.Players
+                                  join c in _dal.Campaigns on p.CampaignId equals c.Id
+                                  where p.Id == ordersSheet.PlayerId
+                                  select c.GameId).FirstOrDefault();
+                    this.InitializeGameEngine(gameId);
+
+                    var orders = this._gameEngines[gameId].CheckOrdersSheet(ordersSheet);
+                    _dal.SaveChanges();
+
+                    return Ok(orders.OrderBy(o => o.Rank));
                 }
             }
             catch (Exception e)
@@ -198,15 +257,15 @@ namespace API.Controllers
         {
             try
             {
-                using (var dal = new DAL())
+                using (_dal)
                 {
                     var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                     if (claim == null) return Unauthorized();
 
                     // On récupère les ordres de la feuille ciblée
                     var idPlayer = long.Parse(claim.Value);
-                    var orders = (from o in dal.Orders
-                                  join s in dal.OrdersSheets on o.OrdersSheetId equals s.Id
+                    var orders = (from o in _dal.Orders
+                                  join s in _dal.OrdersSheets on o.OrdersSheetId equals s.Id
                                   where s.PlayerId == idPlayer && s.Id == id
                                   orderby o.Rank
                                   select o).ToList();
@@ -215,7 +274,7 @@ namespace API.Controllers
                     return Ok(orders);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError);
             }
@@ -229,19 +288,19 @@ namespace API.Controllers
         {
             try
             {
-                using (var dal = new DAL())
+                using (_dal)
                 {
                     var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                     if (claim == null) return Unauthorized();
 
                     // On récupère la feuille d'ordres ciblée
                     var idPlayer = long.Parse(claim.Value);
-                    var ordersSheet = (from s in dal.OrdersSheets
+                    var ordersSheet = (from s in _dal.OrdersSheets
                                        where s.PlayerId == idPlayer && s.Id == id
                                        select s).FirstOrDefault();
                     if (ordersSheet == null) return NotFound();
 
-                    var ordersCount = (from o in dal.Orders
+                    var ordersCount = (from o in _dal.Orders
                                        where o.OrdersSheetId == ordersSheet.Id
                                        select 1).Count();
                     if (ordersCount >= ordersSheet.MaxOrdersCount) return BadRequest("Nombre d'ordres max atteint");
@@ -255,13 +314,13 @@ namespace API.Controllers
                         Status = OrderStatus.None
                     };
 
-                    dal.Orders.Add(order);
-                    dal.SaveChanges();
+                    _dal.Orders.Add(order);
+                    _dal.SaveChanges();
 
                     return Ok(order);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError);
             }
@@ -273,113 +332,66 @@ namespace API.Controllers
         {
             try
             {
-                using (var dal = new DAL())
+                using (_dal)
                 {
                     var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                     if (claim == null) return Unauthorized();
 
                     // On récupère la feuille d'ordres ciblée
                     var idPlayer = long.Parse(claim.Value);
-                    var ordersSheet = (from s in dal.OrdersSheets
+                    var ordersSheet = (from s in _dal.OrdersSheets
                                        where s.PlayerId == idPlayer && s.Id == idSheet
                                        select s).FirstOrDefault();
                     if (ordersSheet == null) return NotFound();
 
-                    var order = (from o in dal.Orders
+                    var order = (from o in _dal.Orders
                                  where o.OrdersSheetId == idSheet && o.Id == idOrder
                                  select o).FirstOrDefault();
                     if (order == null) return NotFound();
 
                     order.Parameters = input.Parameters;
                     order.Rank = input.Rank;
-                    dal.SaveChanges();
+                    _dal.SaveChanges();
 
                     return Ok(order);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError);
             }
         }
 
-        // PUT api/<OrderController>/5
-        [HttpPut("{idSheet}/orders")]
-        public ActionResult PutOrders(long idSheet, [FromBody] OrderInputModel[] input)
-        {
-            try
-            {
-                if (input == null)
-                    return BadRequest("PUT Orders : body manquant");
-
-                using (var dal = new DAL())
-                {
-                    var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
-                    if (claim == null) return Unauthorized();
-
-                    // On récupère la feuille d'ordres ciblée
-                    var idPlayer = long.Parse(claim.Value);
-                    var ordersSheet = (from s in dal.OrdersSheets
-                                       where s.PlayerId == idPlayer && s.Id == idSheet
-                                       select s).FirstOrDefault();
-                    if (ordersSheet == null) return NotFound();
-
-                    var orders = (from o in dal.Orders
-                                    where o.OrdersSheetId == idSheet
-                                    select o).ToList();
-                    if (orders == null) return NotFound();
-
-                    foreach (var item in input)
-                    {
-                        var order = orders.FirstOrDefault(o => o.Id == item.Id);
-                        if (order == null)
-                        {
-                            return NotFound(string.Format("Ordre non trouvé : {0}", item.Id));
-                        }
-                        order.Parameters = item.Parameters;
-                        order.Rank = item.Rank;
-                    }
-                    dal.SaveChanges();
-
-                    return Ok(orders);
-                }
-            }
-            catch (Exception e)
-            {
-                return StatusCode((int)HttpStatusCode.InternalServerError);
-            }
-        }
-        
         // DELETE api/<OrderController>/5
         [HttpDelete("{idSheet}/orders/{idOrder}")]
         public ActionResult Delete(long idSheet, long idOrder)
         {
             try
             {
-                using (var dal = new DAL())
+                using (_dal)
                 {
                     var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                     if (claim == null) return Unauthorized();
 
                     // On récupère la feuille d'ordres ciblée
                     var idPlayer = long.Parse(claim.Value);
-                    var ordersSheet = (from s in dal.OrdersSheets
+                    var ordersSheet = (from s in _dal.OrdersSheets
                                        where s.PlayerId == idPlayer && s.Id == idSheet
                                        select s).FirstOrDefault();
                     if (ordersSheet == null) return NotFound();
 
-                    var order = (from o in dal.Orders
+                    var order = (from o in _dal.Orders
                                  where o.OrdersSheetId == idSheet && o.Id == idOrder
                                  select o).FirstOrDefault();
                     if (order == null) return NotFound();
 
-                    dal.Orders.Remove(order);
-                    dal.SaveChanges();
+                    _dal.Orders.Remove(order);
+                    _dal.SaveChanges();
 
                     return StatusCode((int)HttpStatusCode.NoContent);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError);
             }

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace API.Models
+namespace HostApp.Models
 {
     public class TokenInputModel
     {

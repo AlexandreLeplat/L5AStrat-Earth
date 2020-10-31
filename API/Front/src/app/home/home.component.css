@@ -1,0 +1,25 @@
+.desktop-content {
+  margin-left: 300px;
+}
+.mobile-content {
+  margin-bottom: 75px;
+}
+.home-card {
+    width: 288px;
+    margin: 10% auto auto;
+  }
+.home-card-mobile {
+    width: 90%;
+    margin: 15px auto auto;
+    text-align: center;
+  }
+.mat-card-title {
+    font-size: 16px;
+  }
+.full-width {
+    width: 100%;
+  }
+.value {
+    font-weight: bold;
+    margin: 5px;
+}

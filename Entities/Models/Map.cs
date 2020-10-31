@@ -9,6 +9,9 @@ namespace Entities.Models
     {
         public long Id { get; set; }
 
+        // Nom de la carte
+        public string Name { get; set; }
+
         // Numéro du tour
         public int Turn { get; set; }
 
