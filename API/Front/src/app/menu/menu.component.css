@@ -2,7 +2,7 @@
 .navbar {
   float: left;
   width: 300px;
-  height: 100%;
+  height: calc(100% - 64px);
   overflow: auto;
   z-index: 10;
 }

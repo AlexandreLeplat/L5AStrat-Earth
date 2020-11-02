@@ -1,8 +1,8 @@
 <app-header></app-header>
 <app-menu [selectedRoute]="'inbox'"></app-menu>
-<div ngClass.gt-sm="desktop-content">
-  <mat-accordion *ngIf="messages else spinnerCard">
-    <mat-expansion-panel *ngFor="let message of messages" (opened)="setRead(message)">
+<div ngClass.gt-md="desktop-content" ngClass.xs="mobile-content">
+  <mat-accordion *ngIf="messages else spinnerCard" class="accordion">
+    <mat-expansion-panel *ngFor="let message of messages" class="panel" (opened)="setRead(message)">
       <mat-expansion-panel-header>
         <mat-panel-title *ngIf="playerNames && !message.isNotification">
           <strong *ngIf="!message.isRead">{{playerNames[message.senderId]}}</strong>

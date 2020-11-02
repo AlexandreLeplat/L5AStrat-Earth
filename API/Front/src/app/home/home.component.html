@@ -1,7 +1,7 @@
 <app-header></app-header>
 <app-menu [selectedRoute]="'home'"></app-menu>
 <div [ngClass]="{'dark-theme': isDarkTheme | async}">
-  <div *ngIf="game else spinnerCard" ngClass.gt-sm="desktop-content" 
+  <div *ngIf="game else spinnerCard" ngClass.gt-md="desktop-content" 
       ngClass.xs="mobile-content" fxLayout="row" fxLayout.lt-md="column" fxLayoutWrap fxLayoutGap="0.5%">
     <div *ngFor="let widget of game.homeWidgets" style="width:100%">
       <div [ngSwitch]="widget">

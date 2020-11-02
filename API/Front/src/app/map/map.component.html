@@ -1,17 +1,31 @@
 <app-header></app-header>
 <app-menu [selectedRoute]="'map'"></app-menu>
-<div ngClass.gt-sm="desktop-content"  ngClass.xs="mobile-content" fxLayout="row" fxLayoutWrap fxLayoutGap="0.5%">
-    <div style="width: 63%;">
-        <div class="mapContainer" *ngIf="currentMap && mapTiles else spinnerCard">
-            <div #map style="transition: all 1s;">
-                <table style="width: max-content; border-spacing: 3px;">
-                    <tr *ngFor="let row of mapTiles">
-                        <td class="mapTile" *ngFor="let tile of row" [style.border-color]="tile.borderColor" [ngClass]="{selected: selectedTile && tile.id == selectedTile.id}" 
-                                [style.background]="tile.color" (click)="onTileClick(tile)">
-                            <mat-icon [svgIcon]="tile.symbol"></mat-icon>
-                        </td>
-                    </tr>
-                </table>
+<div ngClass.gt-md="desktop-content"  ngClass.xs="mobile-content" style="margin-top: 20px;" fxLayout="row" fxLayout.xs="column-reverse" fxLayoutWrap fxLayoutGap="0.5%">
+    <div class="mapColumn">
+        <div class="mapSelector">
+            <div class="mapContainer" *ngIf="currentMap && mapTiles else spinnerCard"  fxHide.lt-md>
+                <div class="mapContent" fxLayout="column">
+                    <div *ngFor="let row of mapTiles" fxLayout="row">
+                        <div class="mapTileContainer" *ngFor="let tile of row">
+                            <div class="mapTileContent" [style.border-color]="tile.borderColor" [ngClass]="{selected: selectedTile && tile.id == selectedTile.id}"
+                                [style.background]="tile.color" (click)="onTileClick(tile, false)">
+                                <mat-icon class="icon" [svgIcon]="tile.symbol"></mat-icon>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mapContainer" *ngIf="currentMap && mapTiles else spinnerCard" fxHide.gt-sm>
+                <div #zoomableMap class="mapContent" fxLayout="column">
+                    <div *ngFor="let row of mapTiles" fxLayout="row">
+                        <div class="mapTileContainer" *ngFor="let tile of row">
+                            <div class="mapTileContent" [style.border-color]="tile.borderColor" [ngClass]="{selected: selectedTile && tile.id == selectedTile.id}"
+                                [style.background]="tile.color" (click)="onTileClick(tile, true)">
+                                <mat-icon class="icon" [svgIcon]="tile.symbol"></mat-icon>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

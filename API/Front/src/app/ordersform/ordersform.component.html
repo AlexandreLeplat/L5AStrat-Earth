@@ -1,6 +1,6 @@
 <app-header></app-header>
 <app-menu [selectedRoute]="'orders'"></app-menu>
-<div ngClass.gt-sm="desktop-content" ngClass.xs="mobile-content">
+<div ngClass.gt-md="desktop-content" ngClass.xs="mobile-content">
   <div *ngIf="ordersSheet else spinnerCard" style="width: 90%; margin: 20px auto;">
     <mat-card>
       <strong style="width: 20%;">Tour {{ordersSheet.turn}}</strong>

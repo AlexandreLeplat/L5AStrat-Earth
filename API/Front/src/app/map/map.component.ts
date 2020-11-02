@@ -17,7 +17,8 @@ export class MapComponent implements OnInit {
   mapTiles: MapTile[][];
   selectedTile: MapTile;
   zoomedIn: boolean;
-  @ViewChild("map") mapElement : ElementRef;
+  mapSize:number = 9;
+  @ViewChild("zoomableMap") mapElement : ElementRef;
 
   constructor(private mapsService: MapsService, private playersService: PlayersService
       , private matIconRegistry: MatIconRegistry, private domSanitizer: DomSanitizer) {
@@ -39,13 +40,18 @@ export class MapComponent implements OnInit {
       });
     }
 
-  onTileClick(tile: MapTile): void {
+  onTileClick(tile: MapTile, zoomable: boolean): void {
     if (this.zoomedIn && this.selectedTile && tile.id == this.selectedTile.id) {
       this.zoomOut();
+      this.selectedTile = null;
     }
     else {
-      this.mapElement.nativeElement.style.transform = "scale(2) translate(" + this.calculateTranslation(tile.x) + "%," + this.calculateTranslation(tile.y) + "%)";
-      this.zoomedIn = true;
+      if (zoomable)
+      {
+        var zoom = this.mapSize / 4.7;
+        this.mapElement.nativeElement.style.transform = "scale(" + zoom + ") translate(" + this.calculateTranslation(tile.x) + "%," + this.calculateTranslation(tile.y) + "%)";
+        this.zoomedIn = true;
+      }
       this.selectedTile = tile;
     }
   }
@@ -61,6 +67,8 @@ export class MapComponent implements OnInit {
   }
 
   calculateTranslation(i: number): number {
-    return Math.max(Math.min((4 - i)  * 11, 25), -25);
+    var step = 100 / this.mapSize;
+    var limit = 50 - 235 / this.mapSize;
+    return Math.max(Math.min(((this.mapSize - 1) / 2 - i) * step, limit), -limit);
   }
 }
