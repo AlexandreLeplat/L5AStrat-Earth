@@ -40,19 +40,15 @@ export class MapComponent implements OnInit {
       });
     }
 
-  onTileClick(tile: MapTile, zoomable: boolean): void {
+  onTileClick(tile: MapTile): void {
     if (this.zoomedIn && this.selectedTile && tile.id == this.selectedTile.id) {
       this.zoomOut();
-      this.selectedTile = null;
     }
     else {
-      if (zoomable)
-      {
-        var zoom = this.mapSize / 4.7;
-        this.mapElement.nativeElement.style.transform = "scale(" + zoom + ") translate(" + this.calculateTranslation(tile.x) + "%," + this.calculateTranslation(tile.y) + "%)";
-        this.zoomedIn = true;
-      }
+      var zoom = this.mapSize / 4.7;
+      this.mapElement.nativeElement.style.transform = "scale(" + zoom + ") translate(" + this.calculateTranslation(tile.x) + "%," + this.calculateTranslation(tile.y) + "%)";
       this.selectedTile = tile;
+      this.zoomedIn = true;
     }
   }
 
@@ -63,6 +59,7 @@ export class MapComponent implements OnInit {
 
   zoomOut(): void {
     this.mapElement.nativeElement.style.transform = "scale(1)";
+    this.selectedTile = null;
     this.zoomedIn = false;
   }
 

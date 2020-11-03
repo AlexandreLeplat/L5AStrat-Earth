@@ -2,7 +2,7 @@
     margin-left: 300px;
 }
 .mobile-content {
-    margin-bottom: 100px;
+    margin-bottom: 75px;
 }
 .mapColumn {
     width: calc(80% - 170px);
@@ -58,10 +58,6 @@
     margin: 10% auto;
     width: 285px;
 }
-.zoom {
-    margin: calc(10% + 18px) auto;
-    text-align: center;
-}
 .mobile-content .title-card {
     margin: 80px auto 100px auto;
 }
@@ -71,10 +67,31 @@
 .description-card {
     margin: 10% auto;
     width: 285px;
-    height: calc(90% - 144px);
-    overflow-y: auto;
+    height: 80%;
 }
 .mobile-content .description-card {
     margin: 0 auto 20px auto;
     height: 200px;
+}
+.description-content {
+    margin: 10% auto;
+    width: 285px;
+    height: calc(100% - 150px);
+    overflow-y: auto;
+}
+.mobile-content .description-content {
+    margin: 8px;
+    width: 285px;
+    height: calc(100% - 92px);
+    overflow-y: auto;
+}
+.mobile-content .mat-list-item {
+    height: 24px;
+    font-size: 14px;
+}
+.mat-card-actions .zoomButton {
+    margin: 16px 8px;
+}
+.mobile-content .mat-card-actions .zoomButton {
+    margin: 8px;
 }

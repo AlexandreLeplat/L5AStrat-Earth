@@ -8,7 +8,7 @@
                     <div *ngFor="let row of mapTiles" fxLayout="row">
                         <div class="mapTileContainer" *ngFor="let tile of row">
                             <div class="mapTileContent" [style.border-color]="tile.borderColor" [ngClass]="{selected: selectedTile && tile.id == selectedTile.id}"
-                                [style.background]="tile.color" (click)="onTileClick(tile, false)">
+                                [style.background]="tile.color" (click)="onTileClick(tile)">
                                 <mat-icon class="icon" [svgIcon]="tile.symbol"></mat-icon>
                             </div>
                         </div>
@@ -20,7 +20,7 @@
                     <div *ngFor="let row of mapTiles" fxLayout="row">
                         <div class="mapTileContainer" *ngFor="let tile of row">
                             <div class="mapTileContent" [style.border-color]="tile.borderColor" [ngClass]="{selected: selectedTile && tile.id == selectedTile.id}"
-                                [style.background]="tile.color" (click)="onTileClick(tile, true)">
+                                [style.background]="tile.color" (click)="onTileClick(tile)">
                                 <mat-icon class="icon" [svgIcon]="tile.symbol"></mat-icon>
                             </div>
                         </div>
@@ -41,14 +41,11 @@
                 </mat-card-content>
             </mat-card>
         </div>
-        <div *ngIf="zoomedIn" class="zoom">
-            <button mat-raised-button (click)="zoomOut()">Dézoomer</button>
-        </div>
         <mat-card *ngIf="selectedTile" class="description-card">
             <mat-card-header>
                 <mat-card-title>{{selectedTile.name}}</mat-card-title>
             </mat-card-header>
-            <mat-card-content>
+            <mat-card-content class="description-content">
                 <mat-list *ngFor="let category of selectedTile.assets | keyvalue">
                     <strong>{{category.key}}</strong>
                     <mat-list-item *ngFor="let asset of category.value | keyvalue">
@@ -57,6 +54,10 @@
                     </mat-list-item>
                 </mat-list>
             </mat-card-content>
+            <mat-card-actions  *ngIf="zoomedIn" fxHide.gt-sm>
+                <mat-divider></mat-divider>
+                <button class="zoomButton" mat-raised-button (click)="zoomOut()" color="primary">Dézoomer</button>
+            </mat-card-actions>
         </mat-card>
     </div>
 </div>

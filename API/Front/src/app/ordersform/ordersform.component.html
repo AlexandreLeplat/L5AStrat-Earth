@@ -47,7 +47,7 @@
                 {{order.parameters[orderInput.label].split(";")[0]}}
               </span></span>
             </div>
-            <br/><p>{{orderInput.description}}</p>
+            <p [ngClass]="(orderInput.type == 'Checkbox') ? 'checkboxDescription' : 'selectDescription'">{{orderInput.description}}</p>
           </mat-list-item>
         </mat-list>
         <mat-action-row>

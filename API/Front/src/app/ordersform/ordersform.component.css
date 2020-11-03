@@ -4,4 +4,13 @@
 .mobile-content {
   margin-bottom: 75px;
 }
-  
+.mat-list-base .mat-list-item {
+  height: auto;
+  font-size: 14px;
+}
+.checkboxDescription {
+  margin: 8px;
+}
+.selectDescription {
+  margin: 0 8px 12px
+}
