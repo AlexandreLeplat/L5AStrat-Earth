@@ -496,6 +496,12 @@ namespace L5aStrat_Earth
             }
             player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
 
+            var formation = "Choki";
+            if (order.Parameters.ContainsKey("Formation") && References.FormationList.Contains(order.Parameters["Formation"]))
+            {
+                formation = order.Parameters["Formation"];
+            }
+
             var virtualUnits = (from u in _dal.Units
                                 where u.PlayerId == player.Id && u.Type == "Reinforcement"
                                 select u).ToList();
@@ -507,7 +513,13 @@ namespace L5aStrat_Earth
                 return order;
             }
             virtualUnit.Type = "Army";
-            virtualUnit.Assets.Remove("OrderId");
+            virtualUnit.X = destinationTile.X;
+            virtualUnit.Y = destinationTile.Y;
+            virtualUnit.Assets = new Dictionary<string, Dictionary<string, string>>()
+            {
+                { "Formation", new Dictionary<string, string>() { { formation, null } }  },
+                { "HasReinforced", new Dictionary<string, string>() }
+            };
 
             _dal.Players.Update(player);
             _dal.Units.Update(virtualUnit);

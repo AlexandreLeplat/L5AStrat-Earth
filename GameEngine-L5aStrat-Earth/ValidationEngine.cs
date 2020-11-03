@@ -269,10 +269,7 @@ namespace L5aStrat_Earth
                 order.Status = OrderStatus.Error;
                 return order;
             }
-            var occupiedTile = (from u in _dal.Units
-                                join p in _dal.Players on u.PlayerId equals p.Id
-                                where p.CampaignId == player.CampaignId && u.X == destinationTile.X && u.Y == destinationTile.Y && u.Type == "Army"
-                                select u).FirstOrDefault();
+            var occupiedTile = units.FirstOrDefault(u => u.X == destinationTile.X && u.Y == destinationTile.Y);
             if (occupiedTile != null)
             {
                 order.Comment = "Case de destination occupée";
