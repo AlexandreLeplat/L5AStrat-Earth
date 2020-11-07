@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { OrdersService, ActionType, Order, OrdersSheet, OrderStatus } from '../services/orders.service';
-import { PlayersService, Player } from '../services/players.service';
+import { OrdersService, ActionType, Order, OrdersSheet, OrderStatus, OrdersSheetStatus } from '../services/orders.service';
 import { OptionsService } from '../services/options.service';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { CampaignsService } from '../services/campaigns.service';
@@ -16,13 +15,14 @@ export class OrdersFormComponent implements OnInit {
 
   actionTypes: { [id: number]: ActionType };
   ordersSheet: OrdersSheet;
+  sheetsList: OrdersSheet[];
   orders: Order[];
-  player: Player;
   selectedActionType: number;
+  writingStatus: number = OrdersSheetStatus.Writing;
   optionsLists: { [orderId: number]: { [inputLabel: string]: { [label: string]: string; }; }; } = {};
     
-  constructor(private ordersService: OrdersService, private playersService: PlayersService, 
-    private campaignsService: CampaignsService, private purchasesService: OptionsService) { }
+  constructor(private ordersService: OrdersService, private campaignsService: CampaignsService
+    , private purchasesService: OptionsService) { }
 
   ngOnInit(): void {
     this.ordersService.getActionTypes().subscribe(a => {
@@ -31,16 +31,21 @@ export class OrdersFormComponent implements OnInit {
         this.actionTypes[t.id] = t;
       });
     });
-    this.ordersService.getCurrentOrdersSheet().subscribe(s => {
-        this.ordersSheet = s;        
-        this.ordersService.getOrders(this.ordersSheet.id).subscribe(o => {
-          this.orders = o;
-          this.orders.forEach(e => this.retrieveOptionsList(e));
-        });
+    this.ordersService.getOrdersSheets().subscribe(l => {
+      this.sheetsList = l;
+      this.ordersSheet = l[0];
+      this.ordersService.getOrders(this.ordersSheet.id).subscribe(o => {
+        this.orders = o;
+        this.retrieveOptionsLists();
       });
-      this.playersService.getCurrentPlayer().subscribe(p => {
-        this.player = p;
-      })
+    });
+  }
+
+  selectSheet() {
+    this.ordersService.getOrders(this.ordersSheet.id).subscribe(o => {
+      this.orders = o;
+      this.retrieveOptionsLists();
+    });
   }
 
   drop(event: CdkDragDrop<Order[]>) {
@@ -56,14 +61,14 @@ export class OrdersFormComponent implements OnInit {
   addOrder() {
     var order: Order = { id:null, actionTypeId: this.actionTypes[this.selectedActionType].id, parameters: {},  
         comment: '', status: OrderStatus.None, rank: this.orders.length, selected: true }
-      this.ordersService.createOrder(this.ordersSheet.id, order).subscribe(o => {
-        this.retrieveOptionsList(o);
-        this.orders.forEach(i => i.selected = false);
-        this.orders.push(o);
-        o.selected = true;
-        this.selectedActionType = null;
-        this.checkOrdersSheet();
-      });
+    this.ordersService.createOrder(this.ordersSheet.id, order).subscribe(o => {
+      this.orders.forEach(i => i.selected = false);
+      this.orders.push(o);
+      o.selected = true;
+      this.selectedActionType = null;
+        this.retrieveOptionsLists();
+      this.checkOrdersSheet();
+    });
   }
 
   removeOrder(order: Order) {
@@ -74,9 +79,9 @@ export class OrdersFormComponent implements OnInit {
       });
   }
 
-  retrieveOptionsList(order: Order) {
-    this.actionTypes[order.actionTypeId].form.forEach(input => 
-      {
+  retrieveOptionsLists() {
+    this.orders.forEach(order => {    
+      this.actionTypes[order.actionTypeId].form.forEach(input => {
         var parameterValue = "";
         if (input.parameter) {
           parameterValue = order.parameters[input.parameter];
@@ -88,17 +93,19 @@ export class OrdersFormComponent implements OnInit {
           this.optionsLists[order.id][input.label] = s;
         });
       });
-    }
+    });
+  }
 
   updateOrder(order: Order) {
     this.ordersService.updateOrder(this.ordersSheet.id, order).subscribe(o => {
-      this.retrieveOptionsList(o);
+      this.retrieveOptionsLists();
       this.checkOrdersSheet();
     });
   }
 
   updatePriority() {
     this.ordersService.updateOrdersSheet(this.ordersSheet).subscribe(s => {});
+    this.checkOrdersSheet();
   }
 
   updateCheckbox(order: Order, label:string, event: MatCheckboxChange) {
@@ -107,16 +114,15 @@ export class OrdersFormComponent implements OnInit {
   }
 
   submitOrdersSheet() {
-    this.ordersService.submitOrdersSheet().subscribe(s => 
-      {
-        this.ordersSheet = s;
-        this.campaignsService.getCurrentCampaign().subscribe(c => this.campaignsService.workOnCampaign(c.id).subscribe(i =>
-          {
-            this.ordersService.getOrders(this.ordersSheet.id).subscribe(o => {
-              this.orders = o;
-            });
-          }));
-      });
+    this.ordersService.submitOrdersSheet().subscribe(s => {
+      this.ordersSheet.status = s.status;
+      this.ordersSheet.sendDate = s.sendDate;
+      this.campaignsService.getCurrentCampaign().subscribe(c => this.campaignsService.workOnCampaign(c.id).subscribe(i => {
+        this.ordersService.getOrders(this.ordersSheet.id).subscribe(o => {
+          this.orders = o;
+        });
+      }));
+    });
   }
 
   checkOrdersSheet() {

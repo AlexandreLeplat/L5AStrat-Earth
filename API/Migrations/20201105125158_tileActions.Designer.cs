@@ -4,14 +4,16 @@ using Entities.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HostApp.Migrations
 {
     [DbContext(typeof(DAL))]
-    partial class DALModelSnapshot : ModelSnapshot
+    [Migration("20201105125158_tileActions")]
+    partial class tileActions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -150,7 +152,7 @@ namespace HostApp.Migrations
                             CurrentTurn = 1,
                             GameId = 1L,
                             Name = "La bataille des Quatre Vents",
-                            NextPhase = new DateTime(2020, 11, 7, 6, 0, 0, 0, DateTimeKind.Local),
+                            NextPhase = new DateTime(2020, 11, 6, 6, 0, 0, 0, DateTimeKind.Local),
                             PhaseLength = 720,
                             Status = 2,
                             _jsonAssets = "{\"Prochain classement\":{\"Tour 3\":\"\"}}"
@@ -222,7 +224,7 @@ namespace HostApp.Migrations
                         {
                             Id = 1L,
                             CampaignId = 1L,
-                            CreationDate = new DateTime(2020, 11, 6, 22, 18, 42, 868, DateTimeKind.Local).AddTicks(7176),
+                            CreationDate = new DateTime(2020, 11, 5, 13, 51, 57, 342, DateTimeKind.Local).AddTicks(8852),
                             Name = "Début de Tour 1",
                             PlayerId = 1L,
                             Size = 9,
@@ -1250,9 +1252,6 @@ namespace HostApp.Migrations
                     b.Property<int>("MaxOrdersCount")
                         .HasColumnType("int");
 
-                    b.Property<int>("MaxPriority")
-                        .HasColumnType("int");
-
                     b.Property<long>("PlayerId")
                         .HasColumnType("bigint");
 
@@ -1279,7 +1278,6 @@ namespace HostApp.Migrations
                         {
                             Id = 1L,
                             MaxOrdersCount = 5,
-                            MaxPriority = 0,
                             PlayerId = 2L,
                             Priority = 0,
                             Status = 1,
@@ -1289,7 +1287,6 @@ namespace HostApp.Migrations
                         {
                             Id = 2L,
                             MaxOrdersCount = 5,
-                            MaxPriority = 0,
                             PlayerId = 3L,
                             Priority = 0,
                             Status = 1,
@@ -1299,7 +1296,6 @@ namespace HostApp.Migrations
                         {
                             Id = 3L,
                             MaxOrdersCount = 5,
-                            MaxPriority = 0,
                             PlayerId = 4L,
                             Priority = 0,
                             Status = 1,
@@ -1309,7 +1305,6 @@ namespace HostApp.Migrations
                         {
                             Id = 4L,
                             MaxOrdersCount = 5,
-                            MaxPriority = 0,
                             PlayerId = 5L,
                             Priority = 0,
                             Status = 1,

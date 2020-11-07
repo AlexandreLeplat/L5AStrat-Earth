@@ -22,8 +22,7 @@ namespace L5aStrat_Earth
         {
             var player = (from p in _dal.Players
                           join s in _dal.OrdersSheets on p.Id equals s.PlayerId
-                          join o in _dal.Orders on s.Id equals o.OrdersSheetId
-                          where o.Id == order.Id
+                          where s.Id == order.OrdersSheetId
                           select p).FirstOrDefault();
 
             var playerAssets = JsonSerializer.Deserialize<PlayerAssets>(player._jsonAssets);
@@ -362,6 +361,8 @@ namespace L5aStrat_Earth
                 return order;
             }
 
+            var armyAssets = new Dictionary<string, Dictionary<string, string>>();
+            foreach (var a in army.Assets) { armyAssets.Add(a.Key, a.Value); }
             if (army.Assets.ContainsKey("HasChangedFormation"))
             {
                 order.Comment = "L'armée a déjà changé de formation";
@@ -371,7 +372,8 @@ namespace L5aStrat_Earth
             }
             else
             {
-                army.Assets.Add("HasChangedFormation", new Dictionary<string, string>());
+                armyAssets.Add("HasChangedFormation", new Dictionary<string, string>());
+                army.Assets = armyAssets;
             }
 
             var playerAssets = JsonSerializer.Deserialize<PlayerAssets>(player._jsonAssets);
@@ -406,15 +408,12 @@ namespace L5aStrat_Earth
                 formation = order.Parameters["Formation"];
             }
 
-            if (army.Assets.ContainsKey("Formation"))
+            if (armyAssets.ContainsKey("Formation"))
             {
-                army.Assets["Formation"].Clear();
+                armyAssets.Remove("Formation");
             }
-            else 
-            {
-                army.Assets.Add("Formation", new Dictionary<string, string>());
-            }
-            army.Assets["Formation"].Add(formation, null);
+            armyAssets.Add("Formation", new Dictionary<string, string>() { { formation, null } });
+            army.Assets = armyAssets;
 
             _dal.Players.Update(player);
             _dal.Units.Update(army);
@@ -635,7 +634,10 @@ namespace L5aStrat_Earth
 
             army.X = destinationTile.X;
             army.Y = destinationTile.Y;
-            army.Assets.Add("HasMoved", new Dictionary<string, string>());
+            var armyAssets = new Dictionary<string, Dictionary<string, string>>();
+            foreach (var a in army.Assets) { armyAssets.Add(a.Key, a.Value); }
+            armyAssets.Add("HasMoved", new Dictionary<string, string>());
+            army.Assets = armyAssets;
             _dal.Units.Update(army);
             _dal.SaveChanges();
 
@@ -700,7 +702,10 @@ namespace L5aStrat_Earth
                 {
                     attacker.X = defender.X;
                     attacker.Y = defender.Y;
-                    attacker.Assets.Add("HasMoved", new Dictionary<string, string>());
+                    var armyAssets = new Dictionary<string, Dictionary<string, string>>();
+                    foreach (var a in attacker.Assets) { armyAssets.Add(a.Key, a.Value); }
+                    armyAssets.Add("HasMoved", new Dictionary<string, string>());
+                    attacker.Assets = armyAssets;
                     _dal.Update(attacker);
                     _dal.Remove(defender);
                     attackerNotifSubject = $"Victoire en {tileName}";
@@ -741,23 +746,7 @@ namespace L5aStrat_Earth
 
         private void SendNotification(long playerId, string subject, string body)
         {
-            var adminId = (from p in _dal.Players
-                          join p2 in _dal.Players on p.CampaignId equals p2.CampaignId
-                          where p.IsAdmin && p2.Id == playerId
-                          select p.Id).FirstOrDefault();
-
-            var message = new Message()
-            {
-                SenderId = adminId,
-                PlayerId = playerId,
-                Subject = subject,
-                Body = body,
-                IsNotification = true,
-                SendDate = DateTime.Now
-            };
-
-            _dal.Messages.Add(message);
-            _dal.SaveChanges();
+            Helper.SendNotification(playerId, subject, body, _dal);
         }
         #endregion
     }

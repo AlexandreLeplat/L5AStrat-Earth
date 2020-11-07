@@ -15,6 +15,9 @@ namespace Entities.Models
         // Numéro du tour
         public int Turn { get; set; }
 
+        // Taille de la carte
+        public int Size { get; set; }
+
         // Date d'édition de la carte
         public DateTime CreationDate { get; set; }
 

@@ -88,33 +88,10 @@ namespace HostApp.Business
             {
                 campaign.CurrentTurn++;
                 campaign.CurrentPhase = TurnPhase.Early;
-                this.GenerateNewOrdersSheets(campaign);
                 _gameEngines[campaign.GameId].BeginTurn(campaign);
             }
 
             return true;
-        }
-
-        private void GenerateNewOrdersSheets(Campaign campaign)
-        {
-            var players = (from p in _dal.Players
-                           where p.CampaignId == campaign.Id && !p.IsAdmin
-                           select p).ToList();
-
-            // Générer les feuilles d'ordres des joueurs
-            foreach (var player in players)
-            {
-                var sheet = new OrdersSheet()
-                {
-                    MaxOrdersCount = 5,
-                    PlayerId = player.Id,
-                    Priority = 0,
-                    Status = OrdersSheetStatus.Writing,
-                    Turn = campaign.CurrentTurn
-                };
-                _dal.OrdersSheets.Add(sheet);
-            }
-            _dal.SaveChanges();
         }
 
         private bool CheckEarlyPhaseOrders(Campaign campaign)
@@ -127,15 +104,15 @@ namespace HostApp.Business
 
             foreach (var sheet in ordersSheets)
             {
-                if (sheet.Status != OrdersSheetStatus.Planned) continue;
-
                 sheet.Status = OrdersSheetStatus.Treating;
                 _dal.SaveChanges();
 
                 sheet.Player = _dal.Players.FirstOrDefault(p => p.Id == sheet.PlayerId);
+                sheet.Priority = _gameEngines[campaign.GameId].PayPriority(sheet.Player, sheet.Priority);
+            }
+            foreach (var sheet in ordersSheets.OrderByDescending(s => s.Priority))
+            {
                 sheet.Orders = _dal.Orders.Where(o => o.OrdersSheetId == sheet.Id).OrderBy(o => o.Rank).ToList();
-
-                _gameEngines[campaign.GameId].PayPriority(sheet.Player, sheet.Priority);
                 foreach (var order in sheet.Orders)
                 {
                     _gameEngines[campaign.GameId].ProcessOrder(order);
@@ -157,6 +134,7 @@ namespace HostApp.Business
 
             foreach (var sheet in ordersSheets)
             {
+                if (sheet.Status != OrdersSheetStatus.Planned) continue;
                 sheet.Status = OrdersSheetStatus.Treating;
                 _dal.SaveChanges();
 
@@ -188,9 +166,11 @@ namespace HostApp.Business
                 _dal.SaveChanges();
 
                 sheet.Player = _dal.Players.FirstOrDefault(p => p.Id == sheet.PlayerId);
+                sheet.Priority = _gameEngines[campaign.GameId].PayPriority(sheet.Player, sheet.Priority);
+            }
+            foreach (var sheet in ordersSheets.OrderByDescending(s => s.Priority))
+            {
                 sheet.Orders = _dal.Orders.Where(o => o.OrdersSheetId == sheet.Id).OrderBy(o => o.Rank).ToList();
-
-                _gameEngines[campaign.GameId].PayPriority(sheet.Player, sheet.Priority);
                 foreach (var order in sheet.Orders)
                 {
                     _gameEngines[campaign.GameId].ProcessOrder(order);

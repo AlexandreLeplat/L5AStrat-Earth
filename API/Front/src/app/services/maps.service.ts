@@ -5,12 +5,12 @@ import { environment } from 'src/environments/environment';
 export interface Map {
   id: number;
   name: string;
+  size: number;
   turn: number;
   playerId: number;
   campaignId: number;
   creationDate: Date;
 }
-
 export interface MapTile {
   id: number;
   name: string;
@@ -19,6 +19,7 @@ export interface MapTile {
   symbol: string;
   color: string;
   borderColor: string;
+  actions: { [id: number]: string; };
   assets: { [category: string]: { [asset: string]: string; }; };
   mapId: number;
 }

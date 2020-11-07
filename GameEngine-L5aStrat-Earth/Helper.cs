@@ -1,5 +1,7 @@
-﻿using Entities.Models;
+﻿using Entities.Database;
+using Entities.Models;
 using L5aStrat_Earth.Entities;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,21 +43,25 @@ namespace L5aStrat_Earth
         {
             var namesCount = References.ArmyNamesList.Length;
             var listNames = new List<string>(References.ArmyNamesList);
+            
+            // S'il y a plus de suffixes dispos que de noms utilisés dans la campagne, on écarte les suffixes utilisés
             if (namesCount > campaignNames.Count())
             {
                 foreach(var usedName in campaignNames)
                 {
-                    listNames.RemoveAll(n => usedName.Contains(n));
+                    listNames.RemoveAll(n => usedName.EndsWith($" {n}"));
                 }
-            } 
+            }
+            // S'il y a plus de suffixes dispos que de noms utilisés par le joueur, on écarte les suffixes utilisés
             else if (namesCount > playerNames.Count())
             {
                 foreach (var usedName in playerNames)
                 {
-                    listNames.RemoveAll(n => usedName.Contains(n));
+                    listNames.RemoveAll(n => usedName.EndsWith($" {n}"));
                 }
             }
 
+            // On constitue la liste des combinaisons préfixes + suffixes possibles
             var listFullNames = new List<string>();
             foreach(var unitName in References.UnitNamesList)
             {
@@ -64,20 +70,46 @@ namespace L5aStrat_Earth
                     listFullNames.Add(unitName + " " + armyName);
                 }
             }
-            if (listFullNames.Count() <= campaignNames.Count())
-            {
-                return Guid.NewGuid().ToString();
-            }
+
+            // On écarte les noms déjà utilisés
             if (namesCount <= campaignNames.Count())
             {
                 foreach (var usedName in campaignNames)
                 {
-                    listFullNames.RemoveAll(n => usedName.Contains(n));
+                    listFullNames.RemoveAll(n => usedName == n);
                 }
             }
-            Random rnd = new Random();
-            int rndIndex = rnd.Next(0, listFullNames.Count() - 1);
-            return listFullNames[rndIndex];
+
+            // On sélectionne un nom au hasard dans la liste
+            if (listFullNames.Any())
+            {
+                Random rnd = new Random();
+                int rndIndex = rnd.Next(0, listFullNames.Count() - 1);
+                return listFullNames[rndIndex];
+            }
+            // S'il ne reste aucun nom dispo, on rend un Guid aléatoire
+            else return Guid.NewGuid().ToString();
+        }
+
+        public static void SendNotification(long playerId, string subject, string body, DAL dal)
+        {
+            var adminId = (from p in dal.Players
+                           join p2 in dal.Players on p.CampaignId equals p2.CampaignId
+                           where p.IsAdmin && p2.Id == playerId
+                           select p.Id).FirstOrDefault();
+
+            var message = new Message()
+            {
+                SenderId = adminId,
+                PlayerId = playerId,
+                Subject = subject,
+                Body = body,
+                IsNotification = true,
+                SendDate = DateTime.Now
+            };
+
+            dal.Messages.Add(message);
+            dal.SaveChanges();
         }
     }
 }

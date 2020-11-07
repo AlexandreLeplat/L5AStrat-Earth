@@ -36,7 +36,7 @@
                     <strong>Carte :</strong>
                     <mat-select [(value)]='currentMap' (selectionChange)="selectMap()">
                         <mat-option *ngFor="let map of mapsList" 
-                            [value]="map"><b>{{map.name}}</b> [{{currentMap.creationDate | date:'E d MMM H:mm'}}]</mat-option>
+                            [value]="map"><b>{{map.name}}</b> [{{map.creationDate | date:'E d MMM H:mm'}}]</mat-option>
                     </mat-select>
                 </mat-card-content>
             </mat-card>
@@ -50,13 +50,23 @@
                     <strong>{{category.key}}</strong>
                     <mat-list-item *ngFor="let asset of category.value | keyvalue">
                       {{asset.key}}<span *ngIf="asset.value && asset.value != ''"> : <span class='value'>{{asset.value}}</span></span>
-                      <br>
+                      <br/>
                     </mat-list-item>
                 </mat-list>
             </mat-card-content>
-            <mat-card-actions  *ngIf="zoomedIn" fxHide.gt-sm>
+            <mat-card-actions *ngIf="selectedTile && actionTypes">
                 <mat-divider></mat-divider>
-                <button class="zoomButton" mat-raised-button (click)="zoomOut()" color="primary">Dézoomer</button>
+                <!-- <mat-form-field appearance="fill" style="width: 50%;">
+                    <mat-label>Actions</mat-label>
+                    <mat-select [(value)]="selectedAction" (selectionChange)="selectAction()">
+                        <mat-option  *ngFor="let action of selectedTile.actions | keyvalue" [value]="action.key">
+                            {{actionTypes[action.key].label}}</mat-option>
+                    </mat-select>
+                </mat-form-field> -->
+                <button class="zoomButton" mat-raised-button (click)="zoomOut()" color="primary">
+                    <span fxHide.lt-md>Fermer</span>
+                    <span fxHide.gt-sm>Dézoomer</span>
+                </button>
             </mat-card-actions>
         </mat-card>
     </div>

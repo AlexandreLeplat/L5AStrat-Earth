@@ -46,6 +46,7 @@ export interface OrdersSheet {
   priority: number;
   turn: number;
   maxOrdersCount: number;
+  maxPriority: number;
   status: OrdersSheetStatus;
   sendDate: Date;
 }
@@ -70,8 +71,12 @@ export class OrdersService {
     return this.http.get<ActionType[]>(environment.apiURL + '/ref/actiontypes', { headers : this.headers() });
   }
 
+  getOrdersSheets() {
+    return this.http.get<OrdersSheet[]>(environment.apiURL + '/orderssheets', { headers : this.headers() });
+  }
+
   getCurrentOrdersSheet() {
-      return this.http.get<OrdersSheet>(environment.apiURL + '/orderssheets/current', { headers : this.headers() });
+    return this.http.get<OrdersSheet>(environment.apiURL + '/orderssheets/current', { headers : this.headers() });
   }
 
   updateOrdersSheet(ordersSheet: OrdersSheet) {

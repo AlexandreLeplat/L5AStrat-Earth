@@ -115,17 +115,17 @@ namespace Entities.Database
 
             modelBuilder.Entity<ActionType>().Property(o => o._jsonForm).HasColumnName("Form");
             modelBuilder.Entity<ActionType>().HasData(new ActionType()
-                {
-                    Id = 1,
-                    Label = "Planification",
-                    Description = "Gagnez un point de Stratégie",
-                    GameId = 1,
-                    Form = new List<OrderInput>() {
+            {
+                Id = 1,
+                Label = "Planification",
+                Description = "Gagnez un point de Stratégie",
+                GameId = 1,
+                Form = new List<OrderInput>() {
                         { new OrderInput() {
                             Label = "Augmentation", Type = "Checkbox",
                             Description = "Manoeuvre sournoise : Gagnez 2 points d'Infamie pour gagner un point de Stratégie supplémentaire" } }
                         }
-                },
+            },
                 new ActionType()
                 {
                     Id = 2,
@@ -164,7 +164,7 @@ namespace Entities.Database
                     GameId = 1,
                     Form = new List<OrderInput>() {
                     { new OrderInput() {
-                        Label = "Case", Type = "EntryTile",
+                        Label = "Case", Type = "EntryTile", IsSelectedTileOnMap = true,
                         Description = "La case de renfort ciblée" } },
                     { new OrderInput() {
                         Label = "Formation", Type = "Formation",
@@ -182,11 +182,11 @@ namespace Entities.Database
                     GameId = 1,
                     Form = new List<OrderInput>() {
                     { new OrderInput() {
-                        Label = "Armée", Type = "Army",
+                        Label = "Armée", Type = "Army", IsPredefinedOnMap = true,
                         Description = "L'armée à déplacer" } },
                     { new OrderInput() {
-                        Label = "Destination", Type = "Move", Parameter = "Armée",
-                        Description = "La destination de l'armée" } },
+                        Label = "Destination", Type = "Move", Parameter = "Armée", IsSelectableOnMap = true,
+                        Description = "La destination de l'armée", MapDescription = "Sélectionnez la destination sur la carte" } },
                     { new OrderInput() {
                         Label = "Augmentation", Type = "Checkbox",
                         Description = "Ligne de ravitaillement : Dépensez un point d'Influence pour déplacer l'armée après un renfort ou un changement de formation." } }
@@ -200,7 +200,7 @@ namespace Entities.Database
                     GameId = 1,
                     Form = new List<OrderInput>() {
                     { new OrderInput() {
-                        Label = "Armée", Type = "Army",
+                        Label = "Armée", Type = "Army", IsPredefinedOnMap = true,
                         Description = "L'armée ciblée" } },
                     { new OrderInput() {
                         Label = "Formation", Type = "Formation", Parameter = "Armée",
@@ -243,6 +243,7 @@ namespace Entities.Database
                     CreationDate = DateTime.Now,
                     Name = "Début de Tour 1",
                     Turn = 1,
+                    Size = 9,
                     PlayerId = 1
                 });
 

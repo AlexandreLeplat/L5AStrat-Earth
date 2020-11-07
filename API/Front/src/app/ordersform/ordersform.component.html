@@ -1,22 +1,24 @@
 <app-header></app-header>
 <app-menu [selectedRoute]="'orders'"></app-menu>
 <div ngClass.gt-md="desktop-content" ngClass.xs="mobile-content">
-  <div *ngIf="ordersSheet else spinnerCard" style="width: 90%; margin: 20px auto;">
+  <div *ngIf="ordersSheet else spinnerCard" class="orderSheet">
     <mat-card>
-      <strong style="width: 20%;">Tour {{ordersSheet.turn}}</strong>
-      <p style="width: 60%;">
+      <strong>Tour {{ordersSheet.turn}}</strong>
+      <p>
         Points de priorité :
-      <mat-slider max="5" min="0" thumbLabel tickInterval="1" [(value)]="ordersSheet.priority" [disabled]="ordersSheet.status != 1" 
-          (change)="updatePriority()"></mat-slider></p>
+        <mat-slider [max]="ordersSheet.maxPriority" min="0" thumbLabel tickInterval="1" [(value)]="ordersSheet.priority" 
+        [disabled]="ordersSheet.status != writingStatus" (change)="updatePriority()"></mat-slider>
+        {{ordersSheet.priority}}
+      </p>
     </mat-card>
     <mat-accordion *ngIf="orders && actionTypes else spinnerCard" cdkDropList
-        [cdkDropListData]="orders" (cdkDropListDropped)="drop($event)" [cdkDropListDisabled] = "ordersSheet.status != 1">
+        [cdkDropListData]="orders" (cdkDropListDropped)="drop($event)" [cdkDropListDisabled] = "ordersSheet.status != writingStatus">
       <mat-expansion-panel *ngFor="let order of orders" cdkDrag [(expanded)]="order.selected">
         <mat-expansion-panel-header>
           <mat-panel-title>
-            <mat-icon *ngIf="ordersSheet.status == 1">drag_indicator</mat-icon>
+            <mat-icon *ngIf="ordersSheet.status == writingStatus">drag_indicator</mat-icon>
             &nbsp;{{actionTypes[order.actionTypeId].label}}&nbsp;
-            <mat-icon *ngIf="order.status == 1" [color]="order.comment.endsWith('?') ? 'accent' : 'warn'">warning</mat-icon>
+            <mat-icon *ngIf="order.status == writingStatus" [color]="order.comment.endsWith('?') ? 'accent' : 'warn'">warning</mat-icon>
           </mat-panel-title>
           <mat-panel-description>
             {{order.comment}}
@@ -26,7 +28,7 @@
         <mat-list>
           <mat-list-item *ngFor="let orderInput of actionTypes[order.actionTypeId].form">
             <mat-checkbox *ngIf="orderInput.type == 'Checkbox'" [checked]='order.parameters[orderInput.label] == "true"'
-                [disabled]="ordersSheet.status != 1" (change)="updateCheckbox(order, orderInput.label, $event)">
+                [disabled]="ordersSheet.status != writingStatus" (change)="updateCheckbox(order, orderInput.label, $event)">
               <strong>{{orderInput.label}}</strong>
             </mat-checkbox>
             <div *ngIf="orderInput.type != 'Checkbox' && ordersSheet.status == 1">
@@ -39,7 +41,7 @@
                 </mat-select>
               </mat-form-field>
             </div>
-            <div *ngIf="orderInput.type != 'Checkbox' && ordersSheet.status != 1">
+            <div *ngIf="orderInput.type != 'Checkbox' && ordersSheet.status != writingStatus">
               {{orderInput.label}} 
               <span *ngIf="order.parameters[orderInput.label]"> : <span *ngIf="order.parameters[orderInput.label].split(';').length > 1">
                 {{order.parameters[orderInput.label].split(";")[1]}}
@@ -58,25 +60,33 @@
         <mat-icon style="vertical-align: middle;">add</mat-icon>
         &nbsp;<strong style="vertical-align: middle;">Ajouter un ordre</strong>&nbsp;
         <mat-form-field appearance="fill" style="width: 50%;">
-          <mat-select [(value)]="selectedActionType" [disabled]="ordersSheet.status != 1" (selectionChange)="addOrder()">
-            <mat-option *ngFor="let actionType of actionTypes | keyvalue" value="{{actionType.key}}" >{{actionType.value.label}}</mat-option>
+          <mat-select [(value)]="selectedActionType" [disabled]="ordersSheet.status != writingStatus" (selectionChange)="addOrder()">
+            <mat-option *ngFor="let actionType of actionTypes | keyvalue" [value]="actionType.key" >{{actionType.value.label}}</mat-option>
           </mat-select>
         </mat-form-field>
         &nbsp;{{ordersSheet.maxOrdersCount - orders.length}} restants
       </mat-card>
       <ng-template #submitCard>
-        <mat-card *ngIf="ordersSheet.status == 1">
+        <mat-card *ngIf="ordersSheet.status == writingStatus">
           <mat-card-content style="text-align: center;">
             <button mat-button color="primary" (click)="submitOrdersSheet()"><mat-icon>send</mat-icon>&nbsp;Envoyer</button>
           </mat-card-content>
         </mat-card>
-        <mat-card *ngIf="ordersSheet.status > 1">
+        <mat-card *ngIf="ordersSheet.status > writingStatus">
           <mat-card-content style="text-align: center;">
             Ordres soumis le {{ordersSheet.sendDate | date:'EEEE d MMMM, H:mm'}}
           </mat-card-content>
         </mat-card>
       </ng-template>
     </mat-accordion>
+    <mat-card *ngIf="ordersSheet else spinnerCard" class="archive-card">
+      <mat-card-content *ngIf="sheetsList">
+        <strong>Archives :</strong>
+        <mat-select [(value)]='ordersSheet' (selectionChange)="selectSheet()">
+          <mat-option *ngFor="let sheet of sheetsList" [value]="sheet">Tour {{sheet.turn}}</mat-option>
+        </mat-select>
+      </mat-card-content>
+    </mat-card>
   </div>
   <ng-template #inputLoader>
     <p>Chargement...</p>

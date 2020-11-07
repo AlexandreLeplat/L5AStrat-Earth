@@ -4,6 +4,11 @@
 .mobile-content {
   margin-bottom: 75px;
 }
+.orderSheet {
+  width: 90%;
+  margin: 20px auto;
+  max-width: 860px;
+}
 .mat-list-base .mat-list-item {
   height: auto;
   font-size: 14px;
@@ -13,4 +18,8 @@
 }
 .selectDescription {
   margin: 0 8px 12px
+}
+.archive-card {
+  margin: 20px auto;
+  max-width: 150px;
 }

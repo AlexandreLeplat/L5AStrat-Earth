@@ -241,7 +241,10 @@ namespace L5aStrat_Earth
             {
                 order.Comment += $"{army.Name} [{formation}]";
             }
-            army.Assets.Add("HasChangedFormation", new Dictionary<string, string>());
+            var armyAssets = new Dictionary<string, Dictionary<string, string>>();
+            foreach (var a in army.Assets) { armyAssets.Add(a.Key, a.Value); }
+            armyAssets.Add("HasChangedFormation", new Dictionary<string, string>());
+            army.Assets = armyAssets;
 
             return order;
         }
@@ -429,7 +432,10 @@ namespace L5aStrat_Earth
 
             army.X = destinationTile.X;
             army.Y = destinationTile.Y;
-            army.Assets.Add("HasMoved", new Dictionary<string, string>());
+            var armyAssets = new Dictionary<string, Dictionary<string, string>>();
+            foreach (var a in army.Assets) { armyAssets.Add(a.Key, a.Value); }
+            armyAssets.Add("HasMoved", new Dictionary<string, string>());
+            army.Assets = armyAssets;
 
             if (order.Status == OrderStatus.Valid)
             {

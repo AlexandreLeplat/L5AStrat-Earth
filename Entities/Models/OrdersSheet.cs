@@ -19,6 +19,9 @@ namespace Entities.Models
         // Nombre maximum d'actions jouables
         public int MaxOrdersCount { get; set; }
 
+        // Nombre maximum de points de priorité pouvant être dépensés
+        public int MaxPriority { get; set; }
+
         // Date d'envoi de la feuille
         public DateTime? SendDate { get; set; }
 

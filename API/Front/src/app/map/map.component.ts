@@ -4,6 +4,7 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { PlayersService } from '../services/players.service';
+import { ActionType, OrdersService, OrdersSheet } from '../services/orders.service';
 
 @Component({
   selector: 'app-map',
@@ -18,9 +19,13 @@ export class MapComponent implements OnInit {
   selectedTile: MapTile;
   zoomedIn: boolean;
   mapSize:number = 9;
+  actionTypes: { [id: number]: ActionType };
+  selectedAction: number;
+  ordersSheet: OrdersSheet;
+
   @ViewChild("zoomableMap") mapElement : ElementRef;
 
-  constructor(private mapsService: MapsService, private playersService: PlayersService
+  constructor(private mapsService: MapsService, private playersService: PlayersService, private ordersService: OrdersService
       , private matIconRegistry: MatIconRegistry, private domSanitizer: DomSanitizer) {
     this.matIconRegistry.addSvgIcon('home', this.domSanitizer.bypassSecurityTrustResourceUrl('../../assets/torii.svg'));
     this.matIconRegistry.addSvgIcon('house', this.domSanitizer.bypassSecurityTrustResourceUrl('../../assets/house.svg'));
@@ -33,6 +38,15 @@ export class MapComponent implements OnInit {
         this.mapsList = m;
         this.currentMap = m[0];
         this.mapsService.getMapTiles(this.currentMap.id).subscribe(t => this.mapTiles = t);
+      });
+      this.ordersService.getActionTypes().subscribe(a => {
+        this.actionTypes = {};
+        a.forEach(t => {
+          this.actionTypes[t.id] = t;
+        });
+      });
+      this.ordersService.getCurrentOrdersSheet().subscribe(s => {
+        this.ordersSheet = s;
       });
       this.playersService.getCurrentPlayer().subscribe(p => {
         p.hasNewMap = false;
@@ -55,6 +69,11 @@ export class MapComponent implements OnInit {
   selectMap(): void {
     this.mapsService.getMapTiles(this.currentMap.id).subscribe(t => this.mapTiles = t);
     this.zoomOut();
+  }
+
+  selectAction(): void {
+    this.selectedAction = null;
+    var length = Object.keys(this.actionTypes).length;
   }
 
   zoomOut(): void {

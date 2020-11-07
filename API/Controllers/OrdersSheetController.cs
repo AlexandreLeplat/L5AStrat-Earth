@@ -57,6 +57,7 @@ namespace HostApp.Controllers
                     var id = long.Parse(claim.Value);
                     var ordersSheets = (from s in _dal.OrdersSheets
                                         where s.PlayerId == id
+                                        orderby s.Turn descending
                                         select s).ToList();
                     if (ordersSheets == null) return NotFound();
 

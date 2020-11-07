@@ -10,7 +10,7 @@ namespace Entities.Interfaces
     {
         public void InitCampaign(Campaign campaign);
             
-        public bool PayPriority(Player player, int priority);
+        public int PayPriority(Player player, int priority);
 
         public List<Order> CheckOrdersSheet(OrdersSheet sheet);
 

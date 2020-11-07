@@ -40,15 +40,31 @@ namespace L5aStrat_Earth
                 CampaignId = campaign.Id,
                 Name = $"Début de Tour {campaign.CurrentTurn}",
                 Turn = campaign.CurrentTurn,
+                Size = 9,
                 CreationDate = DateTime.Now
             };
             _dal.Maps.Add(newMap);
             _dal.SaveChanges();
-
             _dal.MapTiles.AddRange(this.GenerateMapTiles(newMap.Id, campaign.Id, adminId));
             foreach(var player in players)
             {
                 player.HasNewMap = true;
+            }
+
+            // Générer les feuilles d'ordres des joueurs
+            foreach (var player in players.Where(p => !p.IsAdmin))
+            {
+                var playerAssets = JsonSerializer.Deserialize<PlayerAssets>(player._jsonAssets);
+                var sheet = new OrdersSheet()
+                {
+                    MaxOrdersCount = 5,
+                    MaxPriority = Math.Min(playerAssets.Resources.Strategy, 10),
+                    PlayerId = player.Id,
+                    Priority = 0,
+                    Status = OrdersSheetStatus.Writing,
+                    Turn = campaign.CurrentTurn
+                };
+                _dal.OrdersSheets.Add(sheet);
             }
             _dal.SaveChanges();
 
@@ -77,6 +93,7 @@ namespace L5aStrat_Earth
                 CampaignId = campaign.Id,
                 Name = $"Retour d'ordres - Tour {campaign.CurrentTurn}",
                 Turn = campaign.CurrentTurn,
+                Size = 9,
                 CreationDate = DateTime.Now
             };
 
@@ -91,6 +108,7 @@ namespace L5aStrat_Earth
         public bool EndTurn(Campaign campaign)
         {
             var result = true;
+
             // Gérer les productions des bâtiments
             var units = (from a in _dal.Units
                           join p in _dal.Players on a.PlayerId equals p.Id
@@ -98,38 +116,100 @@ namespace L5aStrat_Earth
                           select a).ToList();
             var armies = units.Where(u => u.Type == "Army");
             var buildings = units.Where(u => u.Type == "Building");
-            var virtualUnits = units.Where(u => u.Type == "Reinforcement");
-
-            _dal.Units.RemoveRange(virtualUnits);
 
             var players = (from p in _dal.Players
                          where p.CampaignId == campaign.Id && !p.IsAdmin
-                         select new Tuple<long, Player>(p.Id, p)).ToDictionary(t => t.Item1, t => t.Item2);
+                         select p).ToList();
 
+            var gloryBonus = new Dictionary<long, int>();
+            var stratBonus = new Dictionary<long, int>();
             var scoreBonus = new Dictionary<long, int>();
-            foreach(var playerId in players.Keys)
+            foreach(var player in players)
             {
-                scoreBonus.Add(playerId, 0);
+                gloryBonus.Add(player.Id, 0);
+                stratBonus.Add(player.Id, 0);
+                scoreBonus.Add(player.Id, 0);
             }
             foreach (var building in buildings)
             {
                 var occupyingArmy = armies.Where(a => a.X == building.X && a.Y == building.Y).FirstOrDefault();
-                if (occupyingArmy != null && building.Assets.ContainsKey("Production"))
+                if (occupyingArmy != null && building.Assets.ContainsKey("Type"))
                 {
-                    foreach(var prod in building.Assets["Production"])
+                    switch(building.Assets["Type"].Keys.First())
                     {
-                        this.AddProduction(players[occupyingArmy.PlayerId], prod);
+                        case "Village":
+                            {
+                                gloryBonus[occupyingArmy.PlayerId] += 2;
+                                scoreBonus[occupyingArmy.PlayerId] += 10;
+                                break;
+                            }
+                        case "Avant-Poste":
+                            {
+                                gloryBonus[occupyingArmy.PlayerId] += 1;
+                                stratBonus[occupyingArmy.PlayerId] += 2;
+                                scoreBonus[occupyingArmy.PlayerId] += 10;
+                                break;
+                            }
+                        case "Forteresse":
+                            {
+                                gloryBonus[occupyingArmy.PlayerId] += 3;
+                                stratBonus[occupyingArmy.PlayerId] += 2;
+                                scoreBonus[occupyingArmy.PlayerId] += 20;
+                                break;
+                            }
+                        default:
+                            break;
                     }
-                    if (building.Assets["Type"].ContainsKey("Forteresse"))
-                        scoreBonus[occupyingArmy.PlayerId] += 20;
-                    else
-                        scoreBonus[occupyingArmy.PlayerId] += 10;
+                }
+            }
+            foreach(var player in players)
+            {
+                this.AddProduction(player, gloryBonus[player.Id], stratBonus[player.Id], campaign.CurrentTurn);
+            }
+
+            // Suppression des renforts non concrétisés
+            var virtualUnits = units.Where(u => u.Type == "Reinforcement");
+            _dal.Units.RemoveRange(virtualUnits);
+            _dal.SaveChanges();
+
+            // Expiration des feuilles d'ordres non rendues
+            var expiredSheets = (from s in _dal.OrdersSheets
+                                 join p in _dal.Players on s.PlayerId equals p.Id
+                                 where p.CampaignId == campaign.Id && s.Status == OrdersSheetStatus.Writing
+                                 select s).ToList();
+
+            var planificationId = (from a in _dal.ActionTypes
+                                   where a.Label == "Planification"
+                                   select a.Id).FirstOrDefault();
+            foreach (var sheet in expiredSheets)
+            {
+                sheet.Status = OrdersSheetStatus.Expired;
+                sheet.SendDate = DateTime.Now;
+                _dal.OrdersSheets.Update(sheet);
+                var expiredOrders = (from o in _dal.Orders
+                                     where o.OrdersSheetId == sheet.Id
+                                     select o).ToList();
+                _dal.Orders.RemoveRange(expiredOrders);
+                for(int i=0; i<sheet.MaxOrdersCount; i++)
+                {
+                    var order = new Order()
+                    {
+                        ActionTypeId = planificationId,
+                        Comment = "+1 Stratégie",
+                        Rank = i,
+                        Status = OrderStatus.Valid,
+                        OrdersSheetId = sheet.Id,
+                        Parameters = new Dictionary<string, string>()
+                    };
+                    this.ProcessOrder(order);
+                    _dal.Orders.Add(order);
                 }
             }
 
+            // Gérer le classement
             if (campaign.CurrentTurn % 3 == 0)
             {
-                var leaderboard = this.MakeLeaderboard(players.Values, scoreBonus);
+                var leaderboard = this.MakeLeaderboard(players, scoreBonus);
                 if (campaign.CurrentTurn >= 12)
                 {
                     campaign.Assets = new Dictionary<string, Dictionary<string, string>>() {
@@ -178,17 +258,16 @@ namespace L5aStrat_Earth
             }
         }
 
-        public bool PayPriority(Player player, int priority)
+        public int PayPriority(Player player, int priority)
         {
             var playerAssets = JsonSerializer.Deserialize<PlayerAssets>(player._jsonAssets);
+            if (playerAssets.Resources.Strategy < priority) priority = playerAssets.Resources.Strategy;
             playerAssets.Resources.Strategy -= priority;
-            if (playerAssets.Resources.Strategy < 0) return false;
-
             player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
             _dal.Players.Update(player);
             _dal.SaveChanges();
 
-            return true;
+            return priority;
         }
 
         public Order ProcessOrder(Order order)
@@ -320,13 +399,18 @@ namespace L5aStrat_Earth
             var result = new List<MapTile>();
 
             var players = (from p in _dal.Players
-                         where p.CampaignId == campaignId
-                         select p).ToList();
+                           where p.CampaignId == campaignId
+                           select p).ToList();
 
             var units = (from u in _dal.Units
-                          join p in _dal.Players on u.PlayerId equals p.Id
-                          where p.CampaignId == campaignId
-                          select u).ToList();
+                         join p in _dal.Players on u.PlayerId equals p.Id
+                         where p.CampaignId == campaignId
+                         select u).ToList();
+
+            var actionTypes = (from a in _dal.ActionTypes
+                               join c in _dal.Campaigns on a.GameId equals c.GameId
+                               where c.Id == campaignId
+                               select a).ToList();
 
             for (int i = 0; i < 9; i++)
             {
@@ -334,6 +418,7 @@ namespace L5aStrat_Earth
                 {
                     var tileName = "Plaine";
                     var tileAssets = new Dictionary<string, Dictionary<string, string>>();
+                    var tileActions = new Dictionary<string, string>();
                     var tileColor = ((i + j) % 2 == 1) ? "linen" : "wheat";
                     var tileBorderColor = string.Empty;
                     var tileSymbol = string.Empty;
@@ -347,7 +432,11 @@ namespace L5aStrat_Earth
                                     tileName = "Entrée";
                                     tileSymbol = "home";
                                     tileBorderColor = players.FirstOrDefault(p => p.Id == unit.PlayerId).Color;
-                                    tileAssets.Add("Propriétaire", new Dictionary<string, string>() { { players.FirstOrDefault(p => p.Id == unit.PlayerId).Name, string.Empty } });
+                                    tileAssets.Add("Point d'entrée", new Dictionary<string, string>() { { "Propriétaire", players.FirstOrDefault(p => p.Id == unit.PlayerId).Name } });
+                                    if (unit.PlayerId == playerId)
+                                    {
+                                        tileActions.Add(actionTypes.FirstOrDefault(a => a.Label == "Renforts").Id.ToString(), null);
+                                    }
                                     break;
                                 }
                             case "Village":
@@ -392,7 +481,12 @@ namespace L5aStrat_Earth
                         {
                             formation = unit.Assets["Formation"].Keys.FirstOrDefault();
                         }
-                        tileAssets.Add("Armée", new Dictionary<string, string>() { { unit.Name, null }, { "Propriétaire", players.FirstOrDefault(p => p.Id == unit.PlayerId).Name }, { "Formation", formation } });
+                        tileAssets.Add($"Armée - {unit.Name}", new Dictionary<string, string>() { { "Propriétaire", players.FirstOrDefault(p => p.Id == unit.PlayerId).Name }, { "Formation", formation } });
+                        if (unit.PlayerId == playerId)
+                        {
+                            tileActions.Add(actionTypes.FirstOrDefault(a => a.Label == "Déplacement").Id.ToString(), $"{unit.Id};{unit.Name}");
+                            tileActions.Add(actionTypes.FirstOrDefault(a => a.Label == "Formation").Id.ToString(), $"{unit.Id};{unit.Name}");
+                        }
                     }
 
                     tileName += $" ({References.coordinatesLetters[i]}{j + 1})";
@@ -405,7 +499,8 @@ namespace L5aStrat_Earth
                         BorderColor = tileBorderColor,
                         Color = tileColor,
                         Symbol = tileSymbol,
-                        Assets = tileAssets
+                        Assets = tileAssets,
+                        Actions = tileActions
                     };
 
                     _dal.MapTiles.Add(mapTile);
@@ -415,25 +510,23 @@ namespace L5aStrat_Earth
             return result;
         }
 
-        private bool AddProduction(Player player, KeyValuePair<string, string> prod)
+        private bool AddProduction(Player player, int gloryValue, int stratValue, int turn)
         {
-            int oldValue;
-            int prodValue;
-            if (!int.TryParse(prod.Value, out prodValue))
-                return false;
-
-            if (prod.Key == "Gloire")
+            if (gloryValue > 0)
             {
-                Helper.AddGlory(player, prodValue);
+                Helper.AddGlory(player, gloryValue);
+                var playerAssets = JsonSerializer.Deserialize<PlayerAssets>(player._jsonAssets);
+                playerAssets.Resources.Strategy += stratValue;
+                player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
+                _dal.Update(player);
+                var body = $"Vos bâtiments vous rapportent {gloryValue} point{(gloryValue > 1 ? "s" : "")} de Gloire";
+                if (stratValue > 0)
+                { 
+                    body += $" et {stratValue} points de Stratégie."; 
+                }
+                else body += ".";
+                Helper.SendNotification(player.Id, $"Rapport de production du Tour {turn}", body, _dal);
             }
-            if (prod.Key == "Stratégie")
-            {
-                if (!int.TryParse(player.Assets["Ressources"][prod.Key], out oldValue))
-                    return false;
-
-                player.Assets["Ressources"][prod.Key] = (oldValue + prodValue).ToString();
-            }
-            _dal.Update(player);
             return true;
         }
 
@@ -458,7 +551,8 @@ namespace L5aStrat_Earth
                         bestScore = score;
                 }
                 var treatedPlayers = new List<Player>();
-                foreach(var player in scores.Where(s => s.Value == bestScore).Select(s => s.Key))
+                var notifSubject = $"Vous êtes {position} au classement.";
+                foreach (var player in scores.Where(s => s.Value == bestScore).Select(s => s.Key))
                 {
                     leaderBoard.Add(position, player.Name);
                     treatedPlayers.Add(player);
@@ -468,11 +562,12 @@ namespace L5aStrat_Earth
                 {
                     if (reward > 0)
                     {
-                        var playerAssets = JsonSerializer.Deserialize<PlayerAssets>(player._jsonAssets);
                         Helper.AddGlory(player, reward);
+                        var playerAssets = JsonSerializer.Deserialize<PlayerAssets>(player._jsonAssets);
                         playerAssets.Resources.Strategy += reward;
                         player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
                         _dal.Update(player);
+                        Helper.SendNotification(player.Id, notifSubject, $"Vous gagnez {reward} point{(reward > 1 ? "s" : "")} de Gloire et de Stratégie.", _dal);
                     }
                     scores.Remove(player);
                 }
@@ -487,6 +582,7 @@ namespace L5aStrat_Earth
 
         public List<Order> CheckOrdersSheet(OrdersSheet sheet)
         {
+            // On récupère les infos des joueurs de la campagne
             var dbPlayer = (from p in _dal.Players
                            where p.Id == sheet.PlayerId
                            select p).FirstOrDefault();
@@ -498,30 +594,55 @@ namespace L5aStrat_Earth
                 Name = dbPlayer.Name
             };
 
+            // On récupère les infos des armées du joueur
             var dbUnits = (from u in _dal.Units
                          join p in _dal.Players on u.PlayerId equals p.Id
-                         where p.Id == dbPlayer.Id && u.Type == "Army"
+                         where p.Id == dbPlayer.Id
                          select u).ToList();
             var units = new List<Unit>();
-            foreach(var dbUnit in dbUnits)
+            foreach(var army in dbUnits.Where(u => u.Type == "Army"))
             {
                 units.Add(new Unit()
                 {
-                    Id = dbUnit.Id,
-                    Assets = dbUnit.Assets,
-                    Name = dbUnit.Name,
-                    PlayerId = dbUnit.PlayerId,
-                    Type = dbUnit.Type,
-                    X = dbUnit.X,
-                    Y = dbUnit.Y
+                    Id = army.Id,
+                    Assets = army.Assets,
+                    Name = army.Name,
+                    PlayerId = army.PlayerId,
+                    Type = army.Type,
+                    X = army.X,
+                    Y = army.Y
                 });
             }
 
+            // On récupère les ordres de la feuille d'ordres
             var orders = (from o in _dal.Orders
                            where o.OrdersSheetId == sheet.Id
                            orderby o.Rank
                            select o).ToList();
 
+            // On nettoie les unités virtuelles des ordres de renforts supprimés
+            List<Unit> expiredUnits = new List<Unit>();
+            foreach (var virtualUnit in dbUnits.Where(u => u.Type == "Reinforcement"))
+            {
+                long orderId;
+                if (virtualUnit.Assets.ContainsKey("OrderId") && long.TryParse(virtualUnit.Assets["OrderId"].Keys.FirstOrDefault(), out orderId))
+                {
+                    var order = orders.FirstOrDefault(o => o.Id == orderId);
+                    if (order == null) expiredUnits.Add(virtualUnit);
+                }
+            }
+            _dal.Units.RemoveRange(expiredUnits);
+
+            // On contrôle la validité des PPs
+            var playerAssets = JsonSerializer.Deserialize<PlayerAssets>(player._jsonAssets);
+            if (playerAssets.Resources.Strategy < sheet.Priority)
+            {
+                sheet.Priority = playerAssets.Resources.Strategy;
+            }
+            playerAssets.Resources.Strategy -= sheet.Priority;
+            player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
+
+            // On contrôle la validité de chaque ordre
             foreach (var order in orders)
             {
                 order.ActionType = (from a in _dal.ActionTypes
