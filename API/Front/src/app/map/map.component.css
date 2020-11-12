@@ -55,11 +55,12 @@
     padding-top: 25%;
 }
 .title-card {
-    margin: 10% auto;
+    margin: 25% auto;
     width: 285px;
+    height: 90px;
 }
 .mobile-content .title-card {
-    margin: 80px auto 100px auto;
+    margin: 54px auto 72px auto;
 }
 .mobile-content .zoom {
     display: none;
@@ -70,7 +71,7 @@
     height: 80%;
 }
 .mobile-content .description-card {
-    margin: 0 auto 20px auto;
+    margin: 0 auto 16px auto;
     height: 200px;
 }
 .description-content {

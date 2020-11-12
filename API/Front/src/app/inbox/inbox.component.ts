@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+import { stringToKeyValue } from '@angular/flex-layout/extended/typings/style/style-transforms';
+import { MatDialog } from '@angular/material/dialog';
+import { MessageComponent } from '../message/message.component';
 import { Message, MessagesService } from '../services/messages.service';
-import { Player, PlayersService } from '../services/players.service';
+import { PlayersService } from '../services/players.service';
 
 @Component({
   selector: 'app-inbox',
@@ -12,7 +15,8 @@ export class InboxComponent implements OnInit {
   playerNames: { [id: number]: string };
   messages: Message[];
 
-  constructor(private messageService: MessagesService, private playerService: PlayersService) { }
+  constructor(private messageService: MessagesService, private playerService: PlayersService
+    , public dialog: MatDialog) { }
 
   ngOnInit(): void {
     this.messageService.getMessages().subscribe(m => this.messages = m);
@@ -41,4 +45,8 @@ export class InboxComponent implements OnInit {
     this.messages.splice(index, 1);
     this.messageService.deleteMessage(message.id).subscribe();
   }  
+
+  newMessageDialog(): void {
+    this.dialog.open(MessageComponent);
+  }
 }

@@ -99,6 +99,7 @@ namespace HostApp.Business
             var ordersSheets = (from s in _dal.OrdersSheets
                                 join p in _dal.Players on s.PlayerId equals p.Id
                                 where p.CampaignId == campaign.Id && s.Status == OrdersSheetStatus.Planned
+                                    && s.SendDate < campaign.NextPhase
                                 orderby s.Priority descending, s.SendDate ascending
                                 select s).ToList();
 
@@ -129,6 +130,7 @@ namespace HostApp.Business
             var ordersSheets = (from s in _dal.OrdersSheets
                                 join p in _dal.Players on s.PlayerId equals p.Id
                                 where p.CampaignId == campaign.Id && s.Status == OrdersSheetStatus.Planned
+                                    && s.SendDate < campaign.NextPhase
                                 orderby s.SendDate ascending
                                 select s).ToList();
 
@@ -157,6 +159,7 @@ namespace HostApp.Business
             var ordersSheets = (from s in _dal.OrdersSheets
                                 join p in _dal.Players on s.PlayerId equals p.Id
                                 where p.CampaignId == campaign.Id && s.Status == OrdersSheetStatus.Planned
+                                    && s.SendDate < campaign.NextPhase
                                 orderby s.Priority ascending, s.SendDate ascending
                                 select s).ToList();
 

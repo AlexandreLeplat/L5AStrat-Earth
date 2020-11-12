@@ -37,21 +37,21 @@ namespace HostApp.Controllers
         {
             var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
             if (claim == null) return Unauthorized();
+            var idPlayer = long.Parse(claim.Value);
 
             if (string.IsNullOrEmpty(parameters)) parameters = string.Empty;
             using (_dal)
             {
                 // On récupère la campagne associée au compte joueur courant
-                var id = long.Parse(claim.Value);
                 var campaign = (from c in _dal.Campaigns
                                 join p in _dal.Players on c.Id equals p.CampaignId
-                                where p.Id == id
+                                where p.Id == idPlayer
                                 select c).FirstOrDefault();
                 if (campaign == null) return NotFound();
 
                 this.InitializeGameEngine(campaign.GameId);
 
-                var result = _gameEngines[campaign.GameId].GetOptionsList(resource, id, parameters.Split(';'));
+                var result = _gameEngines[campaign.GameId].GetOptionsList(resource, idPlayer, parameters.Split(';'));
 
                 return Ok(result);
             }

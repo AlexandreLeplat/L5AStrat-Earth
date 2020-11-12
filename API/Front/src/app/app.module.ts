@@ -34,6 +34,7 @@ import { OptionsService } from './services/options.service'
 import { ThemeService } from './services/theme.service'
 import { TokenService } from './services/token.service'
 import { JwtHelperService, JWT_OPTIONS } from '@auth0/angular-jwt';
+import { MessageComponent } from './message/message.component';
 
 registerLocaleData(localeFr, 'fr');
 
@@ -49,7 +50,8 @@ registerLocaleData(localeFr, 'fr');
     MenuComponent,
     OrdersFormComponent,
     InfoComponent,
-    RulesComponent
+    RulesComponent,
+    MessageComponent
   ],
   imports: [
     BrowserModule,

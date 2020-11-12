@@ -46,10 +46,10 @@ namespace HostApp.Controllers
             using (_dal)
             {
                 // On récupère la campagne associée au compte joueur courant
-                var id = long.Parse(claim.Value);
+                var idPlayer = long.Parse(claim.Value);
                 var campaign = (from c in _dal.Campaigns
                                 join p in _dal.Players on c.Id equals p.CampaignId
-                             where p.Id == id
+                             where p.Id == idPlayer
                              select c).FirstOrDefault();
                 if (campaign == null) return NotFound();
 
@@ -108,8 +108,8 @@ namespace HostApp.Controllers
             {
                 var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                 if (claim == null) return Unauthorized();
-
                 var idPlayer = long.Parse(claim.Value);
+
                 var user = (from u in _dal.Users
                             join p in _dal.Players on u.Id equals p.UserId
                             where p.Id == idPlayer
@@ -139,8 +139,8 @@ namespace HostApp.Controllers
             {
                 var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                 if (claim == null) return Unauthorized();
-
                 var idPlayer = long.Parse(claim.Value);
+
                 var user = (from u in _dal.Users
                             join p in _dal.Players on u.Id equals p.UserId
                             where p.Id == idPlayer
@@ -210,12 +210,12 @@ namespace HostApp.Controllers
             {
                 var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                 if (claim == null) return Unauthorized();
+                var idPlayer = long.Parse(claim.Value);
 
                 // On récupère les joueurs ayant le même idCampaign que le joueur courant
-                var id = long.Parse(claim.Value);
                 var players = (from c in _dal.Players
                                join p in _dal.Players on c.CampaignId equals p.CampaignId
-                               where c.Id == id
+                               where c.Id == idPlayer
                                select p).ToList();
                 if (players == null) return NotFound();
 

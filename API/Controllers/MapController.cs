@@ -41,16 +41,16 @@ namespace HostApp.Controllers
                 {
                     var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                     if (claim == null) return Unauthorized();
-                    var id = long.Parse(claim.Value);
+                    var idPlayer = long.Parse(claim.Value);
 
                     var adminId = (from p1 in _dal.Players
                                    join p2 in _dal.Players on p1.CampaignId equals p2.CampaignId
-                                   where p1.Id == id && p2.IsAdmin
+                                   where p1.Id == idPlayer && p2.IsAdmin
                                    select p2.Id).FirstOrDefault();
 
                     // On récupère les cartes du joueur courant ou du joueur admin de la partie
                     var maps = (from m in _dal.Maps
-                                where m.PlayerId == id || m.PlayerId == adminId
+                                where m.PlayerId == idPlayer || m.PlayerId == adminId
                                 orderby m.CreationDate descending
                                 select m).ToList();
                     if (maps == null) return NotFound();
@@ -76,8 +76,19 @@ namespace HostApp.Controllers
                 {
                     var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                     if (claim == null) return Unauthorized();
+                    var idPlayer = long.Parse(claim.Value);
 
-                    // On récupère la carte la plus récente du joueur courant
+                    var adminId = (from p1 in _dal.Players
+                                   join p2 in _dal.Players on p1.CampaignId equals p2.CampaignId
+                                   where p1.Id == idPlayer && p2.IsAdmin
+                                   select p2.Id).FirstOrDefault();
+
+                    var map = (from m in _dal.Maps
+                               where m.Id == id.Value && (m.PlayerId == idPlayer || m.PlayerId == adminId)
+                               select m).FirstOrDefault();
+                    if (map == null) return NotFound();
+
+                    // On récupère les tuiles de la carte
                     var tiles = (from t in _dal.MapTiles
                                where t.MapId == id
                                orderby t.Y, t.X 

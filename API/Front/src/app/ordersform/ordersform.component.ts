@@ -22,7 +22,7 @@ export class OrdersFormComponent implements OnInit {
   optionsLists: { [orderId: number]: { [inputLabel: string]: { [label: string]: string; }; }; } = {};
     
   constructor(private ordersService: OrdersService, private campaignsService: CampaignsService
-    , private purchasesService: OptionsService) { }
+    , private optionsService: OptionsService) { }
 
   ngOnInit(): void {
     this.ordersService.getActionTypes().subscribe(a => {
@@ -86,7 +86,7 @@ export class OrdersFormComponent implements OnInit {
         if (input.parameter) {
           parameterValue = order.parameters[input.parameter];
         }
-        this.purchasesService.getOptions(input.type, parameterValue).subscribe(s => {
+        this.optionsService.getOptions(input.type, parameterValue).subscribe(s => {
           if (!this.optionsLists[order.id]) {
             this.optionsLists[order.id] = {};
           }

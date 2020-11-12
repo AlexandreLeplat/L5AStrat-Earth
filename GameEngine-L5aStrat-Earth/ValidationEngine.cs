@@ -349,7 +349,7 @@ namespace L5aStrat_Earth
 
             if (order.Status == OrderStatus.Valid)
             {
-                order.Comment += $"{virtualUnit.Name} [{formation}]";
+                order.Comment += $"{virtualUnit.Name} [{formation}] -> {References.coordinatesLetters[virtualUnit.X]}{virtualUnit.Y + 1}";
             }
             return order;
         }

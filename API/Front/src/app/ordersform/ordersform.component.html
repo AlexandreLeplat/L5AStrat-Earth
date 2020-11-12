@@ -82,9 +82,11 @@
     <mat-card *ngIf="ordersSheet else spinnerCard" class="archive-card">
       <mat-card-content *ngIf="sheetsList">
         <strong>Archives :</strong>
-        <mat-select [(value)]='ordersSheet' (selectionChange)="selectSheet()">
-          <mat-option *ngFor="let sheet of sheetsList" [value]="sheet">Tour {{sheet.turn}}</mat-option>
-        </mat-select>
+        <mat-form-field appearance="fill" style="width: 100%;">
+          <mat-select [(value)]='ordersSheet' (selectionChange)="selectSheet()">
+            <mat-option *ngFor="let sheet of sheetsList" [value]="sheet">Tour {{sheet.turn}}</mat-option>
+          </mat-select>
+        </mat-form-field>
       </mat-card-content>
     </mat-card>
   </div>

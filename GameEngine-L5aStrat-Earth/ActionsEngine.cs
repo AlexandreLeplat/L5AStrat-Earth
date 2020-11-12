@@ -232,7 +232,7 @@ namespace L5aStrat_Earth
                 string report = string.Empty;
                 foreach(var category in target.Assets.Keys)
                 {
-                    report += $"{category} :{System.Environment.NewLine}";
+                    report += $"b§:{category} :{System.Environment.NewLine}";
                     foreach (var key in target.Assets[category].Keys)
                     {
                         if (!string.IsNullOrEmpty(target.Assets[category][key]))
@@ -245,7 +245,7 @@ namespace L5aStrat_Earth
                         }
                     }
                 }
-                report += $"{System.Environment.NewLine}Armées :{System.Environment.NewLine}";
+                report += $"{System.Environment.NewLine}b§:Armées :{System.Environment.NewLine}";
 
                 var units = (from u in _dal.Units
                              where u.PlayerId == target.Id && u.Type == "Army"
@@ -265,7 +265,7 @@ namespace L5aStrat_Earth
 
                 if (lastOrderSheet != null)
                 {
-                    report += $"{System.Environment.NewLine}Ordres Tour {lastOrderSheet.Turn} :{System.Environment.NewLine}";
+                    report += $"{System.Environment.NewLine}b§:Ordres Tour {lastOrderSheet.Turn} :{System.Environment.NewLine}";
                     
                     var orders = (from o in _dal.Orders
                                   where o.OrdersSheetId == lastOrderSheet.Id
@@ -278,44 +278,6 @@ namespace L5aStrat_Earth
                     {
                         var actionType = actionTypes.FirstOrDefault(a => a.Id == targetOrder.ActionTypeId);
                         report += $"- {actionType.Label}";
-                        bool hasParameters = false;
-                        foreach(var parameter in targetOrder.Parameters)
-                        {
-                            string info = string.Empty;
-                            var inputType = actionType.Form.FirstOrDefault(i => i.Label == parameter.Key).Type;
-                            if (inputType == "Checkbox")
-                            {
-                                if (bool.Parse(parameter.Value))
-                                    info = parameter.Key;
-                            }
-                            else
-                            {
-                                var splittedParameter = parameter.Value.Split(';');
-                                if (splittedParameter.Length == 1)
-                                {
-                                    info = parameter.Value;
-                                }
-                                else
-                                {
-                                    info = splittedParameter[1];
-                                }
-                            }
-                            if (!string.IsNullOrEmpty(info))
-                            {
-                                if (hasParameters)
-                                {
-                                    report += ", " + info;
-                                }
-                                else
-                                {
-                                    report += " [" + info;
-                                    hasParameters = true;
-                                }
-                            }
-                        }
-                        if (hasParameters)
-                            report += "]";
-
                         if (!string.IsNullOrEmpty(targetOrder.Comment))
                         {
                             report += $" : {targetOrder.Comment}";

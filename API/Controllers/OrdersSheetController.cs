@@ -52,11 +52,11 @@ namespace HostApp.Controllers
                 {
                     var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                     if (claim == null) return Unauthorized();
+                    var idPlayer = long.Parse(claim.Value);
 
                     // On récupère les feuilles d'ordres du joueur courant
-                    var id = long.Parse(claim.Value);
                     var ordersSheets = (from s in _dal.OrdersSheets
-                                        where s.PlayerId == id
+                                        where s.PlayerId == idPlayer
                                         orderby s.Turn descending
                                         select s).ToList();
                     if (ordersSheets == null) return NotFound();
@@ -82,9 +82,9 @@ namespace HostApp.Controllers
                 {
                     var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                     if (claim == null) return Unauthorized();
+                    var idPlayer = long.Parse(claim.Value);
 
                     // On récupère la feuille d'ordres ciblée
-                    var idPlayer = long.Parse(claim.Value);
                     var ordersSheet = (from s in _dal.OrdersSheets
                                        where s.PlayerId == idPlayer && s.Id == id
                                        select s).FirstOrDefault();
@@ -112,9 +112,9 @@ namespace HostApp.Controllers
                 {
                     var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                     if (claim == null) return Unauthorized();
+                    var idPlayer = long.Parse(claim.Value);
 
                     // On récupère la feuille d'ordres actuelle du joueur
-                    var idPlayer = long.Parse(claim.Value);
                     var ordersSheet = (from s in _dal.OrdersSheets
                                        join p in _dal.Players on s.PlayerId equals p.Id
                                        join c in _dal.Campaigns on p.CampaignId equals c.Id
@@ -143,9 +143,9 @@ namespace HostApp.Controllers
                 {
                     var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                     if (claim == null) return Unauthorized();
+                    var idPlayer = long.Parse(claim.Value);
 
                     // On récupère la feuille d'ordres concernée
-                    var idPlayer = long.Parse(claim.Value);
                     var ordersSheet = (from s in _dal.OrdersSheets
                                        where s.PlayerId == idPlayer && s.Id == input.Id
                                        select s).FirstOrDefault();
@@ -179,9 +179,9 @@ namespace HostApp.Controllers
                 {
                     var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                     if (claim == null) return Unauthorized();
+                    var idPlayer = long.Parse(claim.Value);
 
                     // On récupère la feuille d'ordres actuelle du joueur
-                    var idPlayer = long.Parse(claim.Value);
                     var ordersSheet = (from s in _dal.OrdersSheets
                                        join p in _dal.Players on s.PlayerId equals p.Id
                                        join c in _dal.Campaigns on p.CampaignId equals c.Id
@@ -222,9 +222,9 @@ namespace HostApp.Controllers
                 {
                     var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                     if (claim == null) return Unauthorized();
+                    var idPlayer = long.Parse(claim.Value);
 
                     // On récupère la feuille d'ordres actuelle du joueur
-                    var idPlayer = long.Parse(claim.Value);
                     var ordersSheet = (from s in _dal.OrdersSheets
                                        join p in _dal.Players on s.PlayerId equals p.Id
                                        join c in _dal.Campaigns on p.CampaignId equals c.Id
@@ -262,9 +262,9 @@ namespace HostApp.Controllers
                 {
                     var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                     if (claim == null) return Unauthorized();
+                    var idPlayer = long.Parse(claim.Value);
 
                     // On récupère les ordres de la feuille ciblée
-                    var idPlayer = long.Parse(claim.Value);
                     var orders = (from o in _dal.Orders
                                   join s in _dal.OrdersSheets on o.OrdersSheetId equals s.Id
                                   where s.PlayerId == idPlayer && s.Id == id
@@ -293,9 +293,9 @@ namespace HostApp.Controllers
                 {
                     var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                     if (claim == null) return Unauthorized();
+                    var idPlayer = long.Parse(claim.Value);
 
                     // On récupère la feuille d'ordres ciblée
-                    var idPlayer = long.Parse(claim.Value);
                     var ordersSheet = (from s in _dal.OrdersSheets
                                        where s.PlayerId == idPlayer && s.Id == id
                                        select s).FirstOrDefault();
@@ -337,9 +337,9 @@ namespace HostApp.Controllers
                 {
                     var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                     if (claim == null) return Unauthorized();
+                    var idPlayer = long.Parse(claim.Value);
 
                     // On récupère la feuille d'ordres ciblée
-                    var idPlayer = long.Parse(claim.Value);
                     var ordersSheet = (from s in _dal.OrdersSheets
                                        where s.PlayerId == idPlayer && s.Id == idSheet
                                        select s).FirstOrDefault();
@@ -373,9 +373,9 @@ namespace HostApp.Controllers
                 {
                     var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                     if (claim == null) return Unauthorized();
+                    var idPlayer = long.Parse(claim.Value);
 
                     // On récupère la feuille d'ordres ciblée
-                    var idPlayer = long.Parse(claim.Value);
                     var ordersSheet = (from s in _dal.OrdersSheets
                                        where s.PlayerId == idPlayer && s.Id == idSheet
                                        select s).FirstOrDefault();

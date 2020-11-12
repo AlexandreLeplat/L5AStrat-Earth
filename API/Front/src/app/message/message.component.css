@@ -1,0 +1,21 @@
+.main-card {
+    margin: 0px auto;
+    width: 800px;
+    max-width: 100%;
+}
+.full-width {
+    width: 100%
+}
+.text-area {
+    height: 200px;
+    resize: none;
+}
+.mat-dialog-content.full-width-dialog {
+    padding: 0 8px;
+}
+.par.selected {
+    border: 2px solid black !important;
+}
+.par:hover {
+    border: 2px solid gray !important;
+}

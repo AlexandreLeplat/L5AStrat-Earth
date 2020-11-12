@@ -17,3 +17,7 @@
 .mobile-content .panel {
   width: 96%;
 }
+.new-message {
+  max-width: 150px;
+  margin: 0 calc(50% - 75px);
+}

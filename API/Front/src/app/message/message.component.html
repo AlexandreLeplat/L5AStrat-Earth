@@ -1,0 +1,39 @@
+<h2 mat-dialog-title>Nouveau message</h2>
+<mat-dialog-content class="mat-typography" ngClass.xs="full-width-dialog">
+  <div *ngIf="isWriting" class="main-card">
+    <mat-form-field appearance="fill" style="width: 100%;">
+      <mat-label>Destinataire</mat-label>
+      <mat-select [(value)]='selectedRecipient'>
+        <mat-option *ngFor="let recipient of recipientOptions | keyvalue" [value]="recipient.value.split(';')[0]">{{recipient.key}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <p>
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Objet</mat-label>
+        <input matInput [(value)]="subject" maxlength="60"/>
+      </mat-form-field>
+    </p>
+    <p>
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Message</mat-label>
+        <textarea matInput [(ngModel)]="body" maxlength="5000" class="text-area"></textarea>
+        <mat-hint align="end">{{body.length || 0}}/5000</mat-hint>
+      </mat-form-field>
+    </p>
+  </div>
+  <div *ngIf="isFormatting" class="main-card">
+    <p *ngFor="let par of previewMessage">
+      <ng-container [ngSwitch]="par.substring(0,3)">
+        <b *ngSwitchCase="'b§:'">{{par.substring(3)}}</b>
+        <i *ngSwitchCase="'i§:'">{{par.substring(3)}}</i>
+        <ng-template [ngSwitchDefault]>{{par}}</ng-template>
+      </ng-container>
+    </p>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button *ngIf="isWriting" mat-button color="primary" mat-dialog-close>Fermer</button>
+  <button *ngIf="isWriting" mat-raised-button color="primary" (click)="preview()">Prévisualiser</button>
+  <button *ngIf="isFormatting" mat-button color="primary" (click)="back()">Retour</button>
+  <button *ngIf="isFormatting" mat-raised-button color="primary" (click)="send()">Envoyer</button>
+</mat-dialog-actions>

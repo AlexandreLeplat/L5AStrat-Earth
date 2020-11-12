@@ -29,6 +29,10 @@ export class MessagesService {
     });
   }
 
+  sendMessage(message: Message) {
+    return this.http.post<Message>(environment.apiURL + '/messages', message, { headers : this.headers() });
+  }
+
   getMessages() {
     return this.http.get<Message[]>(environment.apiURL + '/messages', { headers : this.headers() });
   }

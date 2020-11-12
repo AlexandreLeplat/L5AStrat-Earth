@@ -21,7 +21,13 @@
         <span style="width: 35%;text-align: right;">{{message.sendDate | date:'E d MMM H:mm'}}</span>
       </mat-panel-description>
       </mat-expansion-panel-header>
-      <p *ngFor="let par of message.body.split('\r\n')">{{par}}</p>
+      <p *ngFor="let par of message.body.split('\r\n')">
+        <ng-container [ngSwitch]="par.substring(0,3)">
+          <b *ngSwitchCase="'b§:'">{{par.substring(3)}}</b>
+          <i *ngSwitchCase="'i§:'">{{par.substring(3)}}</i>
+          <ng-template [ngSwitchDefault]>{{par}}</ng-template>
+        </ng-container>
+      </p>
       <mat-action-row>
         <button mat-button color="primary" *ngIf="!message.isNotification"><mat-icon>reply</mat-icon>&nbsp;Répondre</button>
         <button mat-button color="primary" *ngIf="!message.isNotification"><mat-icon>reply_all</mat-icon>&nbsp;Répondre à tous</button>
@@ -30,6 +36,8 @@
       </mat-action-row>
     </mat-expansion-panel>
   </mat-accordion>
+
+  <button mat-raised-button class="new-message" (click)="newMessageDialog()" color="primary">Nouveau message</button>
   <ng-template #textLoader>
     <p>Chargement...</p>
   </ng-template>

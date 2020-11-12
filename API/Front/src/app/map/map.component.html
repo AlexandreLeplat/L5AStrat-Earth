@@ -32,12 +32,16 @@
     <div>
         <div *ngIf="!zoomedIn">
             <mat-card *ngIf="currentMap else spinnerCard" class="title-card">
+                <mat-card-header>
+                    <mat-card-title>Carte :</mat-card-title>
+                </mat-card-header>
                 <mat-card-content *ngIf="mapsList">
-                    <strong>Carte :</strong>
-                    <mat-select [(value)]='currentMap' (selectionChange)="selectMap()">
-                        <mat-option *ngFor="let map of mapsList" 
-                            [value]="map"><b>{{map.name}}</b> [{{map.creationDate | date:'E d MMM H:mm'}}]</mat-option>
-                    </mat-select>
+                    <mat-form-field appearance="fill" style="width: 100%;">
+                        <mat-select [(value)]='currentMap' (selectionChange)="selectMap()">
+                            <mat-option *ngFor="let map of mapsList" 
+                                [value]="map"><b>{{map.name}}</b> [{{map.creationDate | date:'E d MMM H:mm'}}]</mat-option>
+                        </mat-select>
+                    </mat-form-field>
                 </mat-card-content>
             </mat-card>
         </div>

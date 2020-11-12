@@ -5,5 +5,8 @@ h3 {
 .main-card {
     margin: 20px auto;
     max-width: 800px;
-    width: 90%;
+}
+
+.mat-dialog-content.full-width-dialog {
+    padding: 0 8px;
 }
