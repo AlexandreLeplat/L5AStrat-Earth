@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { stringToKeyValue } from '@angular/flex-layout/extended/typings/style/style-transforms';
 import { MatDialog } from '@angular/material/dialog';
-import { MessageComponent } from '../message/message.component';
+import { MessageComponent, NewMessageData } from '../message/message.component';
 import { Message, MessagesService } from '../services/messages.service';
 import { PlayersService } from '../services/players.service';
 
@@ -47,6 +47,20 @@ export class InboxComponent implements OnInit {
   }  
 
   newMessageDialog(): void {
-    this.dialog.open(MessageComponent);
+    var messageData: NewMessageData = {
+      isReply: false,
+      recipient: null,
+      subject: ""
+    }
+    this.dialog.open(MessageComponent, { data: messageData });
+  }
+
+  replyTo(message: Message): void {
+    var messageData: NewMessageData = {
+      isReply: true,
+      recipient: message.senderId.toString(),
+      subject: message.subject
+    }
+    this.dialog.open(MessageComponent, { data: messageData });
   }
 }

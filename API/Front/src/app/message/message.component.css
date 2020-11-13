@@ -13,9 +13,30 @@
 .mat-dialog-content.full-width-dialog {
     padding: 0 8px;
 }
-.par.selected {
-    border: 2px solid black !important;
+.preview-area {
+    background-color: whitesmoke;
+    height: 300px;
+    margin: 8px 0;
+    border: 1px solid lightgray;
+    padding: 4px;
+    border-radius: 5px;
+    overflow-y: auto;
 }
-.par:hover {
-    border: 2px solid gray !important;
+.preview-block {
+    border: 1px solid whitesmoke;
+    border-radius: 5px;
+    margin: 0;
+    padding: 2px;
+    min-height: 20px;
+    width: max-content;
+    max-width: calc(100% - 4px);
+    overflow-wrap: anywhere;
+}
+.preview-block.selected {
+    border: 1px solid grey;
+    background-color: lightgrey;
+}
+.preview-block:hover {
+    border: 1px solid lightgrey;
+    cursor: pointer;
 }

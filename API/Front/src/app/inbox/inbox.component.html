@@ -4,22 +4,45 @@
   <mat-accordion *ngIf="messages else spinnerCard" class="accordion">
     <mat-expansion-panel *ngFor="let message of messages" class="panel" (opened)="setRead(message)">
       <mat-expansion-panel-header>
-        <mat-panel-title *ngIf="playerNames && !message.isNotification">
-          <strong *ngIf="!message.isRead">{{playerNames[message.senderId]}}</strong>
-          <span *ngIf="message.isRead">{{playerNames[message.senderId]}}</span>
-        </mat-panel-title>
-        <mat-panel-description>
-          <mat-icon *ngIf="message.isArchived">save</mat-icon>
-          <mat-icon *ngIf="!message.isArchived && message.isRead">chat_bubble_outline</mat-icon>              
-          <mat-icon *ngIf="!message.isArchived && !message.isRead && message.canAnswer">chat</mat-icon>
-          <mat-icon *ngIf="!message.isArchived && !message.isRead && !message.canAnswer">feedback</mat-icon>
-          <div style="width: 100%;">
-            &nbsp;
-          <strong *ngIf="!message.isRead">{{message.subject}}</strong>
-          <span *ngIf="message.isRead">{{message.subject}}</span>
+        <div fxLayout="column" style="width: 100%;">
+          <div fxLayout="row">
+            <div class="sender">
+              <div *ngIf="playerNames && !message.isNotification">
+                <strong *ngIf="!message.isRead">{{playerNames[message.senderId]}}</strong>
+                <span *ngIf="message.isRead">{{playerNames[message.senderId]}}</span>
+              </div>
+              <div *ngIf="message.isNotification">
+                <strong *ngIf="!message.isRead">Notification</strong>
+                <span *ngIf="message.isRead">Notification</span>
+              </div>
+            </div>
+            <div fxHide.xs class="subject" style="width: 100%;">
+              <mat-icon *ngIf="message.isArchived">save</mat-icon>
+              <mat-icon *ngIf="!message.isArchived && message.isRead">chat_bubble_outline</mat-icon>              
+              <mat-icon *ngIf="!message.isArchived && !message.isRead && message.canAnswer">chat</mat-icon>
+              <mat-icon *ngIf="!message.isArchived && !message.isRead && !message.canAnswer">feedback</mat-icon>
+              <div>
+                &nbsp;
+                <strong *ngIf="!message.isRead">{{message.subject}}</strong>
+                <span *ngIf="message.isRead">{{message.subject}}</span>
+              </div>
+            </div>
+            <div class="sendingDate">
+              <span style="text-align: right;">{{message.sendDate | date:'E d MMM H:mm'}}</span>
+            </div>
+          </div>
+          <div fxHide.gt-xs class="subject">
+            <mat-icon *ngIf="message.isArchived">save</mat-icon>
+            <mat-icon *ngIf="!message.isArchived && message.isRead">chat_bubble_outline</mat-icon>              
+            <mat-icon *ngIf="!message.isArchived && !message.isRead && message.canAnswer">chat</mat-icon>
+            <mat-icon *ngIf="!message.isArchived && !message.isRead && !message.canAnswer">feedback</mat-icon>
+            <div>
+              &nbsp;
+              <strong *ngIf="!message.isRead">{{message.subject}}</strong>
+              <span *ngIf="message.isRead">{{message.subject}}</span>
+            </div>
+          </div>
         </div>
-        <span style="width: 35%;text-align: right;">{{message.sendDate | date:'E d MMM H:mm'}}</span>
-      </mat-panel-description>
       </mat-expansion-panel-header>
       <p *ngFor="let par of message.body.split('\r\n')">
         <ng-container [ngSwitch]="par.substring(0,3)">
@@ -29,8 +52,8 @@
         </ng-container>
       </p>
       <mat-action-row>
-        <button mat-button color="primary" *ngIf="!message.isNotification"><mat-icon>reply</mat-icon>&nbsp;Répondre</button>
-        <button mat-button color="primary" *ngIf="!message.isNotification"><mat-icon>reply_all</mat-icon>&nbsp;Répondre à tous</button>
+        <button mat-button color="primary" *ngIf="!message.isNotification" (click)="replyTo(message)"><mat-icon>reply</mat-icon>&nbsp;Répondre</button>
+        <!-- <button mat-button color="primary" *ngIf="!message.isNotification"><mat-icon>reply_all</mat-icon>&nbsp;Répondre à tous</button> -->
         <!-- <button mat-button color="primary" (click)="archive(message)" *ngIf="!message.isArchived"><mat-icon>save</mat-icon>&nbsp;Archiver</button> -->
         <button mat-button color="primary" (click)="remove(message)"><mat-icon>clear</mat-icon>&nbsp;Supprimer</button>
       </mat-action-row>

@@ -102,7 +102,7 @@ namespace HostApp.Controllers
                     if (string.IsNullOrWhiteSpace(message.Subject) 
                         || message.Subject.Length > 100
                         || string.IsNullOrWhiteSpace(message.Body)
-                        || message.Subject.Length > 10000)
+                        || message.Body.Length > 10000)
                         return BadRequest();
 
                     // On vérifie que le destinaire est bien sur la même campagne que le joueur
