@@ -171,7 +171,7 @@ namespace HostApp.Business
                 sheet.Player = _dal.Players.FirstOrDefault(p => p.Id == sheet.PlayerId);
                 sheet.Priority = _gameEngines[campaign.GameId].PayPriority(sheet.Player, sheet.Priority);
             }
-            foreach (var sheet in ordersSheets.OrderByDescending(s => s.Priority))
+            foreach (var sheet in ordersSheets.OrderBy(s => s.Priority))
             {
                 sheet.Orders = _dal.Orders.Where(o => o.OrdersSheetId == sheet.Id).OrderBy(o => o.Rank).ToList();
                 foreach (var order in sheet.Orders)
