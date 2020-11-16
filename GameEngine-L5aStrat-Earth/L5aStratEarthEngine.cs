@@ -418,7 +418,7 @@ namespace L5aStrat_Earth
                 {
                     var tileName = "Plaine";
                     var tileAssets = new Dictionary<string, Dictionary<string, string>>();
-                    var tileActions = new Dictionary<string, string>();
+                    var tileParameters = new Dictionary<string, string>();
                     var tileColor = ((i + j) % 2 == 1) ? "linen" : "wheat";
                     var tileBorderColor = string.Empty;
                     var tileSymbol = string.Empty;
@@ -433,10 +433,6 @@ namespace L5aStrat_Earth
                                     tileSymbol = "home";
                                     tileBorderColor = players.FirstOrDefault(p => p.Id == unit.PlayerId).Color;
                                     tileAssets.Add("Point d'entrée", new Dictionary<string, string>() { { "Propriétaire", players.FirstOrDefault(p => p.Id == unit.PlayerId).Name } });
-                                    if (unit.PlayerId == playerId)
-                                    {
-                                        tileActions.Add(actionTypes.FirstOrDefault(a => a.Label == "Renforts").Id.ToString(), null);
-                                    }
                                     break;
                                 }
                             case "Village":
@@ -482,11 +478,7 @@ namespace L5aStrat_Earth
                             formation = unit.Assets["Formation"].Keys.FirstOrDefault();
                         }
                         tileAssets.Add($"Armée - {unit.Name}", new Dictionary<string, string>() { { "Propriétaire", players.FirstOrDefault(p => p.Id == unit.PlayerId).Name }, { "Formation", formation } });
-                        if (unit.PlayerId == playerId)
-                        {
-                            tileActions.Add(actionTypes.FirstOrDefault(a => a.Label == "Déplacement").Id.ToString(), $"{unit.Id};{unit.Name}");
-                            tileActions.Add(actionTypes.FirstOrDefault(a => a.Label == "Formation").Id.ToString(), $"{unit.Id};{unit.Name}");
-                        }
+                        tileParameters.Add("Army", $"{unit.Id};{unit.Name}");
                     }
 
                     tileName += $" ({References.coordinatesLetters[i]}{j + 1})";
@@ -500,7 +492,7 @@ namespace L5aStrat_Earth
                         Color = tileColor,
                         Symbol = tileSymbol,
                         Assets = tileAssets,
-                        Actions = tileActions
+                        Parameters = tileParameters
                     };
 
                     _dal.MapTiles.Add(mapTile);

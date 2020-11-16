@@ -16,6 +16,9 @@ namespace Entities.Models
         // Flag indiquant si le message est une notification du système de jeu
         public bool IsNotification { get; set; }
 
+        // Numéro de tour de la notification
+        public int Turn { get; set; }
+
         // Flag indiquant si le message est lu
         public bool IsRead { get; set; }
 
@@ -24,6 +27,9 @@ namespace Entities.Models
 
         // Date d'envoi du message
         public DateTime? SendDate { get; set; }
+
+        // Précédent message de la conversation
+        public long? PreviousMessageId { get; set; }
 
         // Joueur auquel le message est adressé
         public long PlayerId { get; set; }

@@ -25,6 +25,10 @@ export interface OrderInput {
   type: string;
   description: string;
   parameter: string;
+  isPredefinedOnMap: boolean;
+  isSelectedTileOnMap: boolean;
+  isSelectableOnMap: boolean;
+  mapDescription: string;
 }
 export interface ActionType {
   id: number;

@@ -98,6 +98,11 @@ namespace L5aStrat_Earth
                            where p.IsAdmin && p2.Id == playerId
                            select p.Id).FirstOrDefault();
 
+            var currentTurn = (from c in dal.Campaigns
+                               join p in dal.Players on c.Id equals p.CampaignId
+                               where p.Id == playerId
+                               select c.CurrentTurn).FirstOrDefault();
+
             var message = new Message()
             {
                 SenderId = adminId,
@@ -105,7 +110,8 @@ namespace L5aStrat_Earth
                 Subject = subject,
                 Body = body,
                 IsNotification = true,
-                SendDate = DateTime.Now
+                SendDate = DateTime.Now,
+                Turn = currentTurn
             };
 
             dal.Messages.Add(message);

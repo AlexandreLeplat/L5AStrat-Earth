@@ -12,6 +12,8 @@ export interface Message {
   sendDate: Date;
   playerId: number;
   senderId: number;
+  turn: number;
+  previousMessageId: number;
 }
 
 @Injectable({

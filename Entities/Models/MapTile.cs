@@ -33,15 +33,15 @@ namespace Entities.Models
         [JsonIgnore]
         public string _jsonAssets { get; set; }
 
-        // Actions réalisables depuis la case, classées par actionId, avec le paramètre prédéfini en string
+        // Les paramètres d'actions exécutables depuis cette case
         [NotMapped]
-        public Dictionary<string, string> Actions
+        public Dictionary<string, string> Parameters
         {
-            get { return _jsonActions == null ? null : JsonSerializer.Deserialize<Dictionary<string, string>>(_jsonActions); }
-            set { _jsonActions = JsonSerializer.Serialize(value); }
+            get { return _jsonParameters == null ? null : JsonSerializer.Deserialize<Dictionary<string, string>>(_jsonParameters); }
+            set { _jsonParameters = JsonSerializer.Serialize(value); }
         }
         [JsonIgnore]
-        public string _jsonActions { get; set; }
+        public string _jsonParameters { get; set; }
 
         // Carte à laquelle la case appartient
         public long MapId { get; set; }

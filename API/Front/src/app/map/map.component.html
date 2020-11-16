@@ -1,14 +1,16 @@
 <app-header></app-header>
 <app-menu [selectedRoute]="'map'"></app-menu>
-<div ngClass.gt-md="desktop-content"  ngClass.xs="mobile-content" style="margin-top: 20px;" fxLayout="row" fxLayout.xs="column-reverse" fxLayoutWrap fxLayoutGap="0.5%">
+<div ngClass.gt-md="desktop-content"  ngClass.xs="mobile-content" style="margin-top: 20px;" fxLayout="row" 
+        fxLayout.xs="column-reverse" fxLayoutWrap fxLayoutGap="0.5%">
     <div class="mapColumn">
         <div class="mapSelector">
             <div class="mapContainer" *ngIf="currentMap && mapTiles else spinnerCard"  fxHide.lt-md>
                 <div class="mapContent" fxLayout="column">
                     <div *ngFor="let row of mapTiles" fxLayout="row">
                         <div class="mapTileContainer" *ngFor="let tile of row">
-                            <div class="mapTileContent" [style.border-color]="tile.borderColor" [ngClass]="{selected: selectedTile && tile.id == selectedTile.id}"
-                                [style.background]="tile.color" (click)="onTileClick(tile)">
+                            <div class="mapTileContent" [style.border-color]="tile.borderColor"
+                                    [ngClass]="{selected: selectedTile && tile.id == selectedTile.id}"
+                                    [style.background]="tile.color" (click)="onTileClick(tile)">
                                 <mat-icon class="icon" [svgIcon]="tile.symbol"></mat-icon>
                             </div>
                         </div>
@@ -19,8 +21,9 @@
                 <div #zoomableMap class="mapContent" fxLayout="column">
                     <div *ngFor="let row of mapTiles" fxLayout="row">
                         <div class="mapTileContainer" *ngFor="let tile of row">
-                            <div class="mapTileContent" [style.border-color]="tile.borderColor" [ngClass]="{selected: selectedTile && tile.id == selectedTile.id}"
-                                [style.background]="tile.color" (click)="onTileClick(tile)">
+                            <div class="mapTileContent" [style.border-color]="tile.borderColor"
+                                    [ngClass]="{selected: selectedTile && tile.id == selectedTile.id}"
+                                    [style.background]="tile.color" (click)="onTileClick(tile)">
                                 <mat-icon class="icon" [svgIcon]="tile.symbol"></mat-icon>
                             </div>
                         </div>
@@ -30,7 +33,7 @@
         </div>
     </div>
     <div>
-        <div *ngIf="!zoomedIn">
+        <div *ngIf="!selectedTile && !actionMode">
             <mat-card *ngIf="currentMap else spinnerCard" class="title-card">
                 <mat-card-header>
                     <mat-card-title>Carte :</mat-card-title>
@@ -45,7 +48,7 @@
                 </mat-card-content>
             </mat-card>
         </div>
-        <mat-card *ngIf="selectedTile" class="description-card">
+        <mat-card *ngIf="selectedTile && !actionMode" class="description-card">
             <mat-card-header>
                 <mat-card-title>{{selectedTile.name}}</mat-card-title>
             </mat-card-header>
@@ -60,21 +63,64 @@
             </mat-card-content>
             <mat-card-actions *ngIf="selectedTile && actionTypes">
                 <mat-divider></mat-divider>
-                <!-- <mat-form-field appearance="fill" style="width: 50%;">
+                <mat-form-field *ngIf="selectedTile.actions"
+                        appearance="fill" style="width: 50%;">
                     <mat-label>Actions</mat-label>
                     <mat-select [(value)]="selectedAction" (selectionChange)="selectAction()">
                         <mat-option  *ngFor="let action of selectedTile.actions | keyvalue" [value]="action.key">
                             {{actionTypes[action.key].label}}</mat-option>
                     </mat-select>
-                </mat-form-field> -->
+                </mat-form-field>
                 <button class="zoomButton" mat-raised-button (click)="zoomOut()" color="primary">
                     <span fxHide.lt-md>Fermer</span>
                     <span fxHide.gt-sm>Dézoomer</span>
                 </button>
             </mat-card-actions>
         </mat-card>
+        <mat-card *ngIf="actionMode && actionTypes && newOrder" class="description-card">
+            <mat-card-header>
+                <mat-card-title>{{actionTypes[newOrder.actionTypeId].label}}</mat-card-title>
+                <mat-icon *ngIf="newOrder.status == 1" [color]="newOrder.comment.endsWith('?') ? 'accent' : 'warn'">warning</mat-icon>
+            </mat-card-header>
+            <mat-card-content class="description-content">
+                <p *ngIf="newOrder"><b>{{newOrder.comment}}</b></p>
+                <mat-list>
+                    <mat-list-item *ngFor="let orderInput of actionTypes[newOrder.actionTypeId].form">
+                      <mat-checkbox *ngIf="orderInput.type == 'Checkbox'" [checked]='newOrder.parameters[orderInput.label] == "true"'
+                            (change)="updateCheckbox(newOrder, orderInput.label, $event)">
+                        <strong>{{orderInput.label}}</strong>
+                      </mat-checkbox>
+                      <div *ngIf="orderInput.type != 'Checkbox' && !orderInput.isPredefinedOnMap && !orderInput.isSelectedTileOnMap">
+                        <mat-form-field *ngIf="optionsList && optionsList[orderInput.label] else inputLoader" appearance="fill">
+                          <mat-label>{{orderInput.label}}</mat-label>
+                          <mat-select [(value)]='newOrder.parameters[orderInput.label]' (selectionChange)="updateOrder(newOrder)">
+                            <mat-option *ngFor="let options of optionsList[orderInput.label] | keyvalue" 
+                              [value]="options.value">{{options.key}}</mat-option>
+                          </mat-select>
+                        </mat-form-field>
+                      </div>
+                      <div *ngIf="orderInput.type != 'Checkbox' && (orderInput.isPredefinedOnMap || orderInput.isSelectedTileOnMap)">
+                        {{orderInput.label}} 
+                        <span *ngIf="newOrder.parameters[orderInput.label]"> : <span *ngIf="newOrder.parameters[orderInput.label].split(';').length > 1">
+                          {{newOrder.parameters[orderInput.label].split(";")[1]}}
+                        </span><span *ngIf="newOrder.parameters[orderInput.label].split(';').length == 1">
+                          {{newOrder.parameters[orderInput.label].split(";")[0]}}
+                        </span></span>
+                      </div>
+                    </mat-list-item>
+                  </mat-list>
+                </mat-card-content>
+            <mat-card-actions>
+                <mat-divider></mat-divider>
+                <button class="zoomButton" mat-button (click)="removeOrder(newOrder)" color="primary">Annuler</button>
+                <button class="zoomButton" mat-raised-button (click)="validateOrder()" color="primary">Valider</button>
+            </mat-card-actions>
+        </mat-card>
     </div>
 </div>
+<ng-template #inputLoader>
+    <p>Chargement...</p>
+</ng-template>
 <ng-template #spinnerCard>
     <mat-card class="home-card" ngClass.xs="home-card-mobile">
     <mat-card-header>

@@ -18,7 +18,7 @@
           <mat-panel-title>
             <mat-icon *ngIf="ordersSheet.status == writingStatus">drag_indicator</mat-icon>
             &nbsp;{{actionTypes[order.actionTypeId].label}}&nbsp;
-            <mat-icon *ngIf="order.status == writingStatus" [color]="order.comment.endsWith('?') ? 'accent' : 'warn'">warning</mat-icon>
+            <mat-icon *ngIf="order.status == 1" [color]="order.comment.endsWith('?') ? 'accent' : 'warn'">warning</mat-icon>
           </mat-panel-title>
           <mat-panel-description>
             {{order.comment}}
@@ -31,11 +31,10 @@
                 [disabled]="ordersSheet.status != writingStatus" (change)="updateCheckbox(order, orderInput.label, $event)">
               <strong>{{orderInput.label}}</strong>
             </mat-checkbox>
-            <div *ngIf="orderInput.type != 'Checkbox' && ordersSheet.status == 1">
+            <div *ngIf="orderInput.type != 'Checkbox' && ordersSheet.status == writingStatus">
               <mat-form-field *ngIf="optionsLists[order.id] && optionsLists[order.id][orderInput.label] else inputLoader" appearance="fill">
                 <mat-label>{{orderInput.label}}</mat-label>
-                <mat-select *ngIf="ordersSheet.status == 1" [(value)]='order.parameters[orderInput.label]'
-                    (selectionChange)="updateOrder(order)">
+                <mat-select [(value)]='order.parameters[orderInput.label]' (selectionChange)="updateOrder(order)">
                   <mat-option *ngFor="let options of optionsLists[order.id][orderInput.label] | keyvalue" 
                     [value]="options.value">{{options.key}}</mat-option>
                 </mat-select>

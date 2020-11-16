@@ -20,6 +20,7 @@ export interface MapTile {
   color: string;
   borderColor: string;
   actions: { [id: number]: string; };
+  parameters: { [type: string]: string; };
   assets: { [category: string]: { [asset: string]: string; }; };
   mapId: number;
 }

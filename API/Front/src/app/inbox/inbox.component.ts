@@ -50,7 +50,8 @@ export class InboxComponent implements OnInit {
     var messageData: NewMessageData = {
       isReply: false,
       recipient: null,
-      subject: ""
+      subject: "",
+      previousMessageId: null
     }
     this.dialog.open(MessageComponent, { data: messageData });
   }
@@ -59,7 +60,8 @@ export class InboxComponent implements OnInit {
     var messageData: NewMessageData = {
       isReply: true,
       recipient: message.senderId.toString(),
-      subject: message.subject
+      subject: message.subject,
+      previousMessageId: message.id
     }
     this.dialog.open(MessageComponent, { data: messageData });
   }

@@ -11,6 +11,7 @@ export interface PreviewBlock {
   isSelected: boolean;
 }
 export interface NewMessageData {
+  previousMessageId: number;
   isReply: boolean;
   recipient: string;
   subject: string;
@@ -22,12 +23,12 @@ export interface NewMessageData {
   styleUrls: ['./message.component.css']
 })
 export class MessageComponent implements OnInit {
-
   constructor(public dialogRef: MatDialogRef<MessageComponent>, @Inject(MAT_DIALOG_DATA) public data: NewMessageData
       , private optionsService: OptionsService, private messagesService: MessagesService, private snackBar: MatSnackBar) {
         this.isReply = data.isReply;
         this.selectedRecipient = data.recipient;
         this.subject = data.subject;
+        this.previousMessageId = data.previousMessageId;
       }
 
   subject: string = "";
@@ -36,6 +37,7 @@ export class MessageComponent implements OnInit {
   selectedRecipient: string;
   recipientOptions: { [id: string]: string; } = {};
   isReply: boolean;
+  previousMessageId: number;
   isWriting: boolean;
   isFormatting: boolean;
   isSending: boolean;
@@ -109,7 +111,9 @@ export class MessageComponent implements OnInit {
       isArchived: false,
       senderId: 0,
       id: 0,
-      sendDate: null
+      sendDate: null,
+      previousMessageId: this.previousMessageId,
+      turn: 0
     }
     this.messagesService.sendMessage(message).subscribe(
       res => {
