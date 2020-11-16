@@ -41,8 +41,13 @@ namespace L5aStrat_Earth
         public Dictionary<string, string> GetEntryTiles(long playerId)
         {
             var result = new Dictionary<string, string>();
+            var adminId = (from p1 in _dal.Players
+                           join p2 in _dal.Players on p1.CampaignId equals p2.CampaignId
+                           where p1.Id == playerId && p2.IsAdmin
+                           select p2.Id).FirstOrDefault();
+
             var currentMapId = (from m in _dal.Maps
-                                where m.PlayerId == playerId || m.PlayerId == 1
+                                where m.PlayerId == playerId || m.PlayerId == adminId
                                 orderby m.CreationDate descending
                                 select m.Id).FirstOrDefault();
 
@@ -70,8 +75,13 @@ namespace L5aStrat_Earth
                         where u.Id == id && u.PlayerId == playerId
                         select u).FirstOrDefault();
 
+                var adminId = (from p1 in _dal.Players
+                               join p2 in _dal.Players on p1.CampaignId equals p2.CampaignId
+                               where p1.Id == playerId && p2.IsAdmin
+                               select p2.Id).FirstOrDefault();
+
                 var currentMapId = (from m in _dal.Maps
-                                    where m.PlayerId == playerId || m.PlayerId == 1
+                                    where m.PlayerId == playerId || m.PlayerId == adminId
                                     orderby m.CreationDate descending
                                     select m.Id).FirstOrDefault();
 

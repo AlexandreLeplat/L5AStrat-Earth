@@ -71,7 +71,7 @@ namespace HostApp.Controllers
                 Campaign campaign;
                 using (var transaction = _dal.Database.BeginTransaction())
                 {
-                    // On récupère la campagne associée au compte joueur courant
+                    // On récupère la campagne ciblée
                     campaign = (from c in _dal.Campaigns
                                     where c.Id == id
                                     select c).FirstOrDefault();
@@ -112,13 +112,14 @@ namespace HostApp.Controllers
 
                 var user = (from u in _dal.Users
                             join p in _dal.Players on u.Id equals p.UserId
-                            where p.Id == idPlayer
+                            join p2 in _dal.Players on u.Id equals p2.UserId
+                            join c in _dal.Campaigns on p2.CampaignId equals c.Id
+                            where p.Id == idPlayer && c.Id == id.Value
                             select u).FirstOrDefault();
                 if (user == null || user.Role != UserRole.Admin) return Unauthorized();
 
                 var campaign = (from c in _dal.Campaigns
-                                join p in _dal.Players on c.Id equals p.CampaignId
-                                where p.Id == idPlayer
+                                where c.Id == id.Value
                                 select c).FirstOrDefault();
                 if (campaign == null) return NotFound();
 
@@ -143,14 +144,15 @@ namespace HostApp.Controllers
 
                 var user = (from u in _dal.Users
                             join p in _dal.Players on u.Id equals p.UserId
-                            where p.Id == idPlayer
+                            join p2 in _dal.Players on u.Id equals p2.UserId
+                            join c in _dal.Campaigns on p2.CampaignId equals c.Id
+                            where p.Id == idPlayer && c.Id == id.Value
                             select u).FirstOrDefault();
                 if (user == null || user.Role != UserRole.Admin) return Unauthorized();
 
                 var campaign = (from c in _dal.Campaigns
-                            join p in _dal.Players on c.Id equals p.CampaignId 
-                            where p.Id == idPlayer
-                            select c).FirstOrDefault();
+                                where c.Id == id.Value
+                                select c).FirstOrDefault();
                 if (campaign == null) return NotFound();
 
                 campaign.CurrentTurn = 0;

@@ -59,7 +59,7 @@ export class OrdersFormComponent implements OnInit {
     }
 
   addOrder() {
-    var order: Order = { id: null, actionTypeId: this.selectedActionType, parameters: {},  
+    var order: Order = { id: null, actionTypeId: this.actionTypes[this.selectedActionType].id, parameters: {},  
         comment: '', status: OrderStatus.None, rank: this.orders.length, selected: true }
     this.ordersService.createOrder(this.ordersSheet.id, order).subscribe(o => {
       this.orders.forEach(i => i.selected = false);

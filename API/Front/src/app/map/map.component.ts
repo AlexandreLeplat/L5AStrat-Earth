@@ -92,20 +92,15 @@ export class MapComponent implements OnInit {
     actionType.form.forEach(input => {
       if (input.isSelectedTileOnMap || input.isPredefinedOnMap) {
         this.optionsService.getOptions(input.type, null).subscribe(l => {
-          console.log(l);
           for (let key in l) {
             let paramId = l[key].split(";")[0];
             this.mapTiles.forEach(row => row.forEach(tile => {
               if (!tile.parameters) {
                 tile.parameters = {};
               }
-              if (input.isSelectedTileOnMap && tile.id.toString() == paramId) {
-                if (!tile.actions) {
-                  tile.actions = {};
-                }
-                tile.actions[actionType.id] = l[key];
-              }
-              if (input.isPredefinedOnMap && tile.parameters[input.type].split(";")[0] == paramId) {
+              if (tile.parameters[input.type])
+                if ((input.isSelectedTileOnMap && tile.id.toString() == paramId)
+              || (input.isPredefinedOnMap && tile.parameters[input.type] && tile.parameters[input.type].split(";")[0] == paramId)) {
                 if (!tile.actions) {
                   tile.actions = {};
                 }
