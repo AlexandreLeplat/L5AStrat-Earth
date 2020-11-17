@@ -39,9 +39,39 @@ namespace HostApp.Controllers
 
                     // On récupère les messages du joueur courant
                     var messages = (from m in _dal.Messages
-                                        where m.PlayerId == idPlayer || m.PlayerId == 0
+                                        where m.PlayerId == idPlayer
                                         orderby m.SendDate descending
                                         select m).ToList();
+                    if (messages == null) return NotFound();
+
+                    return Ok(messages);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+        // GET messages/sent permet de récupérer la liste des messages envoyés par le joueur courant
+        [HttpGet("sent")]
+        [EnableCors]
+        [Authorize]
+        public ActionResult GetSentMessages()
+        {
+            try
+            {
+                using (_dal)
+                {
+                    var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
+                    if (claim == null) return Unauthorized();
+                    var idPlayer = long.Parse(claim.Value);
+
+                    // On récupère les messages du joueur courant
+                    var messages = (from m in _dal.Messages
+                                    where m.SenderId == idPlayer
+                                    orderby m.SendDate descending
+                                    select m).ToList();
                     if (messages == null) return NotFound();
 
                     return Ok(messages);

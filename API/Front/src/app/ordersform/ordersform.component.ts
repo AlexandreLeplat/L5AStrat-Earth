@@ -5,6 +5,7 @@ import { OptionsService } from '../services/options.service';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { CampaignsService } from '../services/campaigns.service';
 import { forkJoin } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-ordersform',
@@ -22,7 +23,7 @@ export class OrdersFormComponent implements OnInit {
   optionsLists: { [orderId: number]: { [inputLabel: string]: { [label: string]: string; }; }; } = {};
     
   constructor(private ordersService: OrdersService, private campaignsService: CampaignsService
-    , private optionsService: OptionsService) { }
+    , private optionsService: OptionsService, private snackBar: MatSnackBar) { }
 
   ngOnInit(): void {
     this.ordersService.getActionTypes().subscribe(a => {
@@ -120,6 +121,7 @@ export class OrdersFormComponent implements OnInit {
       this.campaignsService.getCurrentCampaign().subscribe(c => this.campaignsService.workOnCampaign(c.id).subscribe(i => {
         this.ordersService.getOrders(this.ordersSheet.id).subscribe(o => {
           this.orders = o;
+          this.snackBar.open("Ordres envoyés", "", { duration : 2500 })
         });
       }));
     });

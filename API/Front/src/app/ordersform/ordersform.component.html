@@ -73,7 +73,9 @@
         </mat-card>
         <mat-card *ngIf="ordersSheet.status > writingStatus">
           <mat-card-content style="text-align: center;">
-            Ordres soumis le {{ordersSheet.sendDate | date:'EEEE d MMMM, H:mm'}}
+            Ordres soumis le {{ordersSheet.sendDate | date:'EEEE d MMMM à H:mm'}}
+            <span *ngIf="ordersSheet.status < 4"> - Non traités.</span>
+            <span *ngIf="ordersSheet.status >= 4"> - Ordres traités.</span>
           </mat-card-content>
         </mat-card>
       </ng-template>

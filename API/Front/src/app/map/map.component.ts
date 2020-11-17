@@ -3,7 +3,7 @@ import { MapsService, Map, MapTile } from '../services/maps.service';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { PlayersService } from '../services/players.service';
-import { ActionType, OrdersService, OrdersSheet, Order, OrderStatus } from '../services/orders.service';
+import { ActionType, OrdersService, OrdersSheet, Order, OrderStatus, OrdersSheetStatus } from '../services/orders.service';
 import { OptionsService } from '../services/options.service';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -55,7 +55,7 @@ export class MapComponent implements OnInit {
               this.actionTypes = {};
               a.forEach(t => {
                 this.actionTypes[t.id] = t;
-                if (s.turn == this.currentMap.turn) {
+                if (s.turn == this.currentMap.turn && s.status == OrdersSheetStatus.Writing) {
                   this.intializeActions(t);
                 }
               });
@@ -98,9 +98,8 @@ export class MapComponent implements OnInit {
               if (!tile.parameters) {
                 tile.parameters = {};
               }
-              if (tile.parameters[input.type])
-                if ((input.isSelectedTileOnMap && tile.id.toString() == paramId)
-              || (input.isPredefinedOnMap && tile.parameters[input.type] && tile.parameters[input.type].split(";")[0] == paramId)) {
+              if ((input.isSelectedTileOnMap && tile.id.toString() == paramId)
+                || (input.isPredefinedOnMap && tile.parameters[input.type] && tile.parameters[input.type].split(";")[0] == paramId)) {
                 if (!tile.actions) {
                   tile.actions = {};
                 }
