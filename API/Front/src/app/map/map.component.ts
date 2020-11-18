@@ -7,6 +7,7 @@ import { ActionType, OrdersService, OrdersSheet, Order, OrderStatus, OrdersSheet
 import { OptionsService } from '../services/options.service';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { I18nPluralPipe } from '@angular/common';
 
 @Component({
   selector: 'app-map',
@@ -28,6 +29,8 @@ export class MapComponent implements OnInit {
   orders: Order[];
   newOrder: Order;
   optionsList: { [inputLabel: string]: { [label: string]: string; }; } = {};
+  selectableTilesIds: number[] = [];
+  selectedParameterTileId: number;
 
   @ViewChild("zoomableMap") mapElement : ElementRef;
 
@@ -70,7 +73,15 @@ export class MapComponent implements OnInit {
     }
 
   onTileClick(tile: MapTile): void {
-    if (this.actionMode) return;
+    if (this.actionMode) {
+      if (this.selectableTilesIds.indexOf(tile.id) > -1) {
+        this.selectedParameterTileId = tile.id;
+        var input = this.actionTypes[this.newOrder.actionTypeId].form.find(input => input.isSelectableOnMap);
+        this.newOrder.parameters[input.label] = tile.id.toString() + ";" + tile.name;
+        this.updateOrder(this.newOrder);
+      }
+      return;
+    }
   
     if (this.zoomedIn && this.selectedTile && tile.id == this.selectedTile.id) {
       this.zoomOut();
@@ -138,6 +149,18 @@ export class MapComponent implements OnInit {
         order.parameters[input.label] = this.selectedTile.parameters[input.type];
       }
     });
+    actionType.form.forEach(input => {
+      if (input.isSelectableOnMap) {
+        this.optionsService.getOptions(input.type, order.parameters[input.parameter]).subscribe(t => {
+          for (let key in t) {
+            let tileId = t[key].split(";")[0];
+            this.selectableTilesIds.push(+tileId);
+          }
+          console.log(this.selectableTilesIds);
+        });
+      }
+    });
+
     this.actionMode = true;
     this.ordersService.createOrder(this.ordersSheet.id, order).subscribe(o => {
       this.orders.push(o);
@@ -154,11 +177,15 @@ export class MapComponent implements OnInit {
       var index: number = this.orders.indexOf(order);
       this.orders.splice(index, 1);
     });
+    this.selectableTilesIds = [];
+    this.selectedParameterTileId = null;
     this.actionMode = false;
     this.snackBar.open("Ordre annulé", "", { duration : 2500 })
   }
 
   validateOrder() {
+    this.selectableTilesIds = [];
+    this.selectedParameterTileId = null;
     this.actionMode = false;
     this.snackBar.open("Ordre validé", "", { duration : 2500 })
   }
@@ -193,10 +220,12 @@ export class MapComponent implements OnInit {
   }
 
   checkOrdersSheet() {
-    this.ordersService.checkOrdersSheet().subscribe(ordersList => {
-      this.orders = ordersList;
-      this.newOrder = this.orders.find(o => o.id == this.newOrder.id);
-    });
+    if (this.newOrder) {
+      this.ordersService.checkOrdersSheet().subscribe(ordersList => {
+        this.orders = ordersList;
+        this.newOrder = this.orders.find(o => o.id == this.newOrder.id);
+      });
+    }
   }
 
   zoomOut(): void {

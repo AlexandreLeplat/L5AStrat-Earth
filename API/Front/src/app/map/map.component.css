@@ -35,7 +35,7 @@
     position: relative;
 }
 .mapTileContent {
-    border: 2px solid white;
+    border: 2px solid transparent;
     border-radius: 10%;
     position: absolute;
     top: 0; 
@@ -46,9 +46,23 @@
 .mapTileContent.selected {
     border: 2px solid black !important;
 }
-.mapTileContent:hover {
+.selectableTile:hover {
     border: 2px solid gray !important;
+    cursor: pointer;
 }
+@-webkit-keyframes glow {
+    to {
+         border-color: grey;
+    }
+}
+.selectableParameterTile {
+    border: 2px solid transparent;
+    -webkit-animation: glow 1s infinite alternate;  
+     -webkit-transition: border 0s linear;
+       -moz-transition: border 0s linear;
+            transition: border 0s linear;
+}
+
 .icon {
     width: 50%;
     height: auto;
@@ -86,9 +100,17 @@
     height: calc(100% - 92px);
     overflow-y: auto;
 }
+.mat-form-field {
+    margin-bottom: -20px;
+}
+.mobile-content .mat-list-base {
+    padding-top: 0;
+}
 .mobile-content .mat-list-item {
-    height: 24px;
     font-size: 14px;
+}
+.mobile-content .selection-card .mat-list-item {
+    height: 24px;
 }
 .mat-card-actions .zoomButton {
     margin: 16px 8px;

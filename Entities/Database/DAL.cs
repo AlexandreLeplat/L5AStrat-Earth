@@ -38,7 +38,7 @@ namespace Entities.Database
                 Name = "La bataille des Quatre Vents",
                 CurrentTurn = 1,
                 GameId = 1,
-                NextPhase = DateTime.Today.AddDays(1).AddHours(6),
+                NextPhase = DateTime.MaxValue,
                 PhaseLength = 720,
                 CurrentPhase = TurnPhase.Early,
                 Status = CampaignStatus.Running,
@@ -226,179 +226,13 @@ namespace Entities.Database
                     }
                 });
 
-            modelBuilder.Entity<OrdersSheet>().HasData(
-                new OrdersSheet() { Id = 1, PlayerId = 2, Turn = 3, Priority = 0, MaxOrdersCount = 5, Status = OrdersSheetStatus.Writing },
-                new OrdersSheet() { Id = 2, PlayerId = 3, Turn = 3, Priority = 0, MaxOrdersCount = 5, Status = OrdersSheetStatus.Writing },
-                new OrdersSheet() { Id = 3, PlayerId = 4, Turn = 3, Priority = 0, MaxOrdersCount = 5, Status = OrdersSheetStatus.Writing },
-                new OrdersSheet() { Id = 4, PlayerId = 5, Turn = 3, Priority = 0, MaxOrdersCount = 5, Status = OrdersSheetStatus.Writing });
-
             modelBuilder.Entity<Order>().Property(o => o._jsonParameters).HasColumnName("Parameters");
             modelBuilder.Entity<Order>().HasOne(e => e.ActionType).WithMany(e => e.Orders).OnDelete(DeleteBehavior.NoAction);
-
             modelBuilder.Entity<Map>().HasOne(m => m.Player).WithMany(p => p.Maps).OnDelete(DeleteBehavior.NoAction);
-            modelBuilder.Entity<Map>().HasData(new Map()
-                {
-                    Id = 1,
-                    CampaignId = 1,
-                    CreationDate = DateTime.Now,
-                    Name = "Début de Tour 1",
-                    Turn = 1,
-                    Size = 9,
-                    PlayerId = 1
-                });
-
             modelBuilder.Entity<MapTile>().Property(o => o._jsonAssets).HasColumnName("Assets");
-            modelBuilder.Entity<MapTile>().HasData(this.GenerateMap(1));
-
             modelBuilder.Entity<Unit>().HasOne(m => m.Player).WithMany(p => p.Units).OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<Unit>().Property(o => o._jsonAssets).HasColumnName("Assets");
-            modelBuilder.Entity<Unit>().HasData(new List<Unit>()
-            {
-                CreateBuilding("Forteresse", 4, 4, 1),
-                CreateBuilding("Avant-Poste", 1, 1, 1),
-                CreateBuilding("Avant-Poste", 6, 6, 1),
-                CreateBuilding("Village", 2, 3, 1),
-                CreateBuilding("Village", 3, 6, 1),
-                CreateBuilding("Village", 5, 2, 1),
-                CreateBuilding("Village", 6, 5, 1),
-                CreateBuilding("Entrée", 0, 3, 2),
-                CreateBuilding("Entrée", 0, 4, 2),
-                CreateBuilding("Entrée", 0, 5, 2),
-                CreateBuilding("Entrée", 0, 6, 2),
-                CreateBuilding("Entrée", 3, 0, 3),
-                CreateBuilding("Entrée", 4, 0, 3),
-                CreateBuilding("Entrée", 5, 0, 3),
-                CreateBuilding("Entrée", 6, 0, 3),
-                CreateBuilding("Entrée", 2, 8, 4),
-                CreateBuilding("Entrée", 3, 8, 4),
-                CreateBuilding("Entrée", 4, 8, 4),
-                CreateBuilding("Entrée", 5, 8, 4),
-                CreateBuilding("Entrée", 8, 2, 5),
-                CreateBuilding("Entrée", 8, 3, 5),
-                CreateBuilding("Entrée", 8, 4, 5),
-                CreateBuilding("Entrée", 8, 5, 5)
-            });
-
             modelBuilder.Entity<Message>().HasOne(m => m.Sender).WithMany(p => p.Messages).OnDelete(DeleteBehavior.NoAction);
-        }
-
-        private List<MapTile> GenerateMap(long mapId)
-        {
-            var result = new List<MapTile>();
-            string coordinatesLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            long idTile = 1;
-            for (int i = 0; i < 9; i++)
-            {
-                for (int j = 0; j < 9; j++)
-                {
-                    var tile = new MapTile()
-                    {
-                        Id = idTile,
-                        X = i,
-                        Y = j,
-                        Color = ((i + j) % 2 == 0) ? "wheat" : "linen",
-                        Name = "Plaine",
-                        MapId = mapId,
-                        Symbol = string.Empty,
-                        Assets = new Dictionary<string, Dictionary<string, string>>()
-                    };
-                    
-                    if (i == 0 && j >= 3 && j <= 6)
-                    {
-                        tile.Name = "Entrée";
-                        tile.Symbol = "home";
-                        tile.Assets = new Dictionary<string, Dictionary<string, string>>()
-                        {
-                            { "Propriétaire", new Dictionary<string, string> () { { "Kitsuki Hisao", "" } } }
-                        };
-                    }
-                    if (i == 8 && j >= 2 && j <= 5)
-                    {
-                        tile.Name = "Entrée";
-                        tile.Symbol = "home";
-                        tile.Assets = new Dictionary<string, Dictionary<string, string>>()
-                        {
-                            { "Propriétaire", new Dictionary<string, string> () { { "Doji Misao", "" } } }
-                        };
-                    }
-                    if (j == 0 && i >= 3 && i <= 6)
-                    {
-                        tile.Name = "Entrée";
-                        tile.Symbol = "home";
-                        tile.Assets = new Dictionary<string, Dictionary<string, string>>()
-                        {
-                            { "Propriétaire", new Dictionary<string, string> () { { "Ikoma Kiyoshi", "" } } }
-                        };
-                    }
-                    if (j == 8 && i >= 2 && i <= 5)
-                    {
-                        tile.Name = "Entrée";
-                        tile.Symbol = "home";
-                        tile.Assets = new Dictionary<string, Dictionary<string, string>>()
-                        {
-                            { "Propriétaire", new Dictionary<string, string> () { { "Yogo Rushi", "" } } }
-                        };
-                    }
-
-                    if (i == 2 && j == 3
-                        || i == 5 && j == 2
-                        || i == 6 && j == 5
-                        || i == 3 && j == 6)
-                    {
-                        tile.Name = "Village";
-                        tile.Symbol = "house";
-                        tile.Assets = new Dictionary<string, Dictionary<string, string>>()
-                        {
-                            { "Production", new Dictionary<string, string> () { { "Gloire", "2" } } }
-                        };
-                    }
-
-                    if (i == 1 && j == 1
-                        || i == 7 && j == 7)
-                    {
-                        tile.Name = "Avant-poste";
-                        tile.Symbol = "tower";
-                        tile.Assets = new Dictionary<string, Dictionary<string, string>>()
-                        {
-                            { "Production", new Dictionary<string, string> () { { "Gloire", "1" }, { "Stratégie", "2" } } }
-                        };
-                    }
-
-                    if (i == 4 && j == 4)
-                    {
-                        tile.Name = "Forteresse";
-                        tile.Symbol = "castle";
-                        var prod = new Dictionary<string, string>();
-                        tile.Assets = new Dictionary<string, Dictionary<string, string>>()
-                        {
-                            { "Production", new Dictionary<string, string> () { { "Gloire", "3" }, { "Stratégie", "2" } } }
-                        };
-                    }
-                    tile.Name += $" ({coordinatesLetters[i]}{j+1})";
-                    result.Add(tile);
-                    idTile++;
-                }
-            }
-            return result;
-        }
-
-        private Unit CreateBuilding(string type, int x, int y, long playerId)
-        {
-            var newUnit = new Unit()
-            {
-                Id = _unitId,
-                Name = type,
-                Type = "Building",
-                PlayerId = playerId,
-                X = x,
-                Y = y,
-                Assets = new Dictionary<string, Dictionary<string, string>>()
-                    {
-                        { "Type", new Dictionary<string, string> () { { type, null } } }
-                    }
-            };
-            _unitId++;
-            return newUnit;
         }
     }
 }

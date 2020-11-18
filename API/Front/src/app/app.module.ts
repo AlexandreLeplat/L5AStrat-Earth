@@ -35,6 +35,7 @@ import { ThemeService } from './services/theme.service'
 import { TokenService } from './services/token.service'
 import { JwtHelperService, JWT_OPTIONS } from '@auth0/angular-jwt';
 import { MessageComponent } from './message/message.component';
+import { MessagehistoryComponent } from './messagehistory/messagehistory.component';
 
 registerLocaleData(localeFr, 'fr');
 
@@ -51,7 +52,8 @@ registerLocaleData(localeFr, 'fr');
     OrdersFormComponent,
     InfoComponent,
     RulesComponent,
-    MessageComponent
+    MessageComponent,
+    MessagehistoryComponent
   ],
   imports: [
     BrowserModule,

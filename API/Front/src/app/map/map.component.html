@@ -9,7 +9,9 @@
                     <div *ngFor="let row of mapTiles" fxLayout="row">
                         <div class="mapTileContainer" *ngFor="let tile of row">
                             <div class="mapTileContent" [style.border-color]="tile.borderColor"
-                                    [ngClass]="{selected: selectedTile && tile.id == selectedTile.id}"
+                                    [ngClass]="{selected: selectedTile && tile.id == selectedTile.id || tile.id == selectedParameterTileId, 
+                                                selectableTile: !actionMode || selectableTilesIds.indexOf(tile.id) > -1 && tile.id != selectedParameterTileId,
+                                                selectableParameterTile: selectableTilesIds.indexOf(tile.id) > -1}"
                                     [style.background]="tile.color" (click)="onTileClick(tile)">
                                 <mat-icon class="icon" [svgIcon]="tile.symbol"></mat-icon>
                             </div>
@@ -22,7 +24,9 @@
                     <div *ngFor="let row of mapTiles" fxLayout="row">
                         <div class="mapTileContainer" *ngFor="let tile of row">
                             <div class="mapTileContent" [style.border-color]="tile.borderColor"
-                                    [ngClass]="{selected: selectedTile && tile.id == selectedTile.id}"
+                                    [ngClass]="{selected: selectedTile && tile.id == selectedTile.id || tile.id == selectedParameterTileId, 
+                                        selectableTile: !actionMode || selectableTilesIds.indexOf(tile.id) > -1 && tile.id != selectedParameterTileId,
+                                        selectableParameterTile: selectableTilesIds.indexOf(tile.id) > -1}"
                                     [style.background]="tile.color" (click)="onTileClick(tile)">
                                 <mat-icon class="icon" [svgIcon]="tile.symbol"></mat-icon>
                             </div>
@@ -52,7 +56,7 @@
             <mat-card-header>
                 <mat-card-title>{{selectedTile.name}}</mat-card-title>
             </mat-card-header>
-            <mat-card-content class="description-content">
+            <mat-card-content class="description-content selection-card">
                 <mat-list *ngFor="let category of selectedTile.assets | keyvalue">
                     <strong>{{category.key}}</strong>
                     <mat-list-item *ngFor="let asset of category.value | keyvalue">
@@ -82,7 +86,7 @@
                 <mat-card-title>{{actionTypes[newOrder.actionTypeId].label}}</mat-card-title>
                 <mat-icon *ngIf="newOrder.status == 1" [color]="newOrder.comment.endsWith('?') ? 'accent' : 'warn'">warning</mat-icon>
             </mat-card-header>
-            <mat-card-content class="description-content">
+            <mat-card-content class="description-content action-card">
                 <p *ngIf="newOrder"><b>{{newOrder.comment}}</b></p>
                 <mat-list>
                     <mat-list-item *ngFor="let orderInput of actionTypes[newOrder.actionTypeId].form">
@@ -90,7 +94,7 @@
                             (change)="updateCheckbox(newOrder, orderInput.label, $event)">
                         <strong>{{orderInput.label}}</strong>
                       </mat-checkbox>
-                      <div *ngIf="orderInput.type != 'Checkbox' && !orderInput.isPredefinedOnMap && !orderInput.isSelectedTileOnMap">
+                      <div *ngIf="orderInput.type != 'Checkbox' && !orderInput.isPredefinedOnMap && !orderInput.isSelectedTileOnMap && !orderInput.isSelectableOnMap">
                         <mat-form-field *ngIf="optionsList && optionsList[orderInput.label] else inputLoader" appearance="fill">
                           <mat-label>{{orderInput.label}}</mat-label>
                           <mat-select [(value)]='newOrder.parameters[orderInput.label]' (selectionChange)="updateOrder(newOrder)">
@@ -99,7 +103,10 @@
                           </mat-select>
                         </mat-form-field>
                       </div>
-                      <div *ngIf="orderInput.type != 'Checkbox' && (orderInput.isPredefinedOnMap || orderInput.isSelectedTileOnMap)">
+                      <div *ngIf="orderInput.isSelectableOnMap && !selectedParameterTileId">
+                          {{orderInput.mapDescription}}
+                      </div>
+                      <div *ngIf="orderInput.isPredefinedOnMap || orderInput.isSelectedTileOnMap || orderInput.isSelectableOnMap && selectedParameterTileId">
                         {{orderInput.label}} 
                         <span *ngIf="newOrder.parameters[orderInput.label]"> : <span *ngIf="newOrder.parameters[orderInput.label].split(';').length > 1">
                           {{newOrder.parameters[orderInput.label].split(";")[1]}}

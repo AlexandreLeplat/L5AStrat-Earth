@@ -25,6 +25,12 @@ namespace Entities.Models
         // Flag indiquant si le message est archivé
         public bool IsArchived { get; set; }
 
+        // Flag indiquant si le message est supprimé
+        public bool IsDeleted { get; set; }
+
+        // Flag indiquant si le message est supprimé de la boîte d'envoi
+        public bool IsDeletedForSender { get; set; }
+
         // Date d'envoi du message
         public DateTime? SendDate { get; set; }
 

@@ -35,12 +35,20 @@ export class MessagesService {
     return this.http.post<Message>(environment.apiURL + '/messages', message, { headers : this.headers() });
   }
 
-  getMessages() {
-    return this.http.get<Message[]>(environment.apiURL + '/messages', { headers : this.headers() });
+  getMessage(id: number) {
+    return this.http.get<Message>(environment.apiURL + '/messages/'+id, { headers : this.headers() });
   }
 
-  getMessageCount() {
-    return this.http.get<number>(environment.apiURL + '/messages/count', { headers : this.headers() });
+  getMessages(pageSize:number, pageIndex: number) {
+    return this.http.get<Message[]>(environment.apiURL + '/messages?pageSize='+pageSize+'&pageIndex='+pageIndex, { headers : this.headers() });
+  }
+
+  getSentMessages(pageSize:number, pageIndex: number) {
+    return this.http.get<Message[]>(environment.apiURL + '/messages/sent?pageSize='+pageSize+'&pageIndex='+pageIndex, { headers : this.headers() });
+  }
+
+  getMessageCount(category:string) {
+    return this.http.get<number>(environment.apiURL + '/messages/count?category='+category, { headers : this.headers() });
   }
 
   updateMessage(message: Message) {

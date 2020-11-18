@@ -40,7 +40,7 @@ export class MenuComponent implements OnInit {
         if (p.hasNewMap) this.menuItems[1].badge = '!';
       });
 
-    this.messagesService.getMessageCount().subscribe(c => {
+    this.messagesService.getMessageCount("unread").subscribe(c => {
         if (c > 0) this.menuItems[3].badge = c.toString();
       });
   }

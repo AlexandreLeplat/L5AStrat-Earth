@@ -8,23 +8,24 @@
           <div fxLayout="row">
             <div class="sender">
               <div *ngIf="playerNames && !message.isNotification">
-                <strong *ngIf="!message.isRead">{{playerNames[message.senderId]}}</strong>
-                <span *ngIf="message.isRead">{{playerNames[message.senderId]}}</span>
+                <strong *ngIf="!message.isRead && !sentBoxMode">{{playerNames[message.senderId]}}</strong>
+                <span *ngIf="message.isRead && !sentBoxMode">{{playerNames[message.senderId]}}</span>
+                <span *ngIf="sentBoxMode">{{playerNames[message.playerId]}}</span>
               </div>
               <div *ngIf="message.isNotification">
-                <strong *ngIf="!message.isRead">Notification</strong>
-                <span *ngIf="message.isRead">Notification</span>
+                <strong *ngIf="!message.isRead">Tour {{message.turn}}</strong>
+                <span *ngIf="message.isRead">Tour {{message.turn}}</span>
               </div>
             </div>
             <div fxHide.xs class="subject" style="width: 100%;">
               <mat-icon *ngIf="message.isArchived">save</mat-icon>
               <mat-icon *ngIf="!message.isArchived && message.isRead">chat_bubble_outline</mat-icon>              
-              <mat-icon *ngIf="!message.isArchived && !message.isRead && message.canAnswer">chat</mat-icon>
-              <mat-icon *ngIf="!message.isArchived && !message.isRead && !message.canAnswer">feedback</mat-icon>
+              <mat-icon *ngIf="!message.isArchived && !message.isRead && !message.isNotification">chat</mat-icon>
+              <mat-icon *ngIf="!message.isArchived && !message.isRead && message.isNotification">feedback</mat-icon>
               <div>
                 &nbsp;
-                <strong *ngIf="!message.isRead">{{message.subject}}</strong>
-                <span *ngIf="message.isRead">{{message.subject}}</span>
+                <strong *ngIf="!message.isRead && !sentBoxMode">{{message.subject}}</strong>
+                <span *ngIf="message.isRead || sentBoxMode">{{message.subject}}</span>
               </div>
             </div>
             <div class="sendingDate">
@@ -34,13 +35,13 @@
           <div fxHide.gt-xs class="subject">
             <mat-icon *ngIf="message.isArchived">save</mat-icon>
             <mat-icon *ngIf="!message.isArchived && message.isRead">chat_bubble_outline</mat-icon>              
-            <mat-icon *ngIf="!message.isArchived && !message.isRead && message.canAnswer">chat</mat-icon>
-            <mat-icon *ngIf="!message.isArchived && !message.isRead && !message.canAnswer">feedback</mat-icon>
-            <div>
+            <mat-icon *ngIf="!message.isArchived && !message.isRead && !message.isNotification">chat</mat-icon>
+            <mat-icon *ngIf="!message.isArchived && !message.isRead && message.isNotification">feedback</mat-icon>
+          <div>
               &nbsp;
-              <strong *ngIf="!message.isRead">{{message.subject}}</strong>
-              <span *ngIf="message.isRead">{{message.subject}}</span>
-            </div>
+              <strong *ngIf="!message.isRead && !sentBoxMode">{{message.subject}}</strong>
+              <span *ngIf="message.isRead || sentBoxMode">{{message.subject}}</span>
+          </div>
           </div>
         </div>
       </mat-expansion-panel-header>
@@ -52,15 +53,28 @@
         </ng-container>
       </p>
       <mat-action-row>
-        <button mat-button color="primary" *ngIf="!message.isNotification" (click)="replyTo(message)"><mat-icon>reply</mat-icon>&nbsp;Répondre</button>
+        <button mat-button color="primary" *ngIf="!message.isNotification && !sentBoxMode" (click)="replyTo(message)"><mat-icon>reply</mat-icon>&nbsp;Répondre</button>
+        <button mat-button color="primary" *ngIf="message.previousMessageId" (click)="history(message)"><mat-icon>import_export</mat-icon>&nbsp;Fil de discussion</button>
         <!-- <button mat-button color="primary" *ngIf="!message.isNotification"><mat-icon>reply_all</mat-icon>&nbsp;Répondre à tous</button> -->
         <!-- <button mat-button color="primary" (click)="archive(message)" *ngIf="!message.isArchived"><mat-icon>save</mat-icon>&nbsp;Archiver</button> -->
         <button mat-button color="primary" (click)="remove(message)"><mat-icon>clear</mat-icon>&nbsp;Supprimer</button>
       </mat-action-row>
     </mat-expansion-panel>
   </mat-accordion>
-
-  <button mat-raised-button class="new-message" (click)="newMessageDialog()" color="primary">Nouveau message</button>
+  <div ngClass.gt-xs="large-controls" ngClass.xs="small-controls">
+    <button mat-raised-button class="controlButton" (click)="switchMode()" color="primary" fxHide.xs>
+      <span *ngIf="!sentBoxMode">Messages envoyés</span>
+      <span *ngIf="sentBoxMode">Boîte de réception</span>
+    </button>
+    <mat-card class="paginator">
+      <mat-paginator [length]="messagesCount" hidePageSize="true" pageSize="10" (page)="page($event)"></mat-paginator>
+    </mat-card>
+    <button mat-raised-button class="controlButton" (click)="switchMode()" color="primary" fxHide.gt-xs>
+      <span *ngIf="!sentBoxMode">Messages envoyés</span>
+      <span *ngIf="sentBoxMode">Boîte de réception</span>
+    </button>
+    <button mat-raised-button class="controlButton" (click)="newMessageDialog()" color="primary">Nouveau message</button>
+  </div>
   <ng-template #textLoader>
     <p>Chargement...</p>
   </ng-template>

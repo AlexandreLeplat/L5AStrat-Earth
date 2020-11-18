@@ -23,11 +23,39 @@ namespace HostApp.Controllers
             _dal = dal;
         }
 
+        // GET messages/id permet de récupérer un message
+        [HttpGet("{id}")]
+        [EnableCors]
+        [Authorize]
+        public ActionResult GetMessage(long? id)
+        {
+            try
+            {
+                using (_dal)
+                {
+                    var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
+                    if (claim == null) return Unauthorized();
+                    var idPlayer = long.Parse(claim.Value);
+
+                    var message = (from m in _dal.Messages
+                                    where m.Id == id.Value && (m.PlayerId == idPlayer || m.SenderId == idPlayer)
+                                    select m).FirstOrDefault();
+                    if (message == null) return NotFound();
+
+                    return Ok(message);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
         // GET messages permet de récupérer la liste des messages du joueur courant
         [HttpGet]
         [EnableCors]
         [Authorize]
-        public ActionResult GetMessages()
+        public ActionResult GetMessages(int pageSize = 10, int pageIndex = 0)
         {
             try
             {
@@ -38,10 +66,11 @@ namespace HostApp.Controllers
                     var idPlayer = long.Parse(claim.Value);
 
                     // On récupère les messages du joueur courant
+                    var skip = pageIndex * pageSize;
                     var messages = (from m in _dal.Messages
-                                        where m.PlayerId == idPlayer
+                                        where m.PlayerId == idPlayer && !m.IsDeleted
                                         orderby m.SendDate descending
-                                        select m).ToList();
+                                        select m).Skip(skip).Take(pageSize).ToList();
                     if (messages == null) return NotFound();
 
                     return Ok(messages);
@@ -57,7 +86,7 @@ namespace HostApp.Controllers
         [HttpGet("sent")]
         [EnableCors]
         [Authorize]
-        public ActionResult GetSentMessages()
+        public ActionResult GetSentMessages(int pageSize = 10, int pageIndex = 0)
         {
             try
             {
@@ -68,10 +97,11 @@ namespace HostApp.Controllers
                     var idPlayer = long.Parse(claim.Value);
 
                     // On récupère les messages du joueur courant
+                    var skip = pageIndex * pageSize;
                     var messages = (from m in _dal.Messages
-                                    where m.SenderId == idPlayer
+                                    where m.SenderId == idPlayer && !m.IsDeletedForSender
                                     orderby m.SendDate descending
-                                    select m).ToList();
+                                    select m).Skip(skip).Take(pageSize).ToList();
                     if (messages == null) return NotFound();
 
                     return Ok(messages);
@@ -87,7 +117,7 @@ namespace HostApp.Controllers
         [HttpGet("count")]
         [EnableCors]
         [Authorize]
-        public ActionResult GetCount()
+        public ActionResult GetCount(string category = null)
         {
             try
             {
@@ -98,7 +128,9 @@ namespace HostApp.Controllers
                     var idPlayer = long.Parse(claim.Value);
 
                     var messageCount = (from m in _dal.Messages
-                                where m.PlayerId == idPlayer && !m.IsRead
+                                where (m.PlayerId == idPlayer && !m.IsDeleted // total des messages
+                                        || category == "sent" && m.SenderId == idPlayer && !m.IsDeletedForSender) // messages envoyés
+                                        && (category != "unread" || !m.IsRead) // messages non lus
                                 select m).Count();
 
                     return Ok(messageCount);
@@ -180,8 +212,8 @@ namespace HostApp.Controllers
 
                     // On récupère le message à mettre à jour
                     var dbMessage = (from m in _dal.Messages
-                                    where m.PlayerId == idPlayer && m.Id == id
-                                    select m).FirstOrDefault();
+                                     where m.PlayerId == idPlayer && m.Id == id && !m.IsDeleted
+                                     select m).FirstOrDefault();
                     if (dbMessage == null) return NotFound();
 
                     dbMessage.IsRead = message.IsRead;
@@ -217,11 +249,14 @@ namespace HostApp.Controllers
 
                     // On récupère le message à mettre à jour
                     var dbMessage = (from m in _dal.Messages
-                                     where m.PlayerId == idPlayer && m.Id == id
+                                     where (m.PlayerId == idPlayer && !m.IsDeleted 
+                                            || m.SenderId == idPlayer && !m.IsDeletedForSender)
+                                            && m.Id == id
                                      select m).FirstOrDefault();
                     if (dbMessage == null) return NotFound();
 
-                    _dal.Messages.Remove(dbMessage);
+                    if (dbMessage.PlayerId == idPlayer) dbMessage.IsDeleted = true;
+                    if (dbMessage.SenderId == idPlayer) dbMessage.IsDeletedForSender = true;
                     _dal.SaveChanges();
 
                     return NoContent();

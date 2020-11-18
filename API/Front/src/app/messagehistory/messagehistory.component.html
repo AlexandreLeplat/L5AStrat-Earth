@@ -1,0 +1,21 @@
+<h2>{{firstMessage.subject}}</h2>
+<mat-dialog-content class="mat-typography" ngClass.xs="full-width-dialog">
+    <mat-card *ngFor="let message of messagesList" class="main-card">
+        <mat-card-content>
+            <div>
+                <strong>{{playerNames[message.senderId]}}</strong>
+                <span style="float: right;">{{message.sendDate | date:'E d MMM H:mm'}}</span>
+            </div>
+            <p *ngFor="let par of message.body.split('\r\n')">
+                <ng-container [ngSwitch]="par.substring(0,3)">
+                <b *ngSwitchCase="'b§:'">{{par.substring(3)}}</b>
+                <i *ngSwitchCase="'i§:'">{{par.substring(3)}}</i>
+                <ng-template [ngSwitchDefault]>{{par}}</ng-template>
+                </ng-container>
+            </p>
+        </mat-card-content>
+    </mat-card>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-raised-button color="primary" mat-dialog-close>Fermer</button>
+</mat-dialog-actions>

@@ -41,7 +41,30 @@
 .mat-expansion-panel-header span {
   flex-direction: column;
 }
-.new-message {
+.controlButton {
   max-width: 150px;
-  margin: 0 calc(50% - 75px);
+  width: max-content;
+}
+.paginator {
+  padding: 0px;
+  width: 240px;
+}
+.large-controls {
+  margin: 0 calc(50% - 290px);
+}
+.large-controls .paginator {
+  float: left;
+}
+.large-controls .controlButton {
+  margin: 10px;
+  float: left;
+}
+.small-controls {
+  margin: 0 auto
+}
+.small-controls .controlButton {
+  margin: 16px calc(25% - 75px) 0;
+}
+.small-controls .paginator {
+  margin: 0 calc(50% - 120px);
 }

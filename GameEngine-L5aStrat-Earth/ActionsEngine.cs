@@ -228,7 +228,7 @@ namespace L5aStrat_Earth
 
             foreach (var target in targets)
             {
-                string title = $"Renseignements {target.Name} - Tour {currentTurn}";
+                string title = $"Renseignements {target.Name}";
                 string report = string.Empty;
                 foreach(var category in target.Assets.Keys)
                 {

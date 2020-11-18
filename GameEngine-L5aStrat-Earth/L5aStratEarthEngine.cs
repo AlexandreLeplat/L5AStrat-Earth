@@ -412,6 +412,31 @@ namespace L5aStrat_Earth
                                where c.Id == campaignId
                                select a).ToList();
 
+            var spyActionId = actionTypes.FirstOrDefault(a => a.Label == "Renseignements").Id;
+            var spyOrders = (from s in _dal.OrdersSheets
+                             join c in _dal.Campaigns on s.Turn equals c.CurrentTurn
+                             join o in _dal.Orders on s.Id equals o.OrdersSheetId
+                             where s.PlayerId == playerId && c.Id == campaignId && o.ActionTypeId == spyActionId
+                             select o).ToList();
+            List<long> spiedPlayers = new List<long>() { playerId };
+            foreach(var spyOrder in spyOrders)
+            {
+                long targetId;
+                if (spyOrder.Status == OrderStatus.Completed 
+                    && spyOrder.Parameters.ContainsKey("Cible") 
+                    && !string.IsNullOrEmpty(spyOrder.Parameters["Cible"]) 
+                    && long.TryParse(spyOrder.Parameters["Cible"].Split(';')[0], out targetId))
+                {
+                    spiedPlayers.Add(targetId);
+                }
+                if (spyOrder.Status == OrderStatus.Completed
+                    && spyOrder.Parameters.ContainsKey("Augmentation") 
+                    && bool.Parse(spyOrder.Parameters["Augmentation"]))
+                {
+                    spiedPlayers.AddRange(players.Where(p => !p.IsAdmin && p.Id != playerId).Select(p => p.Id));
+                }
+            }
+
             for (int i = 0; i < 9; i++)
             {
                 for (int j = 0; j < 9; j++)
@@ -468,12 +493,13 @@ namespace L5aStrat_Earth
                         tileColor = players.FirstOrDefault(p => p.Id == unit.PlayerId).Color;
                         var formation = "Inconnue";
                         if (unit.Assets.ContainsKey("Formation")
-                            && units.Exists(u => u.X <= i+1 
+                            && (spiedPlayers.Contains(unit.PlayerId)
+                                || units.Exists(u => u.X <= i+1 
                                             && u.X >= i - 1 
                                             && u.Y <= j + 1 
                                             && u.Y >= j - 1 
                                             && u.Type == "Army"
-                                            && u.PlayerId == playerId))
+                                            && u.PlayerId == playerId)))
                         {
                             formation = unit.Assets["Formation"].Keys.FirstOrDefault();
                         }
@@ -517,7 +543,7 @@ namespace L5aStrat_Earth
                     body += $" et {stratValue} points de Stratégie."; 
                 }
                 else body += ".";
-                Helper.SendNotification(player.Id, $"Rapport de production du Tour {turn}", body, _dal);
+                Helper.SendNotification(player.Id, "Rapport de production", body, _dal);
             }
             return true;
         }
