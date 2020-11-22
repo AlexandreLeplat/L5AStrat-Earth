@@ -37,6 +37,7 @@ namespace HostApp.Controllers
                             join c in _dal.Campaigns on a.GameId equals c.GameId
                             join p in _dal.Players on c.Id equals p.CampaignId
                             where p.Id == id
+                            orderby a.Label
                             select a).ToList();
                 if (actionTypes == null) return NotFound();
 

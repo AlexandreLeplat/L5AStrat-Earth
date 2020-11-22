@@ -4,14 +4,16 @@ using Entities.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HostApp.Migrations
 {
     [DbContext(typeof(DAL))]
-    partial class DALModelSnapshot : ModelSnapshot
+    [Migration("20201118230942_fix-wording")]
+    partial class fixwording
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -84,7 +86,7 @@ namespace HostApp.Migrations
                             Description = "Déplacez une armée d'une case",
                             GameId = 1L,
                             Label = "Déplacement",
-                            _jsonForm = "[{\"Label\":\"Arm\\u00E9e\",\"Type\":\"Army\",\"Description\":\"L\\u0027arm\\u00E9e \\u00E0 d\\u00E9placer\",\"Parameter\":null,\"IsPredefinedOnMap\":true,\"IsSelectedTileOnMap\":false,\"IsSelectableOnMap\":false,\"MapDescription\":null},{\"Label\":\"Destination\",\"Type\":\"Move\",\"Description\":\"La destination de l\\u0027arm\\u00E9e\",\"Parameter\":\"Arm\\u00E9e\",\"IsPredefinedOnMap\":false,\"IsSelectedTileOnMap\":false,\"IsSelectableOnMap\":true,\"MapDescription\":\"S\\u00E9lectionnez la destination sur la carte\"},{\"Label\":\"Augmentation\",\"Type\":\"Checkbox\",\"Description\":\"Ligne de ravitaillement : D\\u00E9pensez 5 points de Strat\\u00E9gie pour d\\u00E9placer l\\u0027arm\\u00E9e apr\\u00E8s un renfort, un changement de formation ou un premier d\\u00E9placement.\",\"Parameter\":null,\"IsPredefinedOnMap\":false,\"IsSelectedTileOnMap\":false,\"IsSelectableOnMap\":false,\"MapDescription\":null}]"
+                            _jsonForm = "[{\"Label\":\"Arm\\u00E9e\",\"Type\":\"Army\",\"Description\":\"L\\u0027arm\\u00E9e \\u00E0 d\\u00E9placer\",\"Parameter\":null,\"IsPredefinedOnMap\":true,\"IsSelectedTileOnMap\":false,\"IsSelectableOnMap\":false,\"MapDescription\":null},{\"Label\":\"Destination\",\"Type\":\"Move\",\"Description\":\"La destination de l\\u0027arm\\u00E9e\",\"Parameter\":\"Arm\\u00E9e\",\"IsPredefinedOnMap\":false,\"IsSelectedTileOnMap\":false,\"IsSelectableOnMap\":true,\"MapDescription\":\"S\\u00E9lectionnez la destination sur la carte\"},{\"Label\":\"Augmentation\",\"Type\":\"Checkbox\",\"Description\":\"Ligne de ravitaillement : D\\u00E9pensez un point d\\u0027Influence pour d\\u00E9placer l\\u0027arm\\u00E9e apr\\u00E8s un renfort ou un changement de formation.\",\"Parameter\":null,\"IsPredefinedOnMap\":false,\"IsSelectedTileOnMap\":false,\"IsSelectableOnMap\":false,\"MapDescription\":null}]"
                         },
                         new
                         {
@@ -435,11 +437,10 @@ namespace HostApp.Migrations
                         {
                             Id = 1L,
                             CampaignId = 1L,
-                            Color = "lightgrey",
                             HasNewMap = false,
                             IsAdmin = true,
                             IsCurrentPlayer = true,
-                            Name = "Neutre",
+                            Name = "Admin",
                             UserId = 1L
                         },
                         new

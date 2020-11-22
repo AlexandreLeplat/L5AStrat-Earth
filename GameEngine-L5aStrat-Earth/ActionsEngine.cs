@@ -90,10 +90,62 @@ namespace L5aStrat_Earth
                     return order;
                 }
 
-                Helper.AddGlory(targetPlayer, 2);
+                Helper.AddGlory(targetPlayer, 1);
                 _dal.Players.Update(targetPlayer);
                 Helper.AddGlory(player, 1);
-                this.SendNotification(targetPlayer.Id, "On vous flatte à la Cour", $"{player.Name} vante vos mérites. Vous gagnez 2 points de Gloire.");
+                this.SendNotification(targetPlayer.Id, "On vous flatte à la Cour", $"{player.Name} vante vos mérites. Vous gagnez 1 point de Gloire.");
+            }
+
+            _dal.Players.Update(player);
+            _dal.SaveChanges();
+
+            order.Status = OrderStatus.Completed;
+            return order;
+        }
+
+        public Order Trade(Order order)
+        {
+            var player = (from p in _dal.Players
+                          join s in _dal.OrdersSheets on p.Id equals s.PlayerId
+                          join o in _dal.Orders on s.Id equals o.OrdersSheetId
+                          where o.Id == order.Id
+                          select p).FirstOrDefault();
+
+            if (order.Parameters.ContainsKey("Augmentation") && bool.Parse(order.Parameters["Augmentation"]))
+            {
+                var playerAssets = JsonSerializer.Deserialize<PlayerAssets>(player._jsonAssets);
+                if (playerAssets.Resources.Influence < 1)
+                {
+                    order.Comment = "Pas assez d'Influence";
+                    order.Status = OrderStatus.Failed;
+                    this.SendNotification(player.Id, "Ordre annulé : Commerce", "Vous n'avez pas assez d'Influence.");
+                    return order;
+                }
+                else
+                {
+                    playerAssets.Resources.Influence--;
+                    playerAssets.Resources.Strategy += 5;
+                    player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
+                    Helper.AddInfamy(player, 1);
+                }
+            }
+            else
+            {
+                var playerAssets = JsonSerializer.Deserialize<PlayerAssets>(player._jsonAssets);
+                if (playerAssets.Resources.Strategy < 5)
+                {
+                    order.Comment = "Pas assez de points de Stratégie";
+                    order.Status = OrderStatus.Failed;
+                    this.SendNotification(player.Id, "Ordre annulé : Commerce", "Vous n'avez pas assez de points de Stratégie.");
+                    return order;
+                }
+                else
+                {
+                    playerAssets.Resources.Influence++;
+                    playerAssets.Resources.Strategy -= 5;
+                    player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
+                    Helper.AddInfamy(player, 1);
+                }
             }
 
             _dal.Players.Update(player);
@@ -414,6 +466,16 @@ namespace L5aStrat_Earth
                 return order;
             }
 
+            var building = (from b in _dal.Units
+                            where b.PlayerId == player.Id && b.X == destinationTile.X && b.Y == destinationTile.Y && b.Type == "Building"
+                            select b).FirstOrDefault();
+            if (building == null)
+            {
+                order.Comment = "Case de destination invalide";
+                order.Status = OrderStatus.Invalid;
+                return order;
+            }
+
             var occupiedTile = (from u in _dal.Units
                                 join p in _dal.Players on u.PlayerId equals p.Id
                                 where p.CampaignId == player.CampaignId && u.X == destinationTile.X && u.Y == destinationTile.Y && u.Type == "Army"
@@ -443,7 +505,14 @@ namespace L5aStrat_Earth
             }
             else
             {
-                if (playerAssets.Resources.Strategy < 5)
+                var strategyCost = 5;
+                if (building.Assets.ContainsKey("Type"))
+                {
+                    if (building.Assets["Type"].ContainsKey("Entrée")) strategyCost = 4;
+                    if (building.Assets["Type"].ContainsKey("Village")) strategyCost = 6;
+                }
+
+                if (playerAssets.Resources.Strategy < strategyCost)
                 {
                     order.Comment = "Pas assez de points de Stratégie";
                     order.Status = OrderStatus.Failed;
@@ -452,7 +521,7 @@ namespace L5aStrat_Earth
                 }
                 else
                 {
-                    playerAssets.Resources.Strategy = playerAssets.Resources.Strategy - 5;
+                    playerAssets.Resources.Strategy = playerAssets.Resources.Strategy - strategyCost;
                 }
             }
             player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
@@ -478,7 +547,8 @@ namespace L5aStrat_Earth
             virtualUnit.Y = destinationTile.Y;
             virtualUnit.Assets = new Dictionary<string, Dictionary<string, string>>()
             {
-                { "Formation", new Dictionary<string, string>() { { formation, null } }  },
+                { "Formation", new Dictionary<string, string>() { { formation, null } } },
+                { "Renown", new Dictionary<string, string>() { { "3", null } } },
                 { "HasReinforced", new Dictionary<string, string>() }
             };
 
@@ -518,14 +588,6 @@ namespace L5aStrat_Earth
                 return order;
             }
 
-            if (army.Assets.ContainsKey("HasMoved"))
-            {
-                order.Comment = "Armée déjà déplacée";
-                order.Status = OrderStatus.Failed;
-                this.SendNotification(player.Id, "Ordre annulé : Déplacement", "L'armée s'est déjà déplacée.");
-                return order;
-            }
-
             long targetId;
             if (!order.Parameters.ContainsKey("Destination")
                 || string.IsNullOrEmpty(order.Parameters["Destination"])
@@ -549,19 +611,32 @@ namespace L5aStrat_Earth
                 return order;
             }
 
+            var armyAssets = new Dictionary<string, Dictionary<string, string>>();
+            foreach (var a in army.Assets) { armyAssets.Add(a.Key, a.Value); }
+            var armyActionCount = 0;
+            if (armyAssets.ContainsKey("HasChangedFormation")) armyActionCount++;
+            if (armyAssets.ContainsKey("HasReinforced")) armyActionCount++;
+            if (armyAssets.ContainsKey("HasMoved")) armyActionCount++;
+
             var playerAssets = JsonSerializer.Deserialize<PlayerAssets>(player._jsonAssets);
             if (order.Parameters.ContainsKey("Augmentation") && bool.Parse(order.Parameters["Augmentation"]))
             {
-                if (playerAssets.Resources.Influence < 1)
+                if (armyActionCount > 1 || army.Assets.ContainsKey("HasForcedMarched"))
                 {
-                    order.Comment = "Pas assez d'Influence";
+                    order.Comment = "L'armée a déjà effectué plusieurs actions dans le tour";
+                    order.Status = OrderStatus.Invalid;
+                    return order;
+                }
+                if (playerAssets.Resources.Strategy < 5)
+                {
+                    order.Comment = "Pas assez de points de Stratégie";
                     order.Status = OrderStatus.Failed;
-                    this.SendNotification(player.Id, "Ordre annulé : Déplacement", "Vous n'avez pas assez d'Influence.");
+                    this.SendNotification(player.Id, "Ordre annulé : Déplacement", "Vous n'avez pas assez de points de Stratégie.");
                     return order;
                 }
                 else
                 {
-                    playerAssets.Resources.Influence--;
+                    playerAssets.Resources.Strategy -= 5;
                 }
             }
             else
@@ -590,17 +665,33 @@ namespace L5aStrat_Earth
                     return order;
                 }
                 this.Battle(army, occupiedTile);
-                order.Status = OrderStatus.Completed;
-                return order;
+            }
+            else
+            {
+                army.X = destinationTile.X;
+                army.Y = destinationTile.Y;
+                if (army.Assets.ContainsKey("HasMoved"))
+                {
+                    armyAssets.Add("HasForcedMarched", new Dictionary<string, string>());
+                }
+                else
+                {
+                    armyAssets.Add("HasMoved", new Dictionary<string, string>());
+                }
+                army.Assets = armyAssets;
+                _dal.Units.Update(army);
             }
 
-            army.X = destinationTile.X;
-            army.Y = destinationTile.Y;
-            var armyAssets = new Dictionary<string, Dictionary<string, string>>();
-            foreach (var a in army.Assets) { armyAssets.Add(a.Key, a.Value); }
-            armyAssets.Add("HasMoved", new Dictionary<string, string>());
-            army.Assets = armyAssets;
-            _dal.Units.Update(army);
+            // Prise de contrôle de bâtiment
+            var building = (from b in _dal.Units
+                             where b.Type == "Building" && b.X == army.X && b.Y == army.Y
+                             select b).FirstOrDefault();
+            if (building != null)
+            {
+                building.PlayerId = army.PlayerId;
+                _dal.Units.Update(building);
+            }
+
             _dal.SaveChanges();
 
             order.Status = OrderStatus.Completed;
@@ -631,7 +722,11 @@ namespace L5aStrat_Earth
             string attackerNotifBody = string.Empty;
             string defenderNotifBody = string.Empty;
 
-            if (attacker.Assets["Formation"].ContainsKey("Choki"))
+            if (attacker.Assets.ContainsKey("HasMoved"))
+            {
+                winner = defender;
+            }
+            else if (attacker.Assets["Formation"].ContainsKey("Choki"))
             {
                 if (defender.Assets["Formation"].ContainsKey("Guu"))
                 {
@@ -660,14 +755,20 @@ namespace L5aStrat_Earth
 
             if (winner != null)
             {
+                var winnerAssets = new Dictionary<string, Dictionary<string, string>>();
+                foreach (var a in winner.Assets) { winnerAssets.Add(a.Key, a.Value); }
+                int renown = 0;
+                if (winnerAssets.ContainsKey("Renown") && int.TryParse(winnerAssets["Renown"].Keys.First(), out renown))
+                {
+                    renown += 1;
+                    winnerAssets["Renown"] = new Dictionary<string, string>() { { renown.ToString(), null } };
+                }
                 if (winner == attacker)
                 {
                     attacker.X = defender.X;
                     attacker.Y = defender.Y;
-                    var armyAssets = new Dictionary<string, Dictionary<string, string>>();
-                    foreach (var a in attacker.Assets) { armyAssets.Add(a.Key, a.Value); }
-                    armyAssets.Add("HasMoved", new Dictionary<string, string>());
-                    attacker.Assets = armyAssets;
+                    winnerAssets.Add("HasMoved", new Dictionary<string, string>());
+                    attacker.Assets = winnerAssets;
                     _dal.Update(attacker);
                     _dal.Remove(defender);
                     attackerNotifSubject = $"Victoire en {tileName}";
@@ -677,6 +778,8 @@ namespace L5aStrat_Earth
                 }
                 else
                 {
+                    defender.Assets = winnerAssets;
+                    _dal.Update(attacker);
                     _dal.Remove(attacker);
                     attackerNotifSubject = $"Défaite en {tileName}";
                     attackerNotifBody = $"Votre armée a été détruite par des troupes de {defenderName}, qui étaient en formation {defender.Assets["Formation"].Keys.FirstOrDefault()}.";

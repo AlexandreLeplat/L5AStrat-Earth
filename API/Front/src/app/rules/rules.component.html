@@ -6,12 +6,12 @@
     </mat-card-header>
     <mat-card-content>        
         <p>La partie se joue à 4 joueurs. Chaque joueur dispose d’un score de Gloire, d’Infamie, de points d’Influence et de points de Stratégie. Les joueurs commencent le jeu avec 5 points de Gloire et 5 points de Stratégie. 
-            <br/><br/>
-        Le but du jeu est d’atteindre le meilleur score (basé sur le score de Gloire et les bâtiments occupés) au bout de 12 tours, et un classement des joueurs en fonction de ce score est rendu public tous les 3 tours.
         <br/><br/>
         A chaque tranche de 10 points de Gloire gagnés, le joueur gagne un point d’Influence qu’il pourra dépenser pour augmenter l'effet de ses actions.
         <br/><br/>
         Chaque point d’Infamie gagné par un joueur annule le gain d’un point de Gloire à venir.</p>
+        <br/><br/>
+        Le but du jeu est d’atteindre le meilleur score de Renommée (calculé en cumulant le score de Gloire avec la Renommée des armées et des bâtiments contrôlés) au bout de 12 tours. Un classement des joueurs en fonction de ce score est rendu public tous les 3 tours.
     </mat-card-content>
 </mat-card>
 <mat-card class="main-card">
@@ -28,7 +28,8 @@
             <li>Les ordres rendus en phase de début de tour sont traités en fin de phase, dans l'ordre décroissant des points de Stratégie dépensés pour jouer en priorité.</li>
             <li>Les ordres rendus en phase de milieu de tour sont traités instantanément.</li>
             <li>Les ordres rendus en phase de fin de tour sont traités en fin de phase, dans l'ordre croissant des points de Stratégie dépensés pour jouer en dernier.</li>
-            <li>Aucun ordre n'est traité dans la dernière phase (conclusion de tour), mais les bâtiments rapportent leur production aux joueurs qui les occupent. Tous les trois tours, un classement des joueurs est publié en fonction de leur score (Gloire + bonus de bâtiments). Le premier au Score gagne 3 points de Gloire et 3 points de Stratégie, le second gagne 1 point de Gloire et 1 point de Stratégie.</li></ul>
+            <li>Aucun ordre n'est traité dans la dernière phase (conclusion de tour), mais les bâtiments rapportent leur production aux joueurs qui les contrôlent, et chaque joueur doit s'aquitter d'un coût d'entretien d'un point de Stratégie par armée contrôlée. Si ce coût amène leur score de Stratégie dans le négatif, la valeur négative est remplacée par un gain d'Infamie.</li>
+            <li>Tous les trois tours, un classement des joueurs est publié à la phase de conclusion en fonction de leur score de Renommée (Gloire + bonus de bâtiments et d'armées). Le premier au Score gagne 3 points de Gloire et 3 points de Stratégie, le second gagne 1 point de Gloire et 1 point de Stratégie.</li></ul>
         </mat-card-content>
     </mat-card>
     <mat-card class="main-card">
@@ -37,14 +38,14 @@
         </mat-card-header>
         <mat-card-content>        
         <p>Les joueurs peuvent recruter et déplacer des armées sur une carte composée d’un quadrillage de 9 cases par 9.
-            <br/><br/>        
+        <br/><br/>        
         Les armées peuvent se déplacer sur les cases adjacentes, y compris en diagonale, mais ne peuvent pas se déplacer sur une case occupée par une armée alliée.
         <br/><br/>        
-        Il y a 4 types de cases particulières sur la carte :</p>
-        <ul><li>Chaque joueur dispose de 4 cases d'entrée, sur lesquelles il peut recruter ses armées tant qu'elles sont libres.</li>
-            <li>4 cases de Villages rapportent chacune 2 points de Gloire en fin de tour aux joueurs qui les occupent, et +10 au score de classement.</li>
-            <li>2 cases d'Avant-postes rapportent chacune 1 point de Gloire et 2 points de Stratégie en fin de tour aux joueurs qui les occupent, et +10 au score de classement.</li>
-            <li>Une case de Forteresse rapporte 3 points de Gloire et 2 points de Stratégie en fin de tour au joueur qui l'occupe, et +20 au score de classement.</li></ul>
+        Lorsqu'une armée se déplace sur un bâtiment, le joueur propriétaire de l'armée en prend le contrôle. Il y a 4 types de bâtiments sur la carte :</p>
+        <ul><li>Chaque joueur dispose de 4 points d'entrée, qui rapportent 1 point de Stratégie par tour et permettent de recruter des armées pour 1 point de Stratégie de moins.</li>
+            <li>4 cases de Villages rapportent chacune 2 points de Gloire en fin de tour aux joueurs qui les contrôlent, et ajoutent 10 points de Renommée au classement. Recruter sur un village coûte un surplus d'1 point de Stratégie.</li>
+            <li>2 cases d'Avant-postes rapportent chacune 1 point de Gloire et 2 points de Stratégie en fin de tour aux joueurs qui les contrôlent, et ajoutent 10 points de Renommée au classement.</li>
+            <li>Une case de Forteresse rapporte 3 points de Gloire et 2 points de Stratégie en fin de tour au joueur qui la contrôle, et ajoute 20 points de Renommée au classement.</li></ul>
         </mat-card-content>
     </mat-card>
     <mat-card class="main-card">
@@ -57,7 +58,7 @@
             <li>Une armée en formation Pā (formation de tir) gagne lorsqu'elle attaque une armée en formation Gū, mais perd si elle attaque une armée en formation Choki et annule son déplacement face à une armée en formation Pā.</li>
             <li>Une armée en formation Gū (formation défensive) annule son déplacement si elle attaque une armée en formation Choki ou Gū, et perd si eĺle attaque une armée en formation Pā.</li></ul>
         <br/>
-        <p>L'armée vaincue est supprimée et le joueur vainqueur gagne 3 points de Gloire et un point de Stratégie.</p>
+        <p>L'armée vaincue est supprimée et le joueur vainqueur gagne 3 points de Gloire et un point de Stratégie. L'armée remportant le combat augmente sa Renommée d'un point.</p>
     </mat-card-content>
 </mat-card>
 <mat-card class="main-card">
@@ -67,9 +68,11 @@
     <mat-card-content>        
         <p>Les différentes actions jouables sont :</p>
         <ul>
+            <li><b>Commerce :</b> dépensez 5 points de Stratégie pour gagner un point d'Influence et 1 point d'Infamie.
+                <br/><i>Augmentation (Trafic d'influence) :</i> dépensez 1 point d'Influence pour gagner 5 points de Stratégie et 1 point d'Infamie.</li>
             <li><b>Déplacement :</b> déplacez une armée sur une case adjacente. Vous ne pouvez pas déplacer une armée qui s'est déjà déplacée, qui a changé de formation ou qui a été recrutée dans le même tour.
-                <br/><i>Augmentation (Ligne de ravitaillement) :</i> dépensez un point d'Influence pour déplacer une armée même si elle a changé de formation ou a été recrutée ce tour.</li>
-            <li><b>Flatterie :</b> gagnez 1 point de Gloire et ciblez un adversaire qui gagne 2 points de Gloire.
+                <br/><i>Augmentation (Ligne de ravitaillement) :</i> dépensez 5 points de Stratégie pour déplacer l'armée après un renfort, un changement de formation ou un premier déplacement. Dans le cas d'un double déplacement, l'armée perd automatiquement les combats qu'elle initierait sur ce deuxième mouvement.</li>
+            <li><b>Flatterie :</b> gagnez un point de Gloire et ciblez un adversaire qui en gagne un également.
                 <br/><i>Augmentation (Faveur politique) :</i> dépensez un point d’Influence pour gagner 3 points de Gloire supplémentaires et ne cibler personne.</li>
             <li><b>Formation :</b> changez la formation d'une de vos armées. Vous ne pouvez pas donner cet ordre à une armée qui s'est déplacée ou qui a changé de formation dans le même tour.
                 <br/><i>Augmentation (Discipline) :</i> dépensez un point de Stratégie pour changer de formation même si l'armée s'est déplacée ce tour.</li>
@@ -77,8 +80,8 @@
                 <br/><i>Augmentation (Scandale) :</i> dépensez un point d’Influence pour faire gagner 3 points d’Infamie supplémentaires à votre cible et remplacer votre propre gain d'Infamie par un gain d'un point de Gloire.</li>
             <li><b>Planification :</b> gagnez 1 point de Stratégie
                 <br/><i>Augmentation (Manoeuvre sournoise) :</i> gagnez 2 points d’Infamie et 1 point de Stratégie supplémentaire.</li>
-            <li><b>Renforts :</b> dépensez 5 points de Stratégie pour ajouter une armée en formation de votre choix sur une de vos cases d'entrée libre.
-                <br/><i>Augmentation (Soutien militaire) :</i> dépensez un point d'Influence à la place des 5 points de Stratégie.</li>
+            <li><b>Renforts :</b> dépensez 5 points de Stratégie pour ajouter une armée en formation de votre choix sur un de vos bâtiments contrôlés et non occupés. Le coût de recrutement est réduit d'un point sur les points d'entrée et augmenté d'un point sur les villages. La Renommée d'une armée recrutée démarre à 3.
+                <br/><i>Augmentation (Soutien militaire) :</i> dépensez un point d'Influence à la place des points de Stratégie.</li>
             <li><b>Renseignements :</b> ciblez un adversaire et gagnez un point d'Infamie. Vous recevez un rapport indiquant les scores de Gloire, Infamie, Influence et Stratégie de la cible, ainsi que la liste de ses armées et leur formations, et le détail de sa dernière feuille d'ordres.
                 <br/><i>Augmentation (Réseau d'information) :</i> dépensez un point d'Influence pour cibler vos trois adversaires et ne pas subir de gain d'Infamie.</li>
         </ul>

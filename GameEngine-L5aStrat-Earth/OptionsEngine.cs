@@ -1,4 +1,6 @@
 ﻿using Entities.Database;
+using Entities.Enums;
+using Entities.Models;
 using L5aStrat_Earth.Entities;
 using System.Collections.Generic;
 using System.Linq;
@@ -90,11 +92,39 @@ namespace L5aStrat_Earth
                     return result;
                 }
 
+                var moveActionTypeId = (from a in _dal.ActionTypes
+                                        where a.Label == "Déplacement"
+                                        select a.Id).FirstOrDefault();
+                var moveOrders = (from o in _dal.Orders
+                                  join s in _dal.OrdersSheets on o.OrdersSheetId equals s.Id
+                                  where s.PlayerId == playerId && s.Status == OrdersSheetStatus.Writing && o.ActionTypeId == moveActionTypeId
+                                  select o).ToList();
+
+                MapTile targetTile = null;
+                foreach (var order in moveOrders.OrderByDescending(o => o.Rank))
+                {
+                    long armyId = 0;
+                    long targetTileId = 0;
+                    if (order.Parameters.ContainsKey("Armée") && long.TryParse(order.Parameters["Armée"].Split(";").First(), out armyId)
+                        && order.Parameters.ContainsKey("Destination") && long.TryParse(order.Parameters["Destination"].Split(';')[0], out targetTileId))
+                    {
+                        if (unit.Id == armyId)
+                        {
+                            targetTile = (from t in _dal.MapTiles
+                                                 where t.Id == targetTileId
+                                                 select t).FirstOrDefault();
+                        }
+                    }
+                }
+
                 var adjacentTiles = (from t in _dal.MapTiles
                                      where t.MapId == currentMapId
-                                        && !(t.X == unit.X && t.Y == unit.Y)
-                                        && t.X >= unit.X - 1 && t.X <= unit.X + 1 
-                                        && t.Y >= unit.Y - 1 && t.Y <= unit.Y + 1
+                                        && (!(t.X == unit.X && t.Y == unit.Y)
+                                            && t.X >= unit.X - 1 && t.X <= unit.X + 1 
+                                            && t.Y >= unit.Y - 1 && t.Y <= unit.Y + 1
+                                        || targetTile != null && !(t.X == targetTile.X && t.Y == targetTile.Y)
+                                            && t.X >= targetTile.X - 1 && t.X <= targetTile.X + 1
+                                            && t.Y >= targetTile.Y - 1 && t.Y <= targetTile.Y + 1)
                                      select t).ToList();
 
                 adjacentTiles.ForEach(t => result.Add(t.Name, $"{t.Id};{t.Name}"));

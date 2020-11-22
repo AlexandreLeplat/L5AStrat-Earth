@@ -78,13 +78,54 @@ namespace L5aStrat_Earth
                     return order;
                 }
 
-                order.Comment = $"+1 Gloire, {targetName} +2";
+                order.Comment = $"+1 Gloire, {targetName} +1";
                 Helper.AddGlory(player, 1);
             }
 
             return order;
         }
 
+        public Order Trade(Order order, Player player)
+        {
+            order.Status = OrderStatus.Valid;
+            if (order.Parameters.ContainsKey("Augmentation") && bool.Parse(order.Parameters["Augmentation"]))
+            {
+                var playerAssets = JsonSerializer.Deserialize<PlayerAssets>(player._jsonAssets);
+                if (playerAssets.Resources.Influence < 1)
+                {
+                    order.Comment = "Pas assez d'Influence ?";
+                    order.Status = OrderStatus.Invalid;
+                }
+                else
+                {
+                    playerAssets.Resources.Influence--;
+                    order.Comment = "+5 Stratégie, +1 Infamie, -1 Influence";
+                }
+                playerAssets.Resources.Strategy += 5;
+                player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
+                Helper.AddInfamy(player, 1);
+            }
+            else
+            {
+                var playerAssets = JsonSerializer.Deserialize<PlayerAssets>(player._jsonAssets);
+                if (playerAssets.Resources.Strategy < 5)
+                {
+                    order.Comment = "Pas assez de points de Stratégie ?";
+                    order.Status = OrderStatus.Invalid;
+                }
+                else
+                {
+                    playerAssets.Resources.Strategy -= 5;
+                    order.Comment = "-5 Stratégie, +1 Infamie, +1 Influence";
+                }
+                playerAssets.Resources.Influence++;
+                player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
+                Helper.AddInfamy(player, 1);
+            }
+
+            return order;
+        }
+        
         public Order Calomny(Order order, Player player)
         {
             order.Status = OrderStatus.Valid;
@@ -272,6 +313,17 @@ namespace L5aStrat_Earth
                 order.Status = OrderStatus.Error;
                 return order;
             }
+            
+            var building = (from b in _dal.Units
+                            where b.PlayerId == player.Id && b.X == destinationTile.X && b.Y == destinationTile.Y && b.Type == "Building"
+                            select b).FirstOrDefault();
+            if (building == null)
+            {
+                order.Comment = "Case de destination invalide";
+                order.Status = OrderStatus.Invalid;
+                return order;
+            }
+
             var occupiedTile = units.FirstOrDefault(u => u.X == destinationTile.X && u.Y == destinationTile.Y);
             if (occupiedTile != null)
             {
@@ -296,15 +348,22 @@ namespace L5aStrat_Earth
             }
             else
             {
-                if (playerAssets.Resources.Strategy < 5)
+                var strategyCost = 5;
+                if (building.Assets.ContainsKey("Type"))
                 {
-                    order.Comment = "Pas assez de points de Stratégie";
+                    if (building.Assets["Type"].ContainsKey("Entrée")) strategyCost = 4;
+                    if (building.Assets["Type"].ContainsKey("Village")) strategyCost = 6;
+                }
+
+                if (playerAssets.Resources.Strategy < strategyCost)
+                {
+                    order.Comment = "Pas assez de points de Stratégie ?";
                     order.Status = OrderStatus.Invalid;
                 }
                 else
                 {
-                    playerAssets.Resources.Strategy = playerAssets.Resources.Strategy - 5;
-                    order.Comment = "-5 Stratégie, ";
+                    playerAssets.Resources.Strategy = playerAssets.Resources.Strategy - strategyCost;
+                    order.Comment = $"-{strategyCost} Stratégie, ";
                 }
             }
             player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
@@ -374,13 +433,6 @@ namespace L5aStrat_Earth
                 return order;
             }
 
-            if (army.Assets.ContainsKey("HasMoved"))
-            {
-                order.Comment = "Armée déjà déplacée";
-                order.Status = OrderStatus.Invalid;
-                return order;
-            }
-
             long targetId;
             if (!order.Parameters.ContainsKey("Destination")
                 || string.IsNullOrEmpty(order.Parameters["Destination"])
@@ -404,26 +456,39 @@ namespace L5aStrat_Earth
                 return order;
             }
 
+            var armyAssets = new Dictionary<string, Dictionary<string, string>>();
+            foreach (var a in army.Assets) { armyAssets.Add(a.Key, a.Value); }
+            var armyActionCount = 0;
+            if (armyAssets.ContainsKey("HasChangedFormation")) armyActionCount++;
+            if (armyAssets.ContainsKey("HasReinforced")) armyActionCount++;
+            if (armyAssets.ContainsKey("HasMoved")) armyActionCount++;
+
             var playerAssets = JsonSerializer.Deserialize<PlayerAssets>(player._jsonAssets);
             if (order.Parameters.ContainsKey("Augmentation") && bool.Parse(order.Parameters["Augmentation"]))
             {
-                if (playerAssets.Resources.Influence < 1)
+                if (armyActionCount > 1 || army.Assets.ContainsKey("HasForcedMarched"))
                 {
-                    order.Comment = "Pas assez d'Influence ?";
+                    order.Comment = "L'armée a déjà effectué plusieurs actions dans le tour";
+                    order.Status = OrderStatus.Invalid;
+                    return order;
+                }
+                if (playerAssets.Resources.Strategy < 5)
+                {
+                    order.Comment = "Pas assez de points de Stratégie ?";
                     order.Status = OrderStatus.Invalid;
                 }
                 else
                 {
-                    playerAssets.Resources.Influence--;
+                    playerAssets.Resources.Strategy -= 5;
                     player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
-                    order.Comment = "-1 Influence, ";
+                    order.Comment = "-5 Stratégie, ";
                 }
             }
             else
             {
-                if (army.Assets.ContainsKey("HasChangedFormation") || army.Assets.ContainsKey("HasReinforced"))
+                if (armyActionCount > 0)
                 {
-                    order.Comment = "L'armée a été créée dans le tour ou a déjà changé de formation.";
+                    order.Comment = "L'armée a déjà effectué une action dans le tour";
                     order.Status = OrderStatus.Invalid;
                     return order;
                 }
@@ -432,9 +497,14 @@ namespace L5aStrat_Earth
 
             army.X = destinationTile.X;
             army.Y = destinationTile.Y;
-            var armyAssets = new Dictionary<string, Dictionary<string, string>>();
-            foreach (var a in army.Assets) { armyAssets.Add(a.Key, a.Value); }
-            armyAssets.Add("HasMoved", new Dictionary<string, string>());
+            if (army.Assets.ContainsKey("HasMoved"))
+            {
+                armyAssets.Add("HasForcedMarched", new Dictionary<string, string>());
+            }
+            else
+            {
+                armyAssets.Add("HasMoved", new Dictionary<string, string>());
+            }
             army.Assets = armyAssets;
 
             if (order.Status == OrderStatus.Valid)

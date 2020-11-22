@@ -55,7 +55,9 @@ namespace Entities.Database
                                               , new User() { Id = 5, Name = "Crabi", Password = "$2a$11$H9XVGihkqHDssIMjGZW9NefJoocnv2y6NJ4PwVEIEosyp2QnjgQMy", Role = UserRole.None });
 
             modelBuilder.Entity<Player>().Property(o => o._jsonAssets).HasColumnName("Assets");
-            modelBuilder.Entity<Player>().HasData(new Player() { Id = 1, Name = "Admin", UserId = 1, CampaignId = 1, IsCurrentPlayer = true, IsAdmin = true },
+            modelBuilder.Entity<Player>().HasData(
+                new Player() 
+                { Id = 1, Name = "Neutre", UserId = 1, CampaignId = 1, IsCurrentPlayer = true, IsAdmin = true, Color = "lightgrey" },
                 new Player()
                 {
                     Id = 2,
@@ -130,15 +132,15 @@ namespace Entities.Database
                 {
                     Id = 2,
                     Label = "Flatterie",
-                    Description = "Gagnez 1 point de Gloire et faites-en gagner 2 à un adversaire",
+                    Description = "Gagnez 1 point de Gloire et faites-en gagner 1 à un adversaire",
                     GameId = 1,
                     Form = new List<OrderInput>() {
                     { new OrderInput() {
                         Label = "Cible", Type = "Opponent",
-                        Description = "L'adversaire recevant 2 points de Gloire" } },
+                        Description = "L'adversaire recevant 1 point de Gloire" } },
                     { new OrderInput() {
                         Label = "Augmentation", Type = "Checkbox",
-                        Description = "Faveur politique : Dépensez un point d’Influence pour gagner 4 points de Gloire supplémentaires et ne cibler personne" } }
+                        Description = "Faveur politique : Dépensez un point d’Influence pour gagner 3 points de Gloire supplémentaires et ne cibler personne" } }
                     }
                 },
                 new ActionType()
@@ -189,7 +191,7 @@ namespace Entities.Database
                         Description = "La destination de l'armée", MapDescription = "Sélectionnez la destination sur la carte" } },
                     { new OrderInput() {
                         Label = "Augmentation", Type = "Checkbox",
-                        Description = "Ligne de ravitaillement : Dépensez un point d'Influence pour déplacer l'armée après un renfort ou un changement de formation." } }
+                        Description = "Ligne de ravitaillement : Dépensez 5 points de Stratégie pour déplacer l'armée après un renfort, un changement de formation ou un premier déplacement." } }
                     }
                 },
                 new ActionType()
@@ -223,6 +225,18 @@ namespace Entities.Database
                     { new OrderInput() {
                         Label = "Augmentation", Type = "Checkbox",
                         Description = "Réseau d'information : Dépensez un point d'Influence pour annuler l'Infamie et cibler tous les adversaires." } }
+                    }
+                },
+                new ActionType()
+                {
+                    Id = 8,
+                    Label = "Commerce",
+                    Description = "Achetez un point d'Influence pour 5 points de Stratégie et 1 d'Infamie",
+                    GameId = 1,
+                    Form = new List<OrderInput>() {
+                    { new OrderInput() {
+                        Label = "Augmentation", Type = "Checkbox",
+                        Description = "Trafic d'influence : Vendez un point d'Influence et subissez un point d'Infamie pour acheter 5 points de Stratégie." } }
                     }
                 });
 

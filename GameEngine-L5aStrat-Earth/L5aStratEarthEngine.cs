@@ -84,7 +84,8 @@ namespace L5aStrat_Earth
             foreach(var army in armies)
             {
                 var formation = army.Assets["Formation"];
-                army.Assets = new Dictionary<string, Dictionary<string, string>>() { { "Formation", formation } };
+                var renown = army.Assets["Renown"];
+                army.Assets = new Dictionary<string, Dictionary<string, string>>() { { "Formation", formation }, { "Renown", renown } };
             }
 
             var newMap = new Map()
@@ -123,38 +124,53 @@ namespace L5aStrat_Earth
 
             var gloryBonus = new Dictionary<long, int>();
             var stratBonus = new Dictionary<long, int>();
+            var upkeepCost = new Dictionary<long, int>();
             var scoreBonus = new Dictionary<long, int>();
             foreach(var player in players)
             {
                 gloryBonus.Add(player.Id, 0);
                 stratBonus.Add(player.Id, 0);
+                upkeepCost.Add(player.Id, 0);
                 scoreBonus.Add(player.Id, 0);
+            }
+            foreach (var army in armies)
+            {
+                int renown = 0;
+                if (army.Assets.ContainsKey("Renown") && int.TryParse(army.Assets["Renown"].Keys.First(), out renown))
+                {
+                    scoreBonus[army.PlayerId] += renown;
+                }
+                upkeepCost[army.PlayerId]++;
             }
             foreach (var building in buildings)
             {
-                var occupyingArmy = armies.Where(a => a.X == building.X && a.Y == building.Y).FirstOrDefault();
-                if (occupyingArmy != null && building.Assets.ContainsKey("Type"))
+                if (players.Select(p => p.Id).Contains(building.PlayerId) && building.Assets.ContainsKey("Type"))
                 {
                     switch(building.Assets["Type"].Keys.First())
                     {
+                        case "Entrée":
+                            {
+                                stratBonus[building.PlayerId] += 1;
+                                break;
+                            }
                         case "Village":
                             {
-                                gloryBonus[occupyingArmy.PlayerId] += 2;
-                                scoreBonus[occupyingArmy.PlayerId] += 10;
+                                gloryBonus[building.PlayerId] += 2;
+                                scoreBonus[building.PlayerId] += 10;
                                 break;
                             }
                         case "Avant-Poste":
                             {
-                                gloryBonus[occupyingArmy.PlayerId] += 1;
-                                stratBonus[occupyingArmy.PlayerId] += 2;
-                                scoreBonus[occupyingArmy.PlayerId] += 10;
+                                gloryBonus[building.PlayerId] += 1;
+                                stratBonus[building.PlayerId] += 2;
+                                scoreBonus[building.PlayerId] += 10;
                                 break;
                             }
                         case "Forteresse":
                             {
-                                gloryBonus[occupyingArmy.PlayerId] += 3;
-                                stratBonus[occupyingArmy.PlayerId] += 2;
-                                scoreBonus[occupyingArmy.PlayerId] += 20;
+                                gloryBonus[building.PlayerId] += 3;
+                                stratBonus[building.PlayerId] += 2;
+                                scoreBonus[building.PlayerId] += 20;
                                 break;
                             }
                         default:
@@ -164,7 +180,7 @@ namespace L5aStrat_Earth
             }
             foreach(var player in players)
             {
-                this.AddProduction(player, gloryBonus[player.Id], stratBonus[player.Id], campaign.CurrentTurn);
+                this.AddProduction(player, gloryBonus[player.Id], stratBonus[player.Id], upkeepCost[player.Id]);
             }
 
             // Suppression des renforts non concrétisés
@@ -305,6 +321,10 @@ namespace L5aStrat_Earth
                 case "Renseignements":
                     {
                         return this._actionsEngine.Spy(order);
+                    }
+                case "Commerce":
+                    {
+                        return this._actionsEngine.Trade(order);
                     }
                 default:
                     {
@@ -448,63 +468,90 @@ namespace L5aStrat_Earth
                     var tileBorderColor = string.Empty;
                     var tileSymbol = string.Empty;
 
-                    foreach (var unit in units.Where(u => u.X == i && u.Y == j && u.Type == "Building" && u.Assets.ContainsKey("Type")))
+                    var building = units.FirstOrDefault(u => u.X == i && u.Y == j && u.Type == "Building" && u.Assets.ContainsKey("Type"));
+                    if (building != null)
                     {
-                        switch (unit.Assets["Type"].Keys.FirstOrDefault())
+                        switch (building.Assets["Type"].Keys.FirstOrDefault())
                         {
                             case "Entrée":
                                 {
                                     tileName = "Entrée";
                                     tileSymbol = "home";
-                                    tileBorderColor = players.FirstOrDefault(p => p.Id == unit.PlayerId).Color;
-                                    tileAssets.Add("Point d'entrée", new Dictionary<string, string>() { { "Propriétaire", players.FirstOrDefault(p => p.Id == unit.PlayerId).Name } });
+                                    tileBorderColor = players.FirstOrDefault(p => p.Id == building.PlayerId).Color;
+                                    tileAssets.Add("Point d'entrée", new Dictionary<string, string>() {
+                                        { "Propriétaire", players.FirstOrDefault(p => p.Id == building.PlayerId).Name },
+                                        { "Production", "1 Stratégie" },
+                                        { "Recrutement", "Coût -1" }
+                                    });
                                     break;
                                 }
                             case "Village":
                                 {
                                     tileName = "Village";
                                     tileSymbol = "house";
-                                    tileBorderColor = "lightgrey";
-                                    tileAssets.Add("Production", new Dictionary<string, string>() { { "Gloire", "2" } });
+                                    tileBorderColor = players.FirstOrDefault(p => p.Id == building.PlayerId).Color;
+                                    tileAssets.Add("Village", new Dictionary<string, string>() {
+                                        { "Propriétaire", players.FirstOrDefault(p => p.Id == building.PlayerId).Name },
+                                        { "Production", "2 Gloire" },
+                                        { "Recrutement", "Coût +1" },
+                                        { "Renommée", "10" }
+                                    });
                                     break;
                                 }
                             case "Avant-Poste":
                                 {
                                     tileName = "Avant-Poste";
                                     tileSymbol = "tower";
-                                    tileBorderColor = "lightgrey";
-                                    tileAssets.Add("Production", new Dictionary<string, string>() { { "Gloire", "1" }, { "Stratégie", "2" } });
+                                    tileBorderColor = players.FirstOrDefault(p => p.Id == building.PlayerId).Color;
+                                    tileAssets.Add("Avant-Poste", new Dictionary<string, string>() {
+                                        { "Propriétaire", players.FirstOrDefault(p => p.Id == building.PlayerId).Name },
+                                        { "Production", "1 Gloire, 2 Stratégie" },
+                                        { "Renommée", "10" }
+                                    });
                                     break;
                                 }
                             case "Forteresse":
                                 {
                                     tileName = "Forteresse";
                                     tileSymbol = "castle";
-                                    tileBorderColor = "lightgrey";
-                                    tileAssets.Add("Production", new Dictionary<string, string>() { { "Gloire", "3" }, { "Stratégie", "2" } });
+                                    tileBorderColor = players.FirstOrDefault(p => p.Id == building.PlayerId).Color;
+                                    tileAssets.Add("Forteresse", new Dictionary<string, string>() {
+                                        { "Propriétaire", players.FirstOrDefault(p => p.Id == building.PlayerId).Name },
+                                        { "Production", "3 Gloire, 2 Stratégie" },
+                                        { "Renommée", "20" }
+                                    });
                                     break;
                                 }
                             default:
                                 break;
                         }
                     }
-                    foreach (var unit in units.Where(u => u.X == i && u.Y == j && u.Type == "Army"))
+                    var army = units.FirstOrDefault(u => u.X == i && u.Y == j && u.Type == "Army");
+                    if (army != null)
                     {
-                        tileColor = players.FirstOrDefault(p => p.Id == unit.PlayerId).Color;
+                        tileColor = players.FirstOrDefault(p => p.Id == army.PlayerId).Color;
                         var formation = "Inconnue";
-                        if (unit.Assets.ContainsKey("Formation")
-                            && (spiedPlayers.Contains(unit.PlayerId)
-                                || units.Exists(u => u.X <= i+1 
-                                            && u.X >= i - 1 
-                                            && u.Y <= j + 1 
-                                            && u.Y >= j - 1 
+                        if (army.Assets.ContainsKey("Formation")
+                            && (spiedPlayers.Contains(army.PlayerId)
+                                || units.Exists(u => u.X <= i + 1
+                                            && u.X >= i - 1
+                                            && u.Y <= j + 1
+                                            && u.Y >= j - 1
                                             && u.Type == "Army"
                                             && u.PlayerId == playerId)))
                         {
-                            formation = unit.Assets["Formation"].Keys.FirstOrDefault();
+                            formation = army.Assets["Formation"].Keys.FirstOrDefault();
                         }
-                        tileAssets.Add($"Armée - {unit.Name}", new Dictionary<string, string>() { { "Propriétaire", players.FirstOrDefault(p => p.Id == unit.PlayerId).Name }, { "Formation", formation } });
-                        tileParameters.Add("Army", $"{unit.Id};{unit.Name}");
+                        var renown = "?";
+                        if (army.Assets.ContainsKey("Renown"))
+                            renown = army.Assets["Renown"].Keys.First();
+
+                        tileAssets.Add($"Armée - {army.Name}", new Dictionary<string, string>() {
+                            { "Propriétaire", players.FirstOrDefault(p => p.Id == army.PlayerId).Name },
+                            { "Formation", formation },
+                            { "Renommée", renown }
+                        });
+                        tileParameters.Add("Army", $"{army.Id};{army.Name}");
                     }
 
                     tileName += $" ({References.coordinatesLetters[i]}{j + 1})";
@@ -528,14 +575,22 @@ namespace L5aStrat_Earth
             return result;
         }
 
-        private bool AddProduction(Player player, int gloryValue, int stratValue, int turn)
+        private bool AddProduction(Player player, int gloryValue, int stratValue, int upkeepCost)
         {
             if (gloryValue > 0)
             {
-                Helper.AddGlory(player, gloryValue);
                 var playerAssets = JsonSerializer.Deserialize<PlayerAssets>(player._jsonAssets);
-                playerAssets.Resources.Strategy += stratValue;
+                playerAssets.Resources.Strategy += stratValue - upkeepCost;
+                var debtInfamy = 0;
+                if (playerAssets.Resources.Strategy < 0)
+                {
+                    debtInfamy = -(playerAssets.Resources.Strategy);
+                    playerAssets.Resources.Strategy = 0;
+                }
                 player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
+                Helper.AddInfamy(player, debtInfamy);
+                Helper.AddGlory(player, gloryValue);
+
                 _dal.Update(player);
                 var body = $"Vos bâtiments vous rapportent {gloryValue} point{(gloryValue > 1 ? "s" : "")} de Gloire";
                 if (stratValue > 0)
@@ -543,6 +598,14 @@ namespace L5aStrat_Earth
                     body += $" et {stratValue} points de Stratégie."; 
                 }
                 else body += ".";
+                if (upkeepCost > 0)
+                {
+                    body += $"{Environment.NewLine}L'entretien de vos armées vous coûte {upkeepCost} points de Stratégie.";
+                }
+                if (debtInfamy > 0)
+                {
+                    body += $"{Environment.NewLine}Ne pouvant le payer entièrement, vous subissez {debtInfamy} points d'Infamie.";
+                }
                 Helper.SendNotification(player.Id, "Rapport de production", body, _dal);
             }
             return true;
@@ -585,7 +648,11 @@ namespace L5aStrat_Earth
                         playerAssets.Resources.Strategy += reward;
                         player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
                         _dal.Update(player);
-                        Helper.SendNotification(player.Id, notifSubject, $"Vous gagnez {reward} point{(reward > 1 ? "s" : "")} de Gloire et de Stratégie.", _dal);
+                        Helper.SendNotification(player.Id, notifSubject, $"Avec {scores[player]} points de Renommée, vous gagnez {reward} point{(reward > 1 ? "s" : "")} de Gloire et de Stratégie.", _dal);
+                    }
+                    else
+                    {
+                        Helper.SendNotification(player.Id, notifSubject, $"Vous avez {scores[player]} points de Renommée.", _dal);
                     }
                     scores.Remove(player);
                 }
@@ -668,6 +735,11 @@ namespace L5aStrat_Earth
                                     select a).FirstOrDefault();
                 switch (order.ActionType.Label)
                 {
+                    case "Commerce":
+                        {
+                            this._validationEngine.Trade(order, player);
+                            break;
+                        }
                     case "Déplacement":
                         {
                             this._validationEngine.Move(order, player, units);

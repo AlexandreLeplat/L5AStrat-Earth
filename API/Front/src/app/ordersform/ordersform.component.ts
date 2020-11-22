@@ -14,7 +14,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 })
 export class OrdersFormComponent implements OnInit {
 
-  actionTypes: { [id: number]: ActionType };
+  actionTypes: ActionType[];
   ordersSheet: OrdersSheet;
   sheetsList: OrdersSheet[];
   orders: Order[];
@@ -27,10 +27,7 @@ export class OrdersFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.ordersService.getActionTypes().subscribe(a => {
-      this.actionTypes = {};
-      a.forEach(t => {
-        this.actionTypes[t.id] = t;
-      });
+      this.actionTypes = a;
     });
     this.ordersService.getOrdersSheets().subscribe(l => {
       this.sheetsList = l;
@@ -40,6 +37,10 @@ export class OrdersFormComponent implements OnInit {
         this.retrieveOptionsLists();
       });
     });
+  }
+
+  orderType(order: Order): ActionType {
+    return this.actionTypes.find(a => a.id == order.actionTypeId);
   }
 
   selectSheet() {
@@ -60,14 +61,14 @@ export class OrdersFormComponent implements OnInit {
     }
 
   addOrder() {
-    var order: Order = { id: null, actionTypeId: this.actionTypes[this.selectedActionType].id, parameters: {},  
+    var order: Order = { id: null, actionTypeId: this.selectedActionType, parameters: {},  
         comment: '', status: OrderStatus.None, rank: this.orders.length, selected: true }
     this.ordersService.createOrder(this.ordersSheet.id, order).subscribe(o => {
       this.orders.forEach(i => i.selected = false);
       this.orders.push(o);
       o.selected = true;
       this.selectedActionType = null;
-        this.retrieveOptionsLists();
+      this.retrieveOptionsLists();
       this.checkOrdersSheet();
     });
   }
@@ -82,7 +83,7 @@ export class OrdersFormComponent implements OnInit {
 
   retrieveOptionsLists() {
     this.orders.forEach(order => {    
-      this.actionTypes[order.actionTypeId].form.forEach(input => {
+      this.orderType(order).form.forEach(input => {
         var parameterValue = "";
         if (input.parameter) {
           parameterValue = order.parameters[input.parameter];

@@ -235,5 +235,68 @@ namespace HostApp.Controllers
             }
         }
 
+        // GET campaigns/migrate applique les changements de dernière version
+        [HttpGet("migrate")]
+        [EnableCors]
+        [Authorize]
+        public ActionResult Migrate()
+        {
+            using (_dal)
+            {
+                var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
+                if (claim == null) return Unauthorized();
+                var idPlayer = long.Parse(claim.Value);
+
+                var user = (from u in _dal.Users
+                            join p in _dal.Players on u.Id equals p.UserId
+                            where p.Id == idPlayer
+                            select u).FirstOrDefault();
+                if (user == null || user.Role != UserRole.Admin) return Unauthorized();
+
+                var adminPlayers = (from p in _dal.Players
+                                    where p.IsAdmin
+                                    select p).ToList();
+                foreach(var admin in adminPlayers)
+                {
+                    admin.Name = "Neutre";
+                    admin.Color = "lightgrey";
+                }
+
+                var campaigns = (from c in _dal.Campaigns
+                                select c).ToList();
+                if (campaigns == null) return NotFound();
+                foreach(var campaign in campaigns) 
+                {
+                    var units = (from u in _dal.Units
+                                 join p in _dal.Players on u.PlayerId equals p.Id
+                                 join c in _dal.Campaigns on p.CampaignId equals c.Id
+                                 where c.Id == campaign.Id
+                                 select u).ToList();
+                    foreach(var building in units.Where(u => u.Type == "Building"))
+                    {
+                        if (adminPlayers.Select(a => a.Id).Contains(building.PlayerId))
+                        {
+                            foreach(var army in units.Where(u => u.Type == "Army"))
+                            {
+                                if (building.X == army.X && building.Y == army.Y)
+                                {
+                                    building.PlayerId = army.PlayerId;
+                                }
+                            }
+                        }
+                    }
+                    foreach(var army in units.Where(u => u.Type == "Army"))
+                    {
+                        var armyAssets = new Dictionary<string, Dictionary<string, string>>();
+                        foreach (var a in army.Assets) { armyAssets.Add(a.Key, a.Value); }
+                        armyAssets.Add("Renown", new Dictionary<string, string>() { { "3", null } });
+                        army.Assets = armyAssets;
+                    }
+                }
+                _dal.SaveChanges();
+
+                return Ok();
+            }
+        }
     }
 }

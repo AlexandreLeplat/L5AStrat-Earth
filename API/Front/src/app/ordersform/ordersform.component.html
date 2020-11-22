@@ -17,16 +17,16 @@
         <mat-expansion-panel-header>
           <mat-panel-title>
             <mat-icon *ngIf="ordersSheet.status == writingStatus">drag_indicator</mat-icon>
-            &nbsp;{{actionTypes[order.actionTypeId].label}}&nbsp;
+            &nbsp;{{orderType(order).label}}&nbsp;
             <mat-icon *ngIf="order.status == 1" [color]="order.comment.endsWith('?') ? 'accent' : 'warn'">warning</mat-icon>
           </mat-panel-title>
           <mat-panel-description>
             {{order.comment}}
           </mat-panel-description>
         </mat-expansion-panel-header>
-        <p>{{actionTypes[order.actionTypeId].description}}</p>
+        <p>{{orderType(order).description}}</p>
         <mat-list>
-          <mat-list-item *ngFor="let orderInput of actionTypes[order.actionTypeId].form">
+          <mat-list-item *ngFor="let orderInput of orderType(order).form">
             <mat-checkbox *ngIf="orderInput.type == 'Checkbox'" [checked]='order.parameters[orderInput.label] == "true"'
                 [disabled]="ordersSheet.status != writingStatus" (change)="updateCheckbox(order, orderInput.label, $event)">
               <strong>{{orderInput.label}}</strong>
@@ -59,8 +59,9 @@
         <mat-icon style="vertical-align: middle;">add</mat-icon>
         &nbsp;<strong style="vertical-align: middle;">Ajouter un ordre</strong>&nbsp;
         <mat-form-field appearance="fill" style="width: 50%;">
+          <mat-label>Type d'action</mat-label>
           <mat-select [(value)]="selectedActionType" [disabled]="ordersSheet.status != writingStatus" (selectionChange)="addOrder()">
-            <mat-option *ngFor="let actionType of actionTypes | keyvalue" [value]="actionType.key" >{{actionType.value.label}}</mat-option>
+            <mat-option *ngFor="let actionType of actionTypes" [value]="actionType.id" >{{actionType.label}}</mat-option>
           </mat-select>
         </mat-form-field>
         &nbsp;{{ordersSheet.maxOrdersCount - orders.length}} restants
