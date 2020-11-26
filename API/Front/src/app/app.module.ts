@@ -19,8 +19,8 @@ import { MapComponent } from './map/map.component';
 import { InboxComponent } from './inbox/inbox.component';
 import { MenuComponent } from './menu/menu.component';
 import { OrdersFormComponent } from './ordersform/ordersform.component';
-import { InfoComponent } from './info/info.component';
-import { RulesComponent } from './rules/rules.component';
+import { InfoComponent } from './header/info/info.component';
+import { RulesComponent } from './header/rules/rules.component';
 
 // Services
 import { AuthenticationService } from './services/authentication.service';
@@ -34,8 +34,10 @@ import { OptionsService } from './services/options.service'
 import { ThemeService } from './services/theme.service'
 import { TokenService } from './services/token.service'
 import { JwtHelperService, JWT_OPTIONS } from '@auth0/angular-jwt';
-import { MessageComponent } from './message/message.component';
-import { MessagehistoryComponent } from './messagehistory/messagehistory.component';
+import { MessageComponent } from './inbox/message/message.component';
+import { MessagehistoryComponent } from './inbox/messagehistory/messagehistory.component';
+import { LobbyComponent } from './lobby/lobby.component';
+import { ConfirmModalComponent } from './ordersform/confirm-modal/confirm-modal.component';
 
 registerLocaleData(localeFr, 'fr');
 
@@ -53,7 +55,9 @@ registerLocaleData(localeFr, 'fr');
     InfoComponent,
     RulesComponent,
     MessageComponent,
-    MessagehistoryComponent
+    MessagehistoryComponent,
+    LobbyComponent,
+    ConfirmModalComponent
   ],
   imports: [
     BrowserModule,

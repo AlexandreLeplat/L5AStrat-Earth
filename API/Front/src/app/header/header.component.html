@@ -1,10 +1,19 @@
 <mat-toolbar color="primary">
     <mat-toolbar-row>  
     <span>L5A Strat Auto - [Terre]</span>  
-      <span class="fill-remaining-space"></span>  
-      <button mat-icon-button [matMenuTriggerFor]="menu">  
+    <span class="fill-remaining-space"></span>  
+    <button *ngIf="playersList" mat-icon-button [matMenuTriggerFor]="playersMenu">  
+      <mat-icon>account_circle</mat-icon>
+    </button>  
+    <button mat-icon-button [matMenuTriggerFor]="menu">  
       <mat-icon>more_vert</mat-icon>  
     </button>  
+    <mat-menu #playersMenu="matMenu">
+      <button mat-menu-item *ngFor="let player of playersList" (click)="switchPlayer(player)">
+        <span>{{player.name}}</span>
+        &nbsp;<mat-icon *ngIf="player.isCurrentPlayer">account_circle</mat-icon>
+      </button>
+    </mat-menu>
     <mat-menu #menu="matMenu">  
       <!-- <button mat-menu-item *ngIf="isDarkTheme" (click)="switchBrightness(false)">
         <mat-icon>brightness_5</mat-icon>  

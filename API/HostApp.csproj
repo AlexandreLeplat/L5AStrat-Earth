@@ -19,6 +19,8 @@
     <Compile Remove="Migrations\20201016144603_mapInit.Designer.cs" />
     <Compile Remove="Migrations\20201016144831_mapInit.cs" />
     <Compile Remove="Migrations\20201016144831_mapInit.Designer.cs" />
+    <Compile Remove="Migrations\20201124161011_lobbymode.cs" />
+    <Compile Remove="Migrations\20201124161011_lobbymode.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

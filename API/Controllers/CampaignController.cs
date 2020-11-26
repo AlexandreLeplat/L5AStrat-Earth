@@ -29,9 +29,137 @@ namespace HostApp.Controllers
         [HttpGet]
         [EnableCors]
         [Authorize]
-        public ActionResult Get()
+        public ActionResult GetCampaigns(int? status = null)
         {
-            return NotFound();
+            var claim = User.Claims.Where(x => x.Type == ClaimTypes.PrimarySid).FirstOrDefault();
+            if (claim == null) return Unauthorized();
+            var userId = long.Parse(claim.Value);
+
+            using (_dal)
+            {
+                // On vérifie l'existence de l'utilisateur
+                if (!_dal.Users.Any(u => u.Id == userId))
+                    return Unauthorized();
+
+                // On récupère la liste des campagnes
+                var campaigns = (from c in _dal.Campaigns
+                                where status == null || (int)c.Status == status
+                                select c).ToList();
+
+                return Ok(campaigns);
+            }
+        }
+
+        // GET campaign permet de récupérer une campagne
+        [HttpGet("{id}")]
+        [EnableCors]
+        [Authorize]
+        public ActionResult GetCampaign(long? id)
+        {
+            var claim = User.Claims.Where(x => x.Type == ClaimTypes.PrimarySid).FirstOrDefault();
+            if (claim == null) return Unauthorized();
+            var userId = long.Parse(claim.Value);
+
+            using (_dal)
+            {
+                // On vérifie l'existence de l'utilisateur
+                if (!_dal.Users.Any(u => u.Id == userId))
+                    return Unauthorized();
+
+                // On récupère la campagne
+                var campaign = (from c in _dal.Campaigns
+                                 where c.Id == id.Value
+                                 select c).FirstOrDefault();
+                if (campaign == null) return NotFound();
+
+                return Ok(campaign);
+            }
+        }
+
+        // GET campaign permet de récupérer une campagne
+        [HttpPost]
+        [EnableCors]
+        [Authorize]
+        public ActionResult PostCampaign(Campaign model)
+        {
+            var claim = User.Claims.Where(x => x.Type == ClaimTypes.PrimarySid).FirstOrDefault();
+            if (claim == null) return Unauthorized();
+            var userId = long.Parse(claim.Value);
+
+            using (_dal)
+            {
+                // On vérifie l'existence de l'utilisateur
+                if (!_dal.Users.Any(u => u.Id == userId))
+                    return Unauthorized();
+
+                if (model == null)
+                    return BadRequest("Paramètres manquants");
+
+                if (string.IsNullOrWhiteSpace(model.Name) || model.Name.Length > 50)
+                    return BadRequest("Nom de campagne incorrect");
+
+                var gameId = _dal.Games.First().Id; // TODO : choix du système de jeu
+
+                if (model.PhaseLength == 0) model.PhaseLength = 1440;
+                if (model.NextPhase < DateTime.Now) model.NextPhase = DateTime.Now;
+
+                var campaign = new Campaign()
+                {
+                    Name = model.Name.Trim(),
+                    PhaseLength = model.PhaseLength,
+                    NextPhase = model.NextPhase,
+                    GameId = model.GameId,
+                    Status = CampaignStatus.Preparation,
+                    Assets = new Dictionary<string, Dictionary<string, string>>()
+                };
+
+                _dal.Campaigns.Add(campaign);
+                _dal.SaveChanges();
+
+                var adminPlayer = new Player()
+                {
+                    Name = "Neutre",
+                    Color = "lightgrey",
+                    CampaignId = campaign.Id,
+                    UserId = 1, // TODO : récupérer l'idUser admin dans la config
+                    IsAdmin = true
+                };
+                _dal.Players.Add(adminPlayer);
+                _dal.SaveChanges();
+
+                return Ok(campaign);
+            }
+        }
+
+        // DELETE campaign permet de supprimer une campagne en préparation
+        [HttpDelete("{id}")]
+        [EnableCors]
+        [Authorize]
+        public ActionResult DeleteCampaign(long? id)
+        {
+            var claim = User.Claims.Where(x => x.Type == ClaimTypes.PrimarySid).FirstOrDefault();
+            if (claim == null) return Unauthorized();
+            var userId = long.Parse(claim.Value);
+
+            using (_dal)
+            {
+                // On vérifie l'existence de l'utilisateur
+                if (!_dal.Users.Any(u => u.Id == userId))
+                    return Unauthorized();
+
+                // On récupère la campagne ciblée pour vérifier les prérequis
+                var campaign = _dal.Campaigns.FirstOrDefault(c => c.Id == id.Value);
+                if (campaign == null) return NotFound();
+
+                if (campaign.Status != CampaignStatus.Preparation)
+                    return StatusCode((int)HttpStatusCode.PreconditionFailed, "Le statut de la campagne ne permet pas cette action");
+                var campaignPlayers = _dal.Players.Where(p => p.CampaignId == campaign.Id).ToList();
+                _dal.Players.RemoveRange(campaignPlayers);
+
+                _dal.SaveChanges();
+
+                return Ok(campaign);
+            }
         }
 
         // GET campaigns/current permet de récupérer la campagne courante
@@ -189,13 +317,13 @@ namespace HostApp.Controllers
 
                 _dal.Messages.RemoveRange((from m in _dal.Messages
                                            join p in _dal.Players on m.PlayerId equals p.Id
-                                           where p.CampaignId == campaign.Id
+                                           where p.CampaignId == campaign.Id && m.IsNotification
                                            select m).ToArray());
 
                 _dal.SaveChanges();
 
-                var orderEngine = new OrdersEngine(_dal);
-                orderEngine.Work(campaign);
+                var lobbyEngine = new LobbyEngine(_dal);
+                lobbyEngine.LaunchGame(campaign);
                 _dal.SaveChanges();
 
                 return Ok();
@@ -235,67 +363,34 @@ namespace HostApp.Controllers
             }
         }
 
-        // GET campaigns/migrate applique les changements de dernière version
-        [HttpGet("migrate")]
+        // GET campaigns/{id}/randomplayer permet de proposer un joueur aléatoire pour s'inscrire à la partie
+        [HttpGet("{id}/randomplayer")]
         [EnableCors]
         [Authorize]
-        public ActionResult Migrate()
+        public ActionResult GetRandomPlayerForCampaign(long? id)
         {
             using (_dal)
             {
-                var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
+                var claim = User.Claims.Where(x => x.Type == ClaimTypes.PrimarySid).FirstOrDefault();
                 if (claim == null) return Unauthorized();
-                var idPlayer = long.Parse(claim.Value);
+                var userId = long.Parse(claim.Value);
 
-                var user = (from u in _dal.Users
-                            join p in _dal.Players on u.Id equals p.UserId
-                            where p.Id == idPlayer
-                            select u).FirstOrDefault();
-                if (user == null || user.Role != UserRole.Admin) return Unauthorized();
+                // On vérifie l'existence de l'utilisateur
+                if (!_dal.Users.Any(u => u.Id == userId))
+                    return Unauthorized();
 
-                var adminPlayers = (from p in _dal.Players
-                                    where p.IsAdmin
-                                    select p).ToList();
-                foreach(var admin in adminPlayers)
-                {
-                    admin.Name = "Neutre";
-                    admin.Color = "lightgrey";
-                }
+                // On récupère la campagne ciblée pour vérifier les prérequis
+                var campaign = _dal.Campaigns.FirstOrDefault(c => c.Id == id.Value);
+                if (campaign == null) return NotFound();
 
-                var campaigns = (from c in _dal.Campaigns
-                                select c).ToList();
-                if (campaigns == null) return NotFound();
-                foreach(var campaign in campaigns) 
-                {
-                    var units = (from u in _dal.Units
-                                 join p in _dal.Players on u.PlayerId equals p.Id
-                                 join c in _dal.Campaigns on p.CampaignId equals c.Id
-                                 where c.Id == campaign.Id
-                                 select u).ToList();
-                    foreach(var building in units.Where(u => u.Type == "Building"))
-                    {
-                        if (adminPlayers.Select(a => a.Id).Contains(building.PlayerId))
-                        {
-                            foreach(var army in units.Where(u => u.Type == "Army"))
-                            {
-                                if (building.X == army.X && building.Y == army.Y)
-                                {
-                                    building.PlayerId = army.PlayerId;
-                                }
-                            }
-                        }
-                    }
-                    foreach(var army in units.Where(u => u.Type == "Army"))
-                    {
-                        var armyAssets = new Dictionary<string, Dictionary<string, string>>();
-                        foreach (var a in army.Assets) { armyAssets.Add(a.Key, a.Value); }
-                        armyAssets.Add("Renown", new Dictionary<string, string>() { { "3", null } });
-                        army.Assets = armyAssets;
-                    }
-                }
-                _dal.SaveChanges();
+                if (campaign.Status != CampaignStatus.Preparation)
+                    return StatusCode((int)HttpStatusCode.PreconditionFailed, "Le statut de la campagne ne permet pas cette action");
+                var campaignPlayers = _dal.Players.Where(p => p.CampaignId == campaign.Id && !p.IsAdmin).ToList();
 
-                return Ok();
+                var lobbyEngine = new LobbyEngine(_dal);
+                var randomPlayer = lobbyEngine.GenerateRandomPlayer(campaign, userId);
+
+                return Ok(randomPlayer);
             }
         }
     }

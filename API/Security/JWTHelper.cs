@@ -34,7 +34,8 @@ namespace HostApp.Security
                 Subject = new ClaimsIdentity(new[]
                 {
                     new Claim(ClaimTypes.Sid, player.Id.ToString()),
-                    new Claim(ClaimTypes.Name, player.Name)
+                    new Claim(ClaimTypes.Name, player.Name),
+                    new Claim(ClaimTypes.PrimarySid, player.UserId.ToString())
                 }),
                 Expires = expiration,
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -45,7 +46,8 @@ namespace HostApp.Security
             return new Token()
             {
                 Jwt = tokenHandler.WriteToken(token),
-                Expiration = expiration
+                Expiration = expiration,
+                IsPlaying = player.IsPlaying
             };
         }
     }

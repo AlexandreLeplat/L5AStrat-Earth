@@ -24,14 +24,13 @@ namespace Entities.Database
         public DbSet<Unit> Units { get; set; }
         public DbSet<User> Users { get; set; }
 
-        private long _unitId = 1;
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Game>().Property(o => o._jsonHomeWidgets).HasColumnName("HomeWidgets");
             modelBuilder.Entity<Game>().HasData(new Game() { Id = 1, Name = "L5A Strat - TERRE", HomeWidgets = new List<string>() { "Clock", "PlayerInfo", "CampaignInfo" } });
 
             modelBuilder.Entity<Campaign>().Property(o => o._jsonAssets).HasColumnName("Assets");
+            modelBuilder.Entity<Campaign>().HasOne(c => c.Creator).WithMany(u => u.Campaigns).OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<Campaign>().HasData(new Campaign()
             {
                 Id = 1,

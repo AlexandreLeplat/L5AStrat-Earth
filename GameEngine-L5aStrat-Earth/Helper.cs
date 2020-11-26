@@ -91,6 +91,57 @@ namespace L5aStrat_Earth
             else return Guid.NewGuid().ToString();
         }
 
+        public static Tuple<string,string> ChooseRandomColorAndPlayerName(IEnumerable<string> excludeColorList, IEnumerable<string> excludeNameList)
+        {
+            Random rnd = new Random();
+
+            // Choix de la couleur et du nom de famille
+            var clansList = new List<Clan>(References.ClansList);
+            var color = string.Empty;
+            var family = string.Empty;
+            while (string.IsNullOrEmpty(color))
+            {
+                int rndIndex = rnd.Next(0, clansList.Count() - 1);
+                var selectedClan = clansList[rndIndex];
+
+                var colorsList = new List<string>(selectedClan.Colors);
+                var familyNamesList = new List<string>(selectedClan.FamilyNames);
+                colorsList.RemoveAll(c => excludeColorList.Contains(c));
+                if (colorsList.Any() && familyNamesList.Any())
+                {
+                    rndIndex = rnd.Next(0, colorsList.Count() - 1);
+                    color = colorsList[rndIndex];
+                    rndIndex = rnd.Next(0, familyNamesList.Count() - 1);
+                    family = familyNamesList[rndIndex];
+                    if (family.StartsWith('[')) family = string.Empty;
+                }
+                else clansList.RemoveAt(rndIndex);
+            }
+
+            // Choix du prénom
+            var firstNamesList = new List<string>();
+            firstNamesList.AddRange(References.FirstNamesList);
+            var firstName = string.Empty;
+            while(string.IsNullOrEmpty(firstName))
+            {
+                if (firstNamesList.Any())
+                {
+                    int rndIndex = rnd.Next(0, firstNamesList.Count() - 1);
+                    if (excludeNameList.Any(n => n.Contains(firstNamesList[rndIndex])))
+                    {
+                        firstNamesList.RemoveAt(rndIndex);
+                    }
+                    else
+                    {
+                        firstName = firstNamesList[rndIndex];
+                    }
+                }
+                else firstName = Guid.NewGuid().ToString();
+            }
+
+            return new Tuple<string, string>(color, $"{family} {firstName}".Trim());
+        }
+
         public static void SendNotification(long playerId, string subject, string body, DAL dal)
         {
             var adminId = (from p in dal.Players

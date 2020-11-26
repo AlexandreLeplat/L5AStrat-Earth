@@ -397,6 +397,20 @@ namespace L5aStrat_Earth
             });
         }
 
+        public Player GenerateRandomPlayer(long campaignId)
+        {
+            var campaignPlayers = _dal.Players.Where(p => p.CampaignId == campaignId && !p.IsAdmin).ToList();
+
+            var colorAndName = Helper.ChooseRandomColorAndPlayerName(campaignPlayers.Select(p => p.Color), campaignPlayers.Select(p => p.Name));
+            var randomPlayer = new Player()
+            {
+                CampaignId = campaignId,
+                Color = colorAndName.Item1,
+                Name = colorAndName.Item2
+            };
+            return randomPlayer;
+        }
+
         private Unit CreateBuilding(string type, int x, int y, long playerId)
         {
             var newUnit = new Unit()

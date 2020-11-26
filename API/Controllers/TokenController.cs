@@ -49,7 +49,7 @@ namespace HostApp.Controllers
                 if (BCrypt.Net.BCrypt.Verify(input.Password, user.Password))
                 {
                     var mainPlayer = _dal.Players.FirstOrDefault(p => p.UserId == user.Id && p.IsCurrentPlayer);
-                    if (mainPlayer == null) return NotFound();
+                    if (mainPlayer == null) mainPlayer = new Player() { UserId = user.Id };
 
                     var token = jwt.GenerateSecurityToken(mainPlayer);
                     return Ok(token);
@@ -61,17 +61,29 @@ namespace HostApp.Controllers
             }
         }
 
-        // GET token : Permet de renouveler un token existant pour repousser l'expiration
-        [HttpGet]
+        // GET token : Permet d'échanger son token contre celui d'un autre joueur du même utilisateur
+        [HttpGet("{id}")]
         [EnableCors]
         [Authorize]
-        public ActionResult Get()
+        public ActionResult Get(long? id)
         {
             var jwt = new JWTHelper(_config);
-            var id = long.Parse(User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault().Value);
-            var name = User.Claims.Where(x => x.Type == ClaimTypes.Name).FirstOrDefault().Value;
-            var token = jwt.GenerateSecurityToken(new Player() { Id = id, Name = name });
-            return Ok(token);
+            var idUser = long.Parse(User.Claims.Where(x => x.Type == ClaimTypes.PrimarySid).FirstOrDefault().Value);
+
+            using (_dal)
+            {
+                var selectedPlayer = _dal.Players.FirstOrDefault(p => p.UserId == idUser && p.Id == id.Value);
+                if (selectedPlayer == null) return NotFound();
+
+                var mainPlayer = _dal.Players.FirstOrDefault(p => p.UserId == idUser && p.IsCurrentPlayer);
+                if (mainPlayer != null) mainPlayer.IsCurrentPlayer = false;
+
+                selectedPlayer.IsCurrentPlayer = true;
+                _dal.SaveChanges();
+
+                var token = jwt.GenerateSecurityToken(selectedPlayer);
+                return Ok(token);
+            }
         }
     }
 }

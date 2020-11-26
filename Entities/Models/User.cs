@@ -16,5 +16,8 @@ namespace Entities.Models
 
         [JsonIgnore]
         public List<Player> Players { get; set; }
+
+        [JsonIgnore]
+        public List<Campaign> Campaigns { get; set; }
     }
 }

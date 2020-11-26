@@ -1,0 +1,16 @@
+.desktop-content {
+    margin-left: 300px;
+}
+.mobile-content {
+    margin-bottom: 75px;
+}
+.lobby-card {
+    width: 285px;
+    margin: 10% auto auto;
+}
+.lobby-card-mobile {
+    width: 90%;
+    margin: 15px auto auto;
+    text-align: center;
+}
+  

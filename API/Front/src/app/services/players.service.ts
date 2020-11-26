@@ -10,6 +10,7 @@ export interface Player {
   assets: { [category: string]: { [asset: string]: string; }; };
   userId: number;
   campaignId: number;
+  isCurrentPlayer: boolean;
 }
 
 @Injectable({
@@ -34,6 +35,10 @@ export class PlayersService {
 
   getCampaignPlayers() {
     return this.http.get<Player[]>(environment.apiURL + '/campaigns/current/players', { headers : this.headers() });
+  }
+
+  getUserPlayers() {
+    return this.http.get<Player[]>(environment.apiURL + '/players', { headers : this.headers() });
   }
 
   updatePlayer(player: Player) {

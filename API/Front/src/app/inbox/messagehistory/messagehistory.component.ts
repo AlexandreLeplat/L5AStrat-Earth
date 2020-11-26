@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Message, MessagesService } from '../services/messages.service';
+import { Message, MessagesService } from '../../services/messages.service';
 
 export interface MessageHistoryData {
   message: Message;

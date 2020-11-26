@@ -29,6 +29,10 @@ export class CampaignsService {
       });
     }
     
+    getCampaigns(status: number) {
+      return this.http.get<Campaign[]>(environment.apiURL + '/campaigns?status=' + status, { headers : this.headers() });
+  }
+  
     getCurrentCampaign() {
         return this.http.get<Campaign>(environment.apiURL + '/campaigns/current', { headers : this.headers() });
     }

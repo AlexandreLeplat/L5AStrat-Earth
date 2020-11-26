@@ -2,8 +2,8 @@ import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Message, MessagesService } from '../services/messages.service';
-import { OptionsService } from '../services/options.service';
+import { Message, MessagesService } from '../../services/messages.service';
+import { OptionsService } from '../../services/options.service';
 
 export interface PreviewBlock {
   content: string;

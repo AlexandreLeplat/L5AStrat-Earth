@@ -653,7 +653,8 @@ namespace L5aStrat_Earth
             _dal.Players.Update(player);
 
             var occupiedTile = (from u in _dal.Units
-                                where u.X == destinationTile.X && u.Y == destinationTile.Y && u.Type == "Army"
+                                join p in _dal.Players on u.PlayerId equals p.Id
+                                where u.X == destinationTile.X && u.Y == destinationTile.Y && u.Type == "Army" && p.CampaignId == player.CampaignId
                                 select u).FirstOrDefault();
             if (occupiedTile != null)
             {
@@ -686,8 +687,9 @@ namespace L5aStrat_Earth
             var building = (from b in _dal.Units
                              where b.Type == "Building" && b.X == army.X && b.Y == army.Y
                              select b).FirstOrDefault();
-            if (building != null)
+            if (building != null && building.PlayerId != army.PlayerId)
             {
+                Helper.SendNotification(building.PlayerId, "Vous perdez un bâtiment", $"Une armée de {player.Name} prend le contrôle de votre {building.Name} en {References.coordinatesLetters[building.X]}{building.Y + 1}.", _dal);
                 building.PlayerId = army.PlayerId;
                 _dal.Units.Update(building);
             }

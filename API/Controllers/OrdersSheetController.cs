@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Entities.Interfaces;
 using L5aStrat_Earth;
+using Serilog;
 
 namespace HostApp.Controllers
 {
@@ -244,7 +245,7 @@ namespace HostApp.Controllers
                     return Ok(orders.OrderBy(o => o.Rank));
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError);
             }
@@ -301,6 +302,9 @@ namespace HostApp.Controllers
                                        select s).FirstOrDefault();
                     if (ordersSheet == null) return NotFound();
 
+                    if (ordersSheet.Status != OrdersSheetStatus.Writing)
+                        return StatusCode((int)HttpStatusCode.PreconditionFailed, "Statut incorrect de la feuille d'ordres");
+
                     var ordersCount = (from o in _dal.Orders
                                        where o.OrdersSheetId == ordersSheet.Id
                                        select 1).Count();
@@ -345,6 +349,9 @@ namespace HostApp.Controllers
                                        select s).FirstOrDefault();
                     if (ordersSheet == null) return NotFound();
 
+                    if (ordersSheet.Status != OrdersSheetStatus.Writing)
+                        return StatusCode((int)HttpStatusCode.PreconditionFailed, "Statut incorrect de la feuille d'ordres");
+
                     var order = (from o in _dal.Orders
                                  where o.OrdersSheetId == idSheet && o.Id == idOrder
                                  select o).FirstOrDefault();
@@ -380,6 +387,8 @@ namespace HostApp.Controllers
                                        where s.PlayerId == idPlayer && s.Id == idSheet
                                        select s).FirstOrDefault();
                     if (ordersSheet == null) return NotFound();
+                    if (ordersSheet.Status != OrdersSheetStatus.Writing)
+                        return StatusCode((int)HttpStatusCode.PreconditionFailed, "Statut incorrect de la feuille d'ordres");
 
                     var order = (from o in _dal.Orders
                                  where o.OrdersSheetId == idSheet && o.Id == idOrder

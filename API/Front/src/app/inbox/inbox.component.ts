@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { stringToKeyValue } from '@angular/flex-layout/extended/typings/style/style-transforms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { MessageComponent, NewMessageData } from '../message/message.component';
-import { MessagehistoryComponent, MessageHistoryData } from '../messagehistory/messagehistory.component';
+import { MessageComponent, NewMessageData } from './message/message.component';
+import { MessagehistoryComponent, MessageHistoryData } from './messagehistory/messagehistory.component';
 import { Message, MessagesService } from '../services/messages.service';
 import { PlayersService } from '../services/players.service';
 

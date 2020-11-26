@@ -51,7 +51,7 @@
             <p [ngClass]="(orderInput.type == 'Checkbox') ? 'checkboxDescription' : 'selectDescription'">{{orderInput.description}}</p>
           </mat-list-item>
         </mat-list>
-        <mat-action-row>
+        <mat-action-row *ngIf="ordersSheet.status == writingStatus">
           <button mat-button color="primary" (click)="removeOrder(order)"><mat-icon>clear</mat-icon>&nbsp;Retirer</button>
         </mat-action-row>
       </mat-expansion-panel>

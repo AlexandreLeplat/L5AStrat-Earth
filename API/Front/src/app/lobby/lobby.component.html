@@ -1,0 +1,25 @@
+<app-header></app-header>
+<div>
+    <div ngClass.gt-md="desktop-content" ngClass.xs="mobile-content"
+            fxLayout="row" fxLayout.lt-md="column" fxLayoutWrap fxLayoutGap="0.5%">
+        <div *ngIf="campaignsList else spinnerCard" style="width:100%">
+            <mat-card *ngFor="let campaign of campaignsList" class="lobby-card">
+              <mat-card-header>
+                <mat-card-title>{{campaign.name}}</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                
+              </mat-card-content>
+            </mat-card>
+        </div>
+    <ng-template #spinnerCard>
+      <mat-card class="home-card" ngClass.xs="home-card-mobile">
+        <mat-card-header>
+          <mat-card-title>Chargement...</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-spinner class="full-width" [style.display]="'block'"></mat-spinner>
+        </mat-card-content>
+      </mat-card>
+    </ng-template>
+</div>

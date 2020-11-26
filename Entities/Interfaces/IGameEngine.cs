@@ -9,7 +9,9 @@ namespace Entities.Interfaces
     public interface IGameEngine
     {
         public void InitCampaign(Campaign campaign);
-            
+
+        public Player GenerateRandomPlayer(long campaignId);
+
         public int PayPriority(Player player, int priority);
 
         public List<Order> CheckOrdersSheet(OrdersSheet sheet);

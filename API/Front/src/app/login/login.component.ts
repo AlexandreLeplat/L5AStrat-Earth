@@ -34,7 +34,11 @@ export class LoginComponent implements OnInit {
       next: data => { 
         localStorage.setItem("userToken", data.jwt);
         localStorage.setItem("expiresAt", data.expiration.toString());
-        this.router.navigate(['/','home']);
+        if (data.isPlaying) {
+          this.router.navigate(['/','home']);
+        } else {
+          this.router.navigate(['/','lobby']);
+        }
       },
       error: error => {
         this.showSpinner = false;

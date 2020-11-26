@@ -28,8 +28,11 @@ namespace Entities.Models
         public bool HasNewMap { get; set; }
 
         // Flag indiquant s'il s'agit du joueur actuellement utilisé par l'utilisateur (dans le cadre d'un utilisateur multi-comptes)
-        [JsonIgnore]
         public bool IsCurrentPlayer { get; set; }
+
+        // Flag indiquant si le joueur est sur une partie en cours ou pas (géré par le token)
+        [JsonIgnore]
+        public bool IsPlaying { get; set; }
 
         // Flag indiquant s'il s'agit d'un compte d'administration
         [JsonIgnore]

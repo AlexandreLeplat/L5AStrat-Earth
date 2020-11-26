@@ -1,6 +1,9 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Security.Claims;
 using Entities.Database;
+using Entities.Enums;
 using Entities.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -24,7 +27,7 @@ namespace HostApp.Controllers
         [HttpGet]
         [EnableCors]
         [Authorize]
-        public ActionResult Get()
+        public ActionResult GetPlayers()
         {
             using (_dal)
             {
@@ -72,13 +75,59 @@ namespace HostApp.Controllers
             return NotFound();
         }
 
-        // POST players permet de créer un joueur
+        // POST players permet de créer un joueur sur une campagne en préparation
         [HttpPost]
         [EnableCors]
         [Authorize]
-        public ActionResult Post([FromBody] string value)
+        public ActionResult Post([FromBody] Player model)
         {
-            return NotFound();
+            if (model == null || string.IsNullOrWhiteSpace(model.Color))
+                return BadRequest("Paramètres manquants");
+
+            if (string.IsNullOrWhiteSpace(model.Name) || model.Name.Trim().Length > 25)
+                return BadRequest("Nom incorrect");
+
+            using (_dal)
+            {
+                var claim = User.Claims.Where(x => x.Type == ClaimTypes.PrimarySid).FirstOrDefault();
+                if (claim == null) return Unauthorized();
+                var userId = long.Parse(claim.Value);
+
+                // On vérifie l'existence de l'utilisateur
+                if (_dal.Users.Any(u => u.Id == userId))
+                    return Unauthorized();
+
+                // On récupère la campagne ciblée pour vérifier les prérequis
+                var campaign = _dal.Campaigns.FirstOrDefault(c => c.Id == model.CampaignId);
+                if (campaign == null) return NotFound();
+
+                if (campaign.Status != CampaignStatus.Preparation)
+                    return StatusCode((int)HttpStatusCode.PreconditionFailed, "Le statut de la campagne ne permet pas cette action");
+                var campaignPlayers = _dal.Players.Where(p => p.CampaignId == campaign.Id && !p.IsAdmin).ToList();
+                
+                if (campaignPlayers.Count() >= 4) // TODO : gérer dynamiquement le max de joueurs
+                    return StatusCode((int)HttpStatusCode.PreconditionFailed, "La campagne ne peut plus accepter de joueur supplémentaire");
+
+                if (campaignPlayers.Exists(p => p.Color == model.Color || p.Name.ToUpperInvariant() == model.Name.ToUpperInvariant().Trim()))
+                    return StatusCode((int)HttpStatusCode.PreconditionFailed, "Le nom ou la couleur a déjà été pris sur cette campagne");
+
+                if (campaignPlayers.Exists(p => p.UserId == userId))
+                    return StatusCode((int)HttpStatusCode.PreconditionFailed, "Vous avez déjà créé un joueur sur cette campagne");
+
+                Player player = new Player()
+                {
+                    Name = model.Name.Trim(),
+                    Color = model.Color,
+                    CampaignId = campaign.Id,
+                    UserId = model.UserId,
+                    Assets = new Dictionary<string, Dictionary<string, string>>()
+                };
+
+                _dal.Players.Add(player);
+                _dal.SaveChanges();
+
+                return Ok(model);
+            }
         }
 
         // PUT players permet de mettre à jour un joueur

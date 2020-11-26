@@ -41,6 +41,10 @@ namespace Entities.Models
         [JsonIgnore]
         public Game Game { get; set; }
 
+        public long CreatorId { get; set; }
+        [JsonIgnore]
+        public User Creator { get; set; }
+
         [JsonIgnore]
         public List<Player> Players { get; set; }
 
