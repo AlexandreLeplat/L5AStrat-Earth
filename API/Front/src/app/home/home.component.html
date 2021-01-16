@@ -1,4 +1,4 @@
-<app-header></app-header>
+<app-header [playersList]="playersList"></app-header>
 <app-menu [selectedRoute]="'home'"></app-menu>
 <div [ngClass]="{'dark-theme': isDarkTheme | async}">
   <div *ngIf="game else spinnerCard" ngClass.gt-md="desktop-content" 
@@ -6,33 +6,35 @@
     <div *ngFor="let widget of game.homeWidgets" style="width:100%">
       <div [ngSwitch]="widget">
         <!-- HORLOGE -->
-        <div *ngIf="campaign else spinnerCard">
-          <mat-card *ngSwitchCase="'Clock'" class="home-card" ngClass.xs="home-card-mobile">
+        <mat-card *ngSwitchCase="'Clock'" class="home-card" ngClass.xs="home-card-mobile">
+          <div *ngIf="campaign else spinnerCardContent">
             <mat-card-header>
               <mat-card-title>Tour n° {{campaign.currentTurn}}</mat-card-title>
             </mat-card-header>
             <mat-card-content>
               <br/>
-              <p [ngSwitch]="campaign.currentPhase">
-                <strong *ngSwitchCase="0">Pause</strong>
-                <strong *ngSwitchCase="1">Phase de début de tour</strong>
-                <strong *ngSwitchCase="2">Phase de milieu de tour</strong>
-                <strong *ngSwitchCase="3">Phase de fin de tour</strong>
-                <strong *ngSwitchCase="4">Conclusion du tour</strong>
-              </p>
-              <p *ngIf="campaign.nextPhase">
-                <mat-progress-bar mode="determinate" [value]="calculatePhaseProgress(campaign)"></mat-progress-bar>
-                <br/>
-                Prochaine phase : <strong>{{campaign.nextPhase | date:'EEEE d MMMM, H:mm'}}</strong>
-              </p>
-              <mat-spinner class="full-width" [style.display]="loadingCampaign ? 'block' : 'none'"></mat-spinner>
+              <strong *ngIf="campaign.status == 4">La partie est terminée</strong>
+              <div *ngIf="campaign.status != 4">
+                <p [ngSwitch]="campaign.currentPhase">
+                  <strong *ngSwitchCase="0">Pause</strong>
+                  <strong *ngSwitchCase="1">Phase de début de tour</strong>
+                  <strong *ngSwitchCase="2">Phase de milieu de tour</strong>
+                  <strong *ngSwitchCase="3">Phase de fin de tour</strong>
+                  <strong *ngSwitchCase="4">Conclusion du tour</strong>
+                </p>
+                <p *ngIf="campaign.nextPhase">
+                  <mat-progress-bar mode="determinate" [value]="calculatePhaseProgress(campaign)"></mat-progress-bar>
+                  <br/>
+                  Prochaine phase : <strong>{{campaign.nextPhase | date:'EEEE d MMMM, H:mm'}}</strong>
+                </p>
+              </div>
             </mat-card-content>
-          </mat-card>
-        </div>
+          </div>
+        </mat-card>
         
         <!-- INFOS DE JOUEUR -->
-        <div *ngIf="player else spinnerCard">
-          <mat-card *ngSwitchCase="'PlayerInfo'" class="home-card" ngClass.xs="home-card-mobile">
+        <mat-card *ngSwitchCase="'PlayerInfo'" class="home-card" ngClass.xs="home-card-mobile">
+          <div *ngIf="player else spinnerCardContent">
             <mat-card-header>
               <mat-card-title>{{player.name}}</mat-card-title>
             </mat-card-header>
@@ -45,12 +47,12 @@
                 </mat-list-item>
               </mat-list>
             </mat-card-content>
-          </mat-card>
-        </div>
+          </div>
+        </mat-card>
   
         <!-- INFOS DE CAMPAGNE -->
-        <div *ngIf="campaign else spinnerCard">
-          <mat-card *ngSwitchCase="'CampaignInfo'" class="home-card" ngClass.xs="home-card-mobile">
+        <mat-card *ngSwitchCase="'CampaignInfo'" class="home-card" ngClass.xs="home-card-mobile">
+          <div *ngIf="campaign else spinnerCardContent">
             <mat-card-header>
               <mat-card-title>{{campaign.name}}</mat-card-title>
             </mat-card-header>
@@ -63,8 +65,8 @@
                 </mat-list-item>
               </mat-list>
             </mat-card-content>
-          </mat-card>
-        </div>
+          </div>
+        </mat-card>
       </div>
     </div>
   </div>
@@ -74,8 +76,16 @@
         <mat-card-title>Chargement...</mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        <mat-spinner class="full-width" [style.display]="'block'"></mat-spinner>
+        <mat-spinner class="spinner"></mat-spinner>
       </mat-card-content>
     </mat-card>
+  </ng-template>
+  <ng-template #spinnerCardContent>
+    <mat-card-header>
+      <mat-card-title>Chargement...</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <mat-spinner class="spinner"></mat-spinner>
+    </mat-card-content>
   </ng-template>
 </div>

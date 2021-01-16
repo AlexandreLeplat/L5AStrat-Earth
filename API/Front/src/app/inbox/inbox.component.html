@@ -1,4 +1,4 @@
-<app-header></app-header>
+<app-header [playersList]="playersList"></app-header>
 <app-menu [selectedRoute]="'inbox'"></app-menu>
 <div ngClass.gt-md="desktop-content" ngClass.xs="mobile-content">
   <mat-accordion *ngIf="messages else spinnerCard" class="accordion">
@@ -10,7 +10,7 @@
               <div *ngIf="playerNames && !message.isNotification">
                 <strong *ngIf="!message.isRead && !sentBoxMode">{{playerNames[message.senderId]}}</strong>
                 <span *ngIf="message.isRead && !sentBoxMode">{{playerNames[message.senderId]}}</span>
-                <span *ngIf="sentBoxMode">{{playerNames[message.playerId]}}</span>
+                <span *ngIf="sentBoxMode">À: {{playerNames[message.playerId]}}</span>
               </div>
               <div *ngIf="message.isNotification">
                 <strong *ngIf="!message.isRead">Tour {{message.turn}}</strong>

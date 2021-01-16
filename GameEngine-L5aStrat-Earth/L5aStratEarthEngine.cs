@@ -34,20 +34,20 @@ namespace L5aStrat_Earth
             var adminId = players.FirstOrDefault(p => p.IsAdmin).Id;
 
             // Générer la map de début de tour
-            var newMap = new Map()
+            foreach (var player in players.Where(p => !p.IsAdmin))
             {
-                PlayerId = adminId,
-                CampaignId = campaign.Id,
-                Name = $"Début de Tour {campaign.CurrentTurn}",
-                Turn = campaign.CurrentTurn,
-                Size = 9,
-                CreationDate = DateTime.Now
-            };
-            _dal.Maps.Add(newMap);
-            _dal.SaveChanges();
-            _dal.MapTiles.AddRange(this.GenerateMapTiles(newMap.Id, campaign.Id, adminId));
-            foreach(var player in players)
-            {
+                var newMap = new Map()
+                {
+                    PlayerId = player.Id,
+                    CampaignId = campaign.Id,
+                    Name = $"Début de Tour {campaign.CurrentTurn}",
+                    Turn = campaign.CurrentTurn,
+                    Size = 9,
+                    CreationDate = DateTime.Now
+                };
+                _dal.Maps.Add(newMap);
+                _dal.SaveChanges();
+                _dal.MapTiles.AddRange(this.GenerateMapTiles(newMap.Id, campaign.Id, player.Id, 0));
                 player.HasNewMap = true;
             }
 
@@ -101,7 +101,8 @@ namespace L5aStrat_Earth
             _dal.Maps.Add(newMap);
             _dal.SaveChanges();
 
-            _dal.MapTiles.AddRange(this.GenerateMapTiles(newMap.Id, campaign.Id, player.Id));
+            _dal.MapTiles.AddRange(this.GenerateMapTiles(newMap.Id, campaign.Id, player.Id, 1));
+            player.HasNewMap = true;
 
             return true;
         }
@@ -240,6 +241,32 @@ namespace L5aStrat_Earth
                     };
                 }
             }
+
+            // Fin de partie
+            if (campaign.CurrentTurn >= 12)
+            {
+                campaign.CurrentPhase = TurnPhase.Stop;
+                campaign.Status = CampaignStatus.Finished;
+
+                // Générer la map de fin de partie
+                foreach (var player in players)
+                {
+                    var newMap = new Map()
+                    {
+                        PlayerId = player.Id,
+                        CampaignId = campaign.Id,
+                        Name = $"Fin de partie",
+                        Turn = campaign.CurrentTurn,
+                        Size = 9,
+                        CreationDate = DateTime.Now
+                    };
+                    _dal.Maps.Add(newMap);
+                    _dal.SaveChanges();
+                    _dal.MapTiles.AddRange(this.GenerateMapTiles(newMap.Id, campaign.Id, player.Id, 2));
+                    player.HasNewMap = true;
+                }
+            }
+
             return result;
         }
 
@@ -428,7 +455,7 @@ namespace L5aStrat_Earth
             return newUnit;
         }
 
-        private List<MapTile> GenerateMapTiles(long mapId, long campaignId, long playerId)
+        private List<MapTile> GenerateMapTiles(long mapId, long campaignId, long playerId, byte vision)
         {
             var result = new List<MapTile>();
 
@@ -546,13 +573,15 @@ namespace L5aStrat_Earth
                         tileColor = players.FirstOrDefault(p => p.Id == army.PlayerId).Color;
                         var formation = "Inconnue";
                         if (army.Assets.ContainsKey("Formation")
-                            && (spiedPlayers.Contains(army.PlayerId)
-                                || units.Exists(u => u.X <= i + 1
+                            && (army.PlayerId == playerId
+                                || vision == 2
+                                || vision == 1 && (spiedPlayers.Contains(army.PlayerId)
+                                    || units.Exists(u => u.X <= i + 1
                                             && u.X >= i - 1
                                             && u.Y <= j + 1
                                             && u.Y >= j - 1
                                             && u.Type == "Army"
-                                            && u.PlayerId == playerId)))
+                                            && u.PlayerId == playerId))))
                         {
                             formation = army.Assets["Formation"].Keys.FirstOrDefault();
                         }
@@ -591,37 +620,35 @@ namespace L5aStrat_Earth
 
         private bool AddProduction(Player player, int gloryValue, int stratValue, int upkeepCost)
         {
-            if (gloryValue > 0)
+            var playerAssets = JsonSerializer.Deserialize<PlayerAssets>(player._jsonAssets);
+            playerAssets.Resources.Strategy += stratValue - upkeepCost;
+            var debtInfamy = 0;
+            if (playerAssets.Resources.Strategy < 0)
             {
-                var playerAssets = JsonSerializer.Deserialize<PlayerAssets>(player._jsonAssets);
-                playerAssets.Resources.Strategy += stratValue - upkeepCost;
-                var debtInfamy = 0;
-                if (playerAssets.Resources.Strategy < 0)
-                {
-                    debtInfamy = -(playerAssets.Resources.Strategy);
-                    playerAssets.Resources.Strategy = 0;
-                }
-                player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
-                Helper.AddInfamy(player, debtInfamy);
-                Helper.AddGlory(player, gloryValue);
-
-                _dal.Update(player);
-                var body = $"Vos bâtiments vous rapportent {gloryValue} point{(gloryValue > 1 ? "s" : "")} de Gloire";
-                if (stratValue > 0)
-                { 
-                    body += $" et {stratValue} points de Stratégie."; 
-                }
-                else body += ".";
-                if (upkeepCost > 0)
-                {
-                    body += $"{Environment.NewLine}L'entretien de vos armées vous coûte {upkeepCost} points de Stratégie.";
-                }
-                if (debtInfamy > 0)
-                {
-                    body += $"{Environment.NewLine}Ne pouvant le payer entièrement, vous subissez {debtInfamy} points d'Infamie.";
-                }
-                Helper.SendNotification(player.Id, "Rapport de production", body, _dal);
+                debtInfamy = -(playerAssets.Resources.Strategy);
+                playerAssets.Resources.Strategy = 0;
             }
+            player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
+            Helper.AddInfamy(player, debtInfamy);
+            Helper.AddGlory(player, gloryValue);
+
+            _dal.Update(player);
+            var body = $"Vos bâtiments vous rapportent {stratValue} point{(stratValue > 1 ? "s" : "")} de Stratégie";
+            if (gloryValue > 0)
+            { 
+                body += $" et {gloryValue} points de Gloire."; 
+            }
+            else body += ".";
+            if (upkeepCost > 0)
+            {
+                body += $"{Environment.NewLine}L'entretien de vos armées vous coûte {upkeepCost} points de Stratégie.";
+            }
+            if (debtInfamy > 0)
+            {
+                body += $"{Environment.NewLine}Ne pouvant le payer entièrement, vous subissez {debtInfamy} points d'Infamie.";
+            }
+            Helper.SendNotification(player.Id, "Rapport de production", body, _dal);
+
             return true;
         }
 

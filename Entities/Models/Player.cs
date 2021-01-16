@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Entities.Enums;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -30,9 +31,8 @@ namespace Entities.Models
         // Flag indiquant s'il s'agit du joueur actuellement utilisé par l'utilisateur (dans le cadre d'un utilisateur multi-comptes)
         public bool IsCurrentPlayer { get; set; }
 
-        // Flag indiquant si le joueur est sur une partie en cours ou pas (géré par le token)
-        [JsonIgnore]
-        public bool IsPlaying { get; set; }
+        // Statut indiquant si le joueur est sur une partie en cours ou pas
+        public PlayerStatus Status { get; set; }
 
         // Flag indiquant s'il s'agit d'un compte d'administration
         [JsonIgnore]
@@ -42,11 +42,15 @@ namespace Entities.Models
         public long UserId { get; set; }
         [JsonIgnore]
         public User User { get; set; }
+        [NotMapped]
+        public string UserName { get; set; }
 
         // La campagne sur laquelle le joueur est inscrit
         public long CampaignId { get; set; }
         [JsonIgnore]
         public Campaign Campaign { get; set; }
+        [NotMapped]
+        public string CampaignName { get; set; }
 
         // Liste des cartes du joueur
         [JsonIgnore]

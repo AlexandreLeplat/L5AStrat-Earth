@@ -1,25 +1,105 @@
-<app-header></app-header>
+<app-header [playersList]="playersList"></app-header>
 <div>
-    <div ngClass.gt-md="desktop-content" ngClass.xs="mobile-content"
-            fxLayout="row" fxLayout.lt-md="column" fxLayoutWrap fxLayoutGap="0.5%">
-        <div *ngIf="campaignsList else spinnerCard" style="width:100%">
-            <mat-card *ngFor="let campaign of campaignsList" class="lobby-card">
-              <mat-card-header>
-                <mat-card-title>{{campaign.name}}</mat-card-title>
-              </mat-card-header>
-              <mat-card-content>
-                
-              </mat-card-content>
-            </mat-card>
-        </div>
-    <ng-template #spinnerCard>
-      <mat-card class="home-card" ngClass.xs="home-card-mobile">
-        <mat-card-header>
-          <mat-card-title>Chargement...</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <mat-spinner class="full-width" [style.display]="'block'"></mat-spinner>
-        </mat-card-content>
+  <div ngClass.gt-md="desktop-content" ngClass.xs="mobile-content"
+          fxLayout="row" fxLayout.lt-md="column">
+    <div class="campaigns-block">
+      <mat-card>
+        <strong>Rejoindre une partie</strong>
       </mat-card>
-    </ng-template>
+      <mat-accordion *ngIf="newCampaignsList else spinnerCard">
+        <mat-expansion-panel *ngFor="let campaign of newCampaignsList">
+          <mat-expansion-panel-header>
+            <mat-panel-title class="order-label">
+              <mat-icon color="primary" svgIcon="earth"></mat-icon>
+              &nbsp;{{campaign.name}}&nbsp;
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <p>Durée : {{campaignLengthLabels[campaign.phaseLength]}}</p>
+          <mat-list *ngIf="playersLists[campaign.id]">
+            <mat-list-item *ngFor="let player of playersLists[campaign.id]">
+              <mat-icon [style.color]="player.color">person</mat-icon>
+              &nbsp;{{player.name}}&nbsp;<span style="color: gray;">[{{player.userName}}]</span>&nbsp;
+              <button *ngIf="player.userId == this.userId || campaign.creatorId == this.userId" mat-button color="primary" (click)="removePlayer(player)">
+                <mat-icon>clear</mat-icon>
+              </button>
+            </mat-list-item>
+          </mat-list>
+          <mat-action-row>
+            <button *ngIf="this.playersLists[campaign.id] && isCampaignFull(campaign) && campaign.creatorId == this.userId"
+                mat-button color="primary" (click)="launch(campaign)">
+              <mat-icon>launch</mat-icon>&nbsp;Lancer
+            </button>
+            <button *ngIf="this.playersLists[campaign.id] && !isCampaignFull(campaign) && !isUserInCampaign(campaign)"
+                mat-button color="primary" (click)="join(campaign)">
+              <mat-icon>person_add</mat-icon>&nbsp;Rejoindre
+            </button>
+            <button *ngIf="campaign.creatorId == this.userId" mat-button color="primary" (click)="removeCampaign(campaign)">
+              <mat-icon>clear</mat-icon>&nbsp;Supprimer
+            </button>
+          </mat-action-row>
+        </mat-expansion-panel>
+        <mat-card>
+          <button class="createButton" mat-raised-button (click)="createCampaign()" color="primary">
+            <mat-icon style="vertical-align: middle;">add</mat-icon>&nbsp;Créer une nouvelle partie
+          </button>
+        </mat-card>
+      </mat-accordion>
+    </div>
+    <div class="campaigns-block">
+      <div class="campaigns-separator">
+        <mat-card>
+          <strong>Parties en cours</strong>
+        </mat-card>
+        <mat-accordion *ngIf="runningCampaignsList else spinnerCard">
+          <mat-expansion-panel *ngFor="let campaign of runningCampaignsList">
+            <mat-expansion-panel-header>
+              <mat-panel-title class="order-label">
+                <mat-icon color="primary" svgIcon="earth"></mat-icon>
+                &nbsp;{{campaign.name}}&nbsp;
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <p>Durée : {{campaignLengthLabels[campaign.phaseLength]}}</p>
+            <mat-list *ngIf="playersLists[campaign.id]">
+              <mat-list-item *ngFor="let player of playersLists[campaign.id]">
+                <mat-icon [style.color]="player.color">person</mat-icon>
+                &nbsp;{{player.name}}&nbsp;<span style="color: gray;">[{{player.userName}}]</span>
+              </mat-list-item>
+            </mat-list>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </div>
+      <div>
+        <mat-card>
+          <strong>Parties terminées</strong>
+        </mat-card>
+        <mat-accordion *ngIf="finishedCampaignsList else spinnerCard">
+          <mat-expansion-panel *ngFor="let campaign of finishedCampaignsList">
+            <mat-expansion-panel-header>
+              <mat-panel-title class="order-label">
+                <mat-icon color="primary" svgIcon="earth"></mat-icon>
+                &nbsp;{{campaign.name}}&nbsp;
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <p>Durée : {{campaignLengthLabels[campaign.phaseLength]}}</p>
+            <mat-list *ngIf="playersLists[campaign.id]">
+              <mat-list-item *ngFor="let player of playersLists[campaign.id]">
+                <mat-icon [style.color]="player.color">person</mat-icon>
+                &nbsp;{{player.name}}&nbsp;<span style="color: gray;">[{{player.userName}}]</span>
+              </mat-list-item>
+            </mat-list>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </div>
+    </div>
+  </div>
+  <ng-template #spinnerCard>
+    <mat-card class="home-card" ngClass.xs="home-card-mobile">
+      <mat-card-header>
+        <mat-card-title>Chargement...</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-spinner class="full-width" [style.display]="'block'"></mat-spinner>
+      </mat-card-content>
+    </mat-card>
+  </ng-template>
 </div>

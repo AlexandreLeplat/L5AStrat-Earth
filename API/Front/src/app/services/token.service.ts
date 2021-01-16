@@ -6,6 +6,7 @@ export interface Token {
   jwt: string;
   expiration: Date;
   isPlaying: boolean;
+  userId: number;
 }
 
 @Injectable({

@@ -4,6 +4,13 @@
 .mobile-content {
   margin-bottom: 75px;
 }
+.mat-expansion-panel-header {
+  height: auto;
+  min-height: 50px;
+}
+.mat-expansion-panel-header-title {
+  margin: auto 8px auto 0px;
+}
 .orderSheet {
   width: 90%;
   margin: 20px auto;

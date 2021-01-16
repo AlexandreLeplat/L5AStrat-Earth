@@ -38,10 +38,13 @@ namespace HostApp.Business
             }
             _gameEngines[campaign.GameId].InitCampaign(campaign);
             campaign.Status = CampaignStatus.Running;
-            
+            _gameEngines[campaign.GameId].BeginTurn(campaign);
+
             var launchDate = campaign.NextPhase;
             while (launchDate < DateTime.Now) launchDate = launchDate.AddDays(1);
             campaign.NextPhase = launchDate.AddMinutes(campaign.PhaseLength);
+            campaign.CurrentTurn = 1;
+            campaign.CurrentPhase = TurnPhase.Early;
 
             return true;
         }

@@ -1,16 +1,24 @@
 .desktop-content {
-    margin-left: 300px;
 }
 .mobile-content {
     margin-bottom: 75px;
 }
-.lobby-card {
-    width: 285px;
-    margin: 10% auto auto;
+.campaigns-block {
+    width: 450px;
+    margin: 50px auto;
 }
-.lobby-card-mobile {
+.campaigns-separator {
+    margin-bottom: 50px;
+}
+.mobile-content .campaigns-block{
     width: 90%;
     margin: 15px auto auto;
     text-align: center;
 }
-  
+.mat-list-base {
+    padding-top: 0;
+}
+.mat-list-base .mat-list-item {
+    font-size: 14px;
+    height: 30px;
+}

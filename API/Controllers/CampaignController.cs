@@ -98,19 +98,27 @@ namespace HostApp.Controllers
                 if (string.IsNullOrWhiteSpace(model.Name) || model.Name.Length > 50)
                     return BadRequest("Nom de campagne incorrect");
 
+                if (_dal.Campaigns.Any(c => c.Name == model.Name.Trim()))
+                    return StatusCode((int)HttpStatusCode.PreconditionFailed, "Une campagne avec ce nom existe déjà");
+
                 var gameId = _dal.Games.First().Id; // TODO : choix du système de jeu
 
                 if (model.PhaseLength == 0) model.PhaseLength = 1440;
-                if (model.NextPhase < DateTime.Now) model.NextPhase = DateTime.Now;
+                if (model.NextPhase < DateTime.Now)
+                {
+                    var hours = model.NextPhase.Hour;
+                    model.NextPhase = DateTime.Now.Date.AddHours(hours);
+                }
 
                 var campaign = new Campaign()
                 {
                     Name = model.Name.Trim(),
                     PhaseLength = model.PhaseLength,
                     NextPhase = model.NextPhase,
-                    GameId = model.GameId,
+                    GameId = gameId,
                     Status = CampaignStatus.Preparation,
-                    Assets = new Dictionary<string, Dictionary<string, string>>()
+                    Assets = new Dictionary<string, Dictionary<string, string>>(),
+                    CreatorId = userId
                 };
 
                 _dal.Campaigns.Add(campaign);
@@ -151,8 +159,12 @@ namespace HostApp.Controllers
                 var campaign = _dal.Campaigns.FirstOrDefault(c => c.Id == id.Value);
                 if (campaign == null) return NotFound();
 
+                if (campaign.CreatorId != userId)
+                    return Unauthorized("Vous n'êtes pas autorisé à effecuter cette action");
+
                 if (campaign.Status != CampaignStatus.Preparation)
                     return StatusCode((int)HttpStatusCode.PreconditionFailed, "Le statut de la campagne ne permet pas cette action");
+
                 var campaignPlayers = _dal.Players.Where(p => p.CampaignId == campaign.Id).ToList();
                 _dal.Players.RemoveRange(campaignPlayers);
 
@@ -205,10 +217,10 @@ namespace HostApp.Controllers
                                     select c).FirstOrDefault();
                     if (campaign == null) return NotFound();
 
-                    // Si la campagne est déjà en cours de traitement, en erreur ou terminée, on rend une erreur
+                    // Si la campagne est déjà en cours de traitement, en erreur ou terminée, on ne fait rien
                     if (campaign.Status != CampaignStatus.Running)
                     {
-                        return StatusCode((int)HttpStatusCode.Conflict);
+                        return Ok(campaign);
                     }
 
                     campaign.Status = CampaignStatus.Treating;
@@ -219,10 +231,50 @@ namespace HostApp.Controllers
                 var orderEngine = new OrdersEngine(_dal);
                 orderEngine.Work(campaign);
 
-                campaign.Status = CampaignStatus.Running;
+                if (campaign.Status == CampaignStatus.Treating)
+                    campaign.Status = CampaignStatus.Running;
+
                 _dal.SaveChanges();
 
                 return Ok(campaign);
+            }
+        }
+
+        // POST campaigns/id/start permet de démarrer une partie
+        [HttpPost("{id}/start")]
+        [EnableCors]
+        [Authorize]
+        public ActionResult Start(long? id)
+        {
+            using (_dal)
+            {
+                var claim = User.Claims.Where(x => x.Type == ClaimTypes.PrimarySid).FirstOrDefault();
+                if (claim == null) return Unauthorized();
+                var userId = long.Parse(claim.Value);
+
+                var user = (from u in _dal.Users
+                            where u.Id == userId
+                            select u).FirstOrDefault();
+                if (user == null) return Unauthorized();
+
+                var campaign = (from c in _dal.Campaigns
+                                where c.Id == id.Value
+                                select c).FirstOrDefault();
+                if (campaign == null) return NotFound();
+
+                var playerUsers = (from p in _dal.Players
+                                   where p.CampaignId == id.Value
+                                   select p).ToList();
+
+                if (user.Role != UserRole.Admin && campaign.CreatorId != userId && !playerUsers.Any(p => p.UserId == userId))
+                    return Unauthorized();
+
+                var lobbyEngine = new LobbyEngine(_dal);
+                lobbyEngine.LaunchGame(campaign);
+                playerUsers.ForEach(p => p.Status = PlayerStatus.Ready);
+                _dal.SaveChanges();
+
+                return Ok();
             }
         }
 
@@ -357,6 +409,44 @@ namespace HostApp.Controllers
                     Color = p.Color,
                     UserId = p.UserId,
                     CampaignId = p.CampaignId
+                }).ToList();
+
+                return Ok(players);
+            }
+        }
+
+        // GET campaigns/id/players permet de récupérer la liste des joueurs de la campagne ciblée
+        [HttpGet("{id}/players")]
+        [EnableCors]
+        [Authorize]
+        public ActionResult GetCampaignPlayers(long? id)
+        {
+            using (_dal)
+            {
+                var claim = User.Claims.Where(x => x.Type == ClaimTypes.PrimarySid).FirstOrDefault();
+                if (claim == null) return Unauthorized();
+                var userId = long.Parse(claim.Value);
+
+                // On vérifie l'existence de l'utilisateur
+                if (!_dal.Users.Any(u => u.Id == userId))
+                    return Unauthorized();
+
+                // On récupère les joueurs ayant le même idCampaign que le joueur courant
+                var playersList = (from p in _dal.Players
+                               join u in _dal.Users on p.UserId equals u.Id
+                               where p.CampaignId == id.Value && !p.IsAdmin
+                               select new Tuple<Player, string>(p, u.Name)).ToList();
+
+                // On filtre les informations pour n'afficher que ce que le joueur a le droit de voir
+                var players = playersList.Select(t => new Player()
+                {
+                    Id = t.Item1.Id,
+                    Name = t.Item1.Name,
+                    Color = t.Item1.Color,
+                    UserId = t.Item1.UserId,
+                    CampaignId = t.Item1.CampaignId,
+                    UserName = t.Item2,
+                    Status = t.Item1.Status
                 }).ToList();
 
                 return Ok(players);

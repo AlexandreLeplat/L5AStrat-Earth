@@ -99,24 +99,24 @@ namespace L5aStrat_Earth
                 else
                 {
                     playerAssets.Resources.Influence--;
-                    order.Comment = "+5 Stratégie, +1 Infamie, -1 Influence";
+                    order.Comment = "+4 Stratégie, +1 Infamie, -1 Influence";
                 }
-                playerAssets.Resources.Strategy += 5;
+                playerAssets.Resources.Strategy += 4;
                 player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
                 Helper.AddInfamy(player, 1);
             }
             else
             {
                 var playerAssets = JsonSerializer.Deserialize<PlayerAssets>(player._jsonAssets);
-                if (playerAssets.Resources.Strategy < 5)
+                if (playerAssets.Resources.Strategy < 4)
                 {
                     order.Comment = "Pas assez de points de Stratégie ?";
                     order.Status = OrderStatus.Invalid;
                 }
                 else
                 {
-                    playerAssets.Resources.Strategy -= 5;
-                    order.Comment = "-5 Stratégie, +1 Infamie, +1 Influence";
+                    playerAssets.Resources.Strategy -= 4;
+                    order.Comment = "-4 Stratégie, +1 Infamie, +1 Influence";
                 }
                 playerAssets.Resources.Influence++;
                 player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
@@ -160,7 +160,7 @@ namespace L5aStrat_Earth
                 {
                     playerAssets.Resources.Influence--;
                     player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
-                    order.Comment = $"+1 Gloire, {targetName} +6 Infamie";
+                    order.Comment = $"-1 Influence, +1 Gloire, {targetName} +6 Infamie";
                 }
                 Helper.AddGlory(player, 1);
             }
@@ -257,7 +257,7 @@ namespace L5aStrat_Earth
                 else
                 {
                     playerAssets.Resources.Strategy--;
-                    order.Comment = "-1 Influence, ";
+                    order.Comment = "-1 Stratégie, ";
                 }
             }
             else
@@ -272,10 +272,16 @@ namespace L5aStrat_Earth
             }
             player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
 
-            var formation = "Choki";
+            string formation = null;
             if (order.Parameters.ContainsKey("Formation") && References.FormationList.Contains(order.Parameters["Formation"]))
             {
                 formation = order.Parameters["Formation"];
+            } 
+            else
+            {
+                order.Comment = "Pas de formation définie";
+                order.Status = OrderStatus.Invalid;
+                return order;
             }
 
             if (order.Status == OrderStatus.Valid)

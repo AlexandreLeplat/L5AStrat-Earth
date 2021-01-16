@@ -1,0 +1,33 @@
+<h2>Nouvelle partie</h2>
+<mat-dialog-content class="mat-typography" ngClass.xs="full-width-dialog">
+  <div class="main-card">
+    <mat-form-field appearance="fill" style="width: 100%;">
+      <mat-label>Nom de la campagne</mat-label>
+      <input matInput [(ngModel)]="newCampaign.name" maxlength="50" required/>
+      <mat-error>Champ obligatoire</mat-error>
+    </mat-form-field>
+    <p>
+      <mat-form-field appearance="fill" hintLabel="Durée des phases :" class="full-width">
+        <mat-label>Durée de la partie</mat-label>
+        <mat-select [(value)]='selectedLength' (selectionChange)="onSelectDuration()" required>
+            <mat-option *ngFor="let length of lengthOptions" [value]="length">{{length.label}}</mat-option>
+        </mat-select>
+        <mat-hint align="end">{{selectedLength.phaseLengthLabel}}</mat-hint>
+        <mat-error>Champ obligatoire</mat-error>
+      </mat-form-field>
+    </p>
+    <p>
+        <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Heure de lancement</mat-label>
+            <mat-select value="0" (selectionChange)="onSelectStartHour($event.value)" required>
+                <mat-option *ngFor="let startHour of startOptions" [value]="startHour.value">{{startHour.label}}</mat-option>
+            </mat-select>
+            <mat-error>Champ obligatoire</mat-error>
+          </mat-form-field>
+    </p>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button color="primary" mat-dialog-close>Annuler</button>
+  <button mat-raised-button color="primary" (click)="create()">Créer</button>
+</mat-dialog-actions>

@@ -1,0 +1,30 @@
+<h2>Rejoindre la partie</h2>
+<p>{{campaign.name}}</p>
+<mat-dialog-content class="mat-typography" ngClass.xs="full-width-dialog">
+  <div class="main-card">
+    <mat-form-field appearance="fill" style="width: 100%;">
+      <mat-label>Nom du personnage</mat-label>
+      <input matInput [(ngModel)]="newPlayer.name" maxlength="25" required/>
+      <mat-error>Champ obligatoire</mat-error>
+    </mat-form-field>
+    <p>
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Couleur</mat-label>
+        <mat-select [(value)]='newPlayer.color' required>
+            <mat-select-trigger>
+                <div style="width: 50px; height: 24px; border: solid 1px black;" [style.background-color]="newPlayer.color"></div>
+            </mat-select-trigger>
+            <mat-option *ngFor="let color of colors" [value]="color">
+                <div style="width: 50px; height: 24px; border: solid 1px black;" [style.background-color]="color"></div>
+            </mat-option>
+        </mat-select>
+        <mat-error>Champ obligatoire</mat-error>
+      </mat-form-field>
+    </p>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button color="primary" mat-dialog-close>Annuler</button>
+  <button mat-raised-button color="primary" (click)="reroll()">Regénérer</button>
+  <button mat-raised-button color="primary" (click)="create()">Rejoindre</button>
+</mat-dialog-actions>

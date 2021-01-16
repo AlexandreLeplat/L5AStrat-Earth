@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CampaignsService, Campaign } from '../services/campaigns.service';
-import { PlayersService, Player } from '../services/players.service';
+import { PlayersService, Player, PlayerStatus } from '../services/players.service';
 import { ThemeService } from '../services/theme.service';
 import { Observable } from 'rxjs';
 import { GamesService, Game } from '../services/games.service';
@@ -20,7 +20,8 @@ export class HomeComponent implements OnInit {
   game: Game;
   campaign: Campaign;
   player: Player;
-  
+  playersList: Player[] = [];
+
   constructor(private themeService: ThemeService, private playersService: PlayersService
     , private campaignsService: CampaignsService, private gamesService: GamesService) { }
 
@@ -37,6 +38,12 @@ export class HomeComponent implements OnInit {
           });
       });
     this.playersService.getCurrentPlayer().subscribe(p => this.player = p);
+    this.playersService.getUserPlayers().subscribe(l => {
+      this.playersList = [];
+      l.forEach(p => {
+        if (p.status > PlayerStatus.none) this.playersList.push(p);
+      });
+    });
   }
 
   calculatePhaseProgress(campaign: Campaign): number {

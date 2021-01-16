@@ -38,9 +38,7 @@ namespace HostApp.Business
 
             if (campaign.Status == CampaignStatus.Preparation)
             {
-                _gameEngines[campaign.GameId].InitCampaign(campaign);
-                campaign.Status = CampaignStatus.Running;
-                isWorkDone = true;
+                return false;
             }
 
             while (campaign.NextPhase < DateTime.Now)
@@ -78,16 +76,9 @@ namespace HostApp.Business
 
         private bool ChangeTurn(Campaign campaign)
         {
-            if (campaign.CurrentTurn >= 12)
-            {
-                campaign.CurrentPhase = TurnPhase.Stop;
-            } 
-            else
-            {
-                campaign.CurrentTurn++;
-                campaign.CurrentPhase = TurnPhase.Early;
-                _gameEngines[campaign.GameId].BeginTurn(campaign);
-            }
+            campaign.CurrentTurn++;
+            campaign.CurrentPhase = TurnPhase.Early;
+            _gameEngines[campaign.GameId].BeginTurn(campaign);
 
             return true;
         }

@@ -19,6 +19,10 @@
 .full-width {
     width: 100%;
   }
+.spinner {
+  margin: auto;
+  display: block;
+}
 .value {
     font-weight: bold;
     margin: 5px;

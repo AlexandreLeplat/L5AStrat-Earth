@@ -1,4 +1,4 @@
-<app-header></app-header>
+<app-header [playersList]="playersList"></app-header>
 <app-menu [selectedRoute]="'orders'"></app-menu>
 <div ngClass.gt-md="desktop-content" ngClass.xs="mobile-content">
   <div *ngIf="ordersSheet else spinnerCard" class="orderSheet">
@@ -15,16 +15,16 @@
         [cdkDropListData]="orders" (cdkDropListDropped)="drop($event)" [cdkDropListDisabled] = "ordersSheet.status != writingStatus">
       <mat-expansion-panel *ngFor="let order of orders" cdkDrag [(expanded)]="order.selected">
         <mat-expansion-panel-header>
-          <mat-panel-title>
+          <mat-panel-title class="order-label" cdkDragHandle>
             <mat-icon *ngIf="ordersSheet.status == writingStatus">drag_indicator</mat-icon>
             &nbsp;{{orderType(order).label}}&nbsp;
             <mat-icon *ngIf="order.status == 1" [color]="order.comment.endsWith('?') ? 'accent' : 'warn'">warning</mat-icon>
           </mat-panel-title>
-          <mat-panel-description>
+          <mat-panel-description class="order-comment">
             {{order.comment}}
           </mat-panel-description>
         </mat-expansion-panel-header>
-        <p>{{orderType(order).description}}</p>
+        <p fxHide.xs>{{orderType(order).description}}</p>
         <mat-list>
           <mat-list-item *ngFor="let orderInput of orderType(order).form">
             <mat-checkbox *ngIf="orderInput.type == 'Checkbox'" [checked]='order.parameters[orderInput.label] == "true"'
@@ -48,7 +48,11 @@
                 {{order.parameters[orderInput.label].split(";")[0]}}
               </span></span>
             </div>
-            <p [ngClass]="(orderInput.type == 'Checkbox') ? 'checkboxDescription' : 'selectDescription'">{{orderInput.description}}</p>
+            <p [ngClass]="(orderInput.type == 'Checkbox') ? 'checkboxDescription' : 'selectDescription'"  fxHide.xs>
+              {{orderInput.description}}
+            </p>
+            <mat-icon [ngClass]="(orderInput.type == 'Checkbox') ? 'checkboxDescription' : 'selectDescription'"
+              fxHide.gt-xs [matTooltip]="orderInput.description" color="primary">help</mat-icon>
           </mat-list-item>
         </mat-list>
         <mat-action-row *ngIf="ordersSheet.status == writingStatus">
@@ -60,7 +64,7 @@
         &nbsp;<strong style="vertical-align: middle;">Ajouter un ordre</strong>&nbsp;
         <mat-form-field appearance="fill" style="width: 50%;">
           <mat-label>Type d'action</mat-label>
-          <mat-select [(value)]="selectedActionType" [disabled]="ordersSheet.status != writingStatus" (selectionChange)="addOrder()">
+          <mat-select *ngIf="actionTypes" [(value)]="selectedActionType" [disabled]="ordersSheet.status != writingStatus" (selectionChange)="addOrder()">
             <mat-option *ngFor="let actionType of actionTypes" [value]="actionType.id" >{{actionType.label}}</mat-option>
           </mat-select>
         </mat-form-field>

@@ -1,0 +1,19 @@
+.subscribe-card {
+  width: 600px;
+  margin: 10% auto;
+}
+.subscribe-card-mobile {
+  width: 90%;
+  margin: 10% auto;
+  text-align: center;
+}
+.subscribe-field {
+  width: 100%;
+  margin-top: 20px;
+} 
+.mat-card-title {
+    font-size: 16px;
+  }
+.full-width {
+    width: 100%;
+  }

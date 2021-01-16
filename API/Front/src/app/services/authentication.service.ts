@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { JwtHelperService } from '@auth0/angular-jwt'
-import { Router, CanActivate } from '@angular/router'
+import { Router, CanActivate, ActivatedRouteSnapshot } from '@angular/router'
 
 @Injectable({
   providedIn: 'root'
@@ -18,10 +18,18 @@ export class AuthenticationService implements CanActivate {
     return (Date.parse(expiration) > new Date().valueOf());
   }
 
-  canActivate(): boolean {
-    if (!this.isAuthenticated())
-    {
+  canActivate(route: ActivatedRouteSnapshot): boolean {
+    if (!this.isAuthenticated()) {
       this.router.navigate(['login']);
+      localStorage.removeItem('userToken');
+      return false;
+    }
+    if (route.data.isPlaying && !localStorage.getItem('isPlaying')) {
+      this.router.navigate(['lobby']);
+      return false;
+    }
+    if (!route.data.isPlaying && localStorage.getItem('isPlaying')) {
+      this.router.navigate(['home']);
       return false;
     }
     return true;

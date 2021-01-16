@@ -1,4 +1,5 @@
 ﻿using Entities;
+using Entities.Enums;
 using Entities.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -47,7 +48,8 @@ namespace HostApp.Security
             {
                 Jwt = tokenHandler.WriteToken(token),
                 Expiration = expiration,
-                IsPlaying = player.IsPlaying
+                IsPlaying = player.Status > PlayerStatus.None,
+                UserId = player.UserId
             };
         }
     }

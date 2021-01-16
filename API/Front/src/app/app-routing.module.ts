@@ -8,15 +8,17 @@ import { OrdersFormComponent } from './ordersform/ordersform.component';
 import { UserComponent } from './user/user.component';
 import { AuthenticationService } from './services/authentication.service';
 import { LobbyComponent } from './lobby/lobby.component';
+import { SubscribeComponent } from './subscribe/subscribe.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
-  { path: 'home', component: HomeComponent, canActivate: [AuthenticationService] },
-  { path: 'inbox', component: InboxComponent, canActivate: [AuthenticationService] },
-  { path: 'map', component: MapComponent, canActivate: [AuthenticationService] },
-  { path: 'orders', component: OrdersFormComponent, canActivate: [AuthenticationService] },
-  { path: 'user', component: UserComponent, canActivate: [AuthenticationService] },
-  { path: 'lobby', component: LobbyComponent, canActivate: [AuthenticationService] },
+  { path: 'subscribe', component: SubscribeComponent },
+  { path: 'home', component: HomeComponent, canActivate: [AuthenticationService], data: { isPlaying: true } },
+  { path: 'inbox', component: InboxComponent, canActivate: [AuthenticationService], data: { isPlaying: true } },
+  { path: 'map', component: MapComponent, canActivate: [AuthenticationService], data: { isPlaying: true } },
+  { path: 'orders', component: OrdersFormComponent, canActivate: [AuthenticationService], data: { isPlaying: true } },
+  { path: 'user', component: UserComponent, canActivate: [AuthenticationService], data: { isPlaying: true } },
+  { path: 'lobby', component: LobbyComponent, canActivate: [AuthenticationService], data: { isPlaying: false } },
   { path : '', component : LoginComponent }
 ];
 

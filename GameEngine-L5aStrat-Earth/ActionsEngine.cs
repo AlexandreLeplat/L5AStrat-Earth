@@ -124,7 +124,7 @@ namespace L5aStrat_Earth
                 else
                 {
                     playerAssets.Resources.Influence--;
-                    playerAssets.Resources.Strategy += 5;
+                    playerAssets.Resources.Strategy += 4;
                     player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
                     Helper.AddInfamy(player, 1);
                 }
@@ -132,7 +132,7 @@ namespace L5aStrat_Earth
             else
             {
                 var playerAssets = JsonSerializer.Deserialize<PlayerAssets>(player._jsonAssets);
-                if (playerAssets.Resources.Strategy < 5)
+                if (playerAssets.Resources.Strategy < 4)
                 {
                     order.Comment = "Pas assez de points de Stratégie";
                     order.Status = OrderStatus.Failed;
@@ -142,7 +142,7 @@ namespace L5aStrat_Earth
                 else
                 {
                     playerAssets.Resources.Influence++;
-                    playerAssets.Resources.Strategy -= 5;
+                    playerAssets.Resources.Strategy -= 4;
                     player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
                     Helper.AddInfamy(player, 1);
                 }
@@ -685,9 +685,11 @@ namespace L5aStrat_Earth
 
             // Prise de contrôle de bâtiment
             var building = (from b in _dal.Units
-                             where b.Type == "Building" && b.X == army.X && b.Y == army.Y
-                             select b).FirstOrDefault();
-            if (building != null && building.PlayerId != army.PlayerId)
+                            join p in _dal.Players on b.PlayerId equals p.Id
+                            where b.Type == "Building" && b.X == army.X && b.Y == army.Y && p.CampaignId == player.CampaignId
+                            select b).FirstOrDefault();
+            if (building != null && building.PlayerId != army.PlayerId 
+                && building.Assets.ContainsKey("Type") && !building.Assets["Type"].ContainsKey("Entrée"))
             {
                 Helper.SendNotification(building.PlayerId, "Vous perdez un bâtiment", $"Une armée de {player.Name} prend le contrôle de votre {building.Name} en {References.coordinatesLetters[building.X]}{building.Y + 1}.", _dal);
                 building.PlayerId = army.PlayerId;
@@ -793,8 +795,8 @@ namespace L5aStrat_Earth
                               where p.Id == winner.PlayerId
                               select p).FirstOrDefault();
 
+                Helper.AddGlory(player, 3);
                 var playerAssets = JsonSerializer.Deserialize<PlayerAssets>(player._jsonAssets);
-                playerAssets.Attributes.Glory += 3;
                 playerAssets.Resources.Strategy++;
                 player._jsonAssets = JsonSerializer.Serialize<PlayerAssets>(playerAssets);
                 _dal.Players.Update(player);

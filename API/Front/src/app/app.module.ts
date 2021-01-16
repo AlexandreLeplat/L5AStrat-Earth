@@ -38,6 +38,9 @@ import { MessageComponent } from './inbox/message/message.component';
 import { MessagehistoryComponent } from './inbox/messagehistory/messagehistory.component';
 import { LobbyComponent } from './lobby/lobby.component';
 import { ConfirmModalComponent } from './ordersform/confirm-modal/confirm-modal.component';
+import { JoinDialogComponent } from './lobby/join-dialog/join-dialog.component';
+import { CreateDialogComponent } from './lobby/create-dialog/create-dialog.component';
+import { SubscribeComponent } from './subscribe/subscribe.component';
 
 registerLocaleData(localeFr, 'fr');
 
@@ -57,7 +60,10 @@ registerLocaleData(localeFr, 'fr');
     MessageComponent,
     MessagehistoryComponent,
     LobbyComponent,
-    ConfirmModalComponent
+    ConfirmModalComponent,
+    JoinDialogComponent,
+    CreateDialogComponent,
+    SubscribeComponent
   ],
   imports: [
     BrowserModule,

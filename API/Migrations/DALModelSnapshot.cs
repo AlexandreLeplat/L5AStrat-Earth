@@ -73,7 +73,7 @@ namespace HostApp.Migrations
                         new
                         {
                             Id = 4L,
-                            Description = "Déployez une armée pour 5 points de Stratégie",
+                            Description = "Déployez une armée pour 4 points de Stratégie sur un point d'entrée, 5 sur un bâtiment militaire ou 6 sur un Village",
                             GameId = 1L,
                             Label = "Renforts",
                             _jsonForm = "[{\"Label\":\"Case\",\"Type\":\"EntryTile\",\"Description\":\"La case de renfort cibl\\u00E9e\",\"Parameter\":null,\"IsPredefinedOnMap\":false,\"IsSelectedTileOnMap\":true,\"IsSelectableOnMap\":false,\"MapDescription\":null},{\"Label\":\"Formation\",\"Type\":\"Formation\",\"Description\":\"La formation \\u00E0 adopter\",\"Parameter\":null,\"IsPredefinedOnMap\":false,\"IsSelectedTileOnMap\":false,\"IsSelectableOnMap\":false,\"MapDescription\":null},{\"Label\":\"Augmentation\",\"Type\":\"Checkbox\",\"Description\":\"Soutien militaire : D\\u00E9pensez un point d\\u0027Influence \\u00E0 la place des points de Strat\\u00E9gie.\",\"Parameter\":null,\"IsPredefinedOnMap\":false,\"IsSelectedTileOnMap\":false,\"IsSelectableOnMap\":false,\"MapDescription\":null}]"
@@ -105,10 +105,10 @@ namespace HostApp.Migrations
                         new
                         {
                             Id = 8L,
-                            Description = "Achetez un point d'Influence pour 5 points de Stratégie et 1 d'Infamie",
+                            Description = "Achetez un point d'Influence pour 4 points de Stratégie et 1 d'Infamie",
                             GameId = 1L,
                             Label = "Commerce",
-                            _jsonForm = "[{\"Label\":\"Augmentation\",\"Type\":\"Checkbox\",\"Description\":\"Trafic d\\u0027influence : Vendez un point d\\u0027Influence et subissez un point d\\u0027Infamie pour acheter 5 points de Strat\\u00E9gie.\",\"Parameter\":null,\"IsPredefinedOnMap\":false,\"IsSelectedTileOnMap\":false,\"IsSelectableOnMap\":false,\"MapDescription\":null}]"
+                            _jsonForm = "[{\"Label\":\"Augmentation\",\"Type\":\"Checkbox\",\"Description\":\"Trafic d\\u0027influence : Vendez un point d\\u0027Influence et subissez un point d\\u0027Infamie pour acheter 4 points de Strat\\u00E9gie.\",\"Parameter\":null,\"IsPredefinedOnMap\":false,\"IsSelectedTileOnMap\":false,\"IsSelectableOnMap\":false,\"MapDescription\":null}]"
                         });
                 });
 
@@ -418,11 +418,11 @@ namespace HostApp.Migrations
                     b.Property<bool>("IsCurrentPlayer")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsPlaying")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");
@@ -448,8 +448,8 @@ namespace HostApp.Migrations
                             HasNewMap = false,
                             IsAdmin = true,
                             IsCurrentPlayer = true,
-                            IsPlaying = false,
                             Name = "Neutre",
+                            Status = 0,
                             UserId = 1L
                         },
                         new
@@ -460,8 +460,8 @@ namespace HostApp.Migrations
                             HasNewMap = false,
                             IsAdmin = false,
                             IsCurrentPlayer = true,
-                            IsPlaying = false,
                             Name = "Matsu Kiperuganyu",
+                            Status = 0,
                             UserId = 2L,
                             _jsonAssets = "{\"Caract\\u00E9ristiques\":{\"Gloire\":\"5\",\"Infamie\":\"0\"},\"Ressources\":{\"Strat\\u00E9gie\":\"5\",\"Influence\":\"0\"}}"
                         },
@@ -473,8 +473,8 @@ namespace HostApp.Migrations
                             HasNewMap = false,
                             IsAdmin = false,
                             IsCurrentPlayer = true,
-                            IsPlaying = false,
                             Name = "Doji Ujitsu",
+                            Status = 0,
                             UserId = 3L,
                             _jsonAssets = "{\"Caract\\u00E9ristiques\":{\"Gloire\":\"5\",\"Infamie\":\"0\"},\"Ressources\":{\"Strat\\u00E9gie\":\"5\",\"Influence\":\"0\"}}"
                         },
@@ -486,8 +486,8 @@ namespace HostApp.Migrations
                             HasNewMap = false,
                             IsAdmin = false,
                             IsCurrentPlayer = true,
-                            IsPlaying = false,
                             Name = "Akodo Yama",
+                            Status = 0,
                             UserId = 4L,
                             _jsonAssets = "{\"Caract\\u00E9ristiques\":{\"Gloire\":\"5\",\"Infamie\":\"0\"},\"Ressources\":{\"Strat\\u00E9gie\":\"5\",\"Influence\":\"0\"}}"
                         },
@@ -499,8 +499,8 @@ namespace HostApp.Migrations
                             HasNewMap = false,
                             IsAdmin = false,
                             IsCurrentPlayer = true,
-                            IsPlaying = false,
                             Name = "Togashi Atsu",
+                            Status = 0,
                             UserId = 5L,
                             _jsonAssets = "{\"Caract\\u00E9ristiques\":{\"Gloire\":\"5\",\"Infamie\":\"0\"},\"Ressources\":{\"Strat\\u00E9gie\":\"5\",\"Influence\":\"0\"}}"
                         });

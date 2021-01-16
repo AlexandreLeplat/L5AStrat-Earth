@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
 using System.Security.Claims;
+using Entities.Enums;
 
 namespace HostApp.Controllers
 {
@@ -49,7 +50,7 @@ namespace HostApp.Controllers
                 if (BCrypt.Net.BCrypt.Verify(input.Password, user.Password))
                 {
                     var mainPlayer = _dal.Players.FirstOrDefault(p => p.UserId == user.Id && p.IsCurrentPlayer);
-                    if (mainPlayer == null) mainPlayer = new Player() { UserId = user.Id };
+                    if (mainPlayer == null) mainPlayer = new Player() { Name = string.Empty, UserId = user.Id };
 
                     var token = jwt.GenerateSecurityToken(mainPlayer);
                     return Ok(token);
@@ -65,20 +66,24 @@ namespace HostApp.Controllers
         [HttpGet("{id}")]
         [EnableCors]
         [Authorize]
-        public ActionResult Get(long? id)
+        public ActionResult GetSwitch(long? id)
         {
             var jwt = new JWTHelper(_config);
             var idUser = long.Parse(User.Claims.Where(x => x.Type == ClaimTypes.PrimarySid).FirstOrDefault().Value);
 
             using (_dal)
             {
-                var selectedPlayer = _dal.Players.FirstOrDefault(p => p.UserId == idUser && p.Id == id.Value);
-                if (selectedPlayer == null) return NotFound();
-
                 var mainPlayer = _dal.Players.FirstOrDefault(p => p.UserId == idUser && p.IsCurrentPlayer);
                 if (mainPlayer != null) mainPlayer.IsCurrentPlayer = false;
 
-                selectedPlayer.IsCurrentPlayer = true;
+                var selectedPlayer = _dal.Players.FirstOrDefault(p => p.UserId == idUser && p.Id == id.Value);
+                if (selectedPlayer == null) selectedPlayer = new Player() { Name = string.Empty, UserId = idUser };
+                else
+                {
+                    selectedPlayer.IsCurrentPlayer = true;
+                    if (selectedPlayer.Status == PlayerStatus.Ready) selectedPlayer.Status = PlayerStatus.Playing;
+                }
+
                 _dal.SaveChanges();
 
                 var token = jwt.GenerateSecurityToken(selectedPlayer);

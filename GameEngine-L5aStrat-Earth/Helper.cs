@@ -84,7 +84,7 @@ namespace L5aStrat_Earth
             if (listFullNames.Any())
             {
                 Random rnd = new Random();
-                int rndIndex = rnd.Next(0, listFullNames.Count() - 1);
+                int rndIndex = rnd.Next(0, listFullNames.Count());
                 return listFullNames[rndIndex];
             }
             // S'il ne reste aucun nom dispo, on rend un Guid aléatoire
@@ -101,7 +101,7 @@ namespace L5aStrat_Earth
             var family = string.Empty;
             while (string.IsNullOrEmpty(color))
             {
-                int rndIndex = rnd.Next(0, clansList.Count() - 1);
+                int rndIndex = rnd.Next(0, clansList.Count());
                 var selectedClan = clansList[rndIndex];
 
                 var colorsList = new List<string>(selectedClan.Colors);
@@ -109,9 +109,9 @@ namespace L5aStrat_Earth
                 colorsList.RemoveAll(c => excludeColorList.Contains(c));
                 if (colorsList.Any() && familyNamesList.Any())
                 {
-                    rndIndex = rnd.Next(0, colorsList.Count() - 1);
+                    rndIndex = rnd.Next(0, colorsList.Count());
                     color = colorsList[rndIndex];
-                    rndIndex = rnd.Next(0, familyNamesList.Count() - 1);
+                    rndIndex = rnd.Next(0, familyNamesList.Count());
                     family = familyNamesList[rndIndex];
                     if (family.StartsWith('[')) family = string.Empty;
                 }
@@ -126,7 +126,7 @@ namespace L5aStrat_Earth
             {
                 if (firstNamesList.Any())
                 {
-                    int rndIndex = rnd.Next(0, firstNamesList.Count() - 1);
+                    int rndIndex = rnd.Next(0, firstNamesList.Count());
                     if (excludeNameList.Any(n => n.Contains(firstNamesList[rndIndex])))
                     {
                         firstNamesList.RemoveAt(rndIndex);

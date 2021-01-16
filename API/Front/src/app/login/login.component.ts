@@ -21,9 +21,13 @@ export class LoginComponent implements OnInit {
 
   ngOnInit() {  
     this.isDarkTheme = this.themeService.isDarkTheme;
-    if (localStorage.getItem("userToken"))
-    {
-      this.router.navigate(['/','home']);
+    if (localStorage.getItem("userToken")) {
+      if (localStorage.getItem("isPlaying"))
+      {
+        this.router.navigate(['/','home']);
+      } else {
+        this.router.navigate(['/','lobby']);
+      }
     }
   }
 
@@ -33,10 +37,13 @@ export class LoginComponent implements OnInit {
     token.subscribe({
       next: data => { 
         localStorage.setItem("userToken", data.jwt);
+        localStorage.setItem("userId", data.userId.toString());
         localStorage.setItem("expiresAt", data.expiration.toString());
         if (data.isPlaying) {
+          localStorage.setItem("isPlaying", "yes");
           this.router.navigate(['/','home']);
         } else {
+          localStorage.removeItem("isPlaying");
           this.router.navigate(['/','lobby']);
         }
       },
@@ -54,5 +61,9 @@ export class LoginComponent implements OnInit {
         }
       } 
     });
+  }
+
+  subscribe(): void {
+    this.router.navigate(['/','subscribe']);
   }
 }

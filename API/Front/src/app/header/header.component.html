@@ -3,7 +3,7 @@
     <span>L5A Strat Auto - [Terre]</span>  
     <span class="fill-remaining-space"></span>  
     <button *ngIf="playersList" mat-icon-button [matMenuTriggerFor]="playersMenu">  
-      <mat-icon>account_circle</mat-icon>
+      <mat-icon [matBadge]="hasReadyNewPlayer ? '!' : ''" matBadgeColor="warn" matBadgeSize="small">account_circle</mat-icon>
     </button>  
     <button mat-icon-button [matMenuTriggerFor]="menu">  
       <mat-icon>more_vert</mat-icon>  
@@ -11,7 +11,13 @@
     <mat-menu #playersMenu="matMenu">
       <button mat-menu-item *ngFor="let player of playersList" (click)="switchPlayer(player)">
         <span>{{player.name}}</span>
+        &nbsp;<span style="color: gray;">[{{player.campaignName}}]</span>
         &nbsp;<mat-icon *ngIf="player.isCurrentPlayer">account_circle</mat-icon>
+        <mat-icon *ngIf="player.status == 1" color="warn">error</mat-icon>
+      </button>
+      <button mat-menu-item *ngIf="currentUser" (click)="switchPlayer(null)">
+        <span>{{currentUser.name}}</span>
+        &nbsp;<mat-icon *ngIf="!currentPlayer">account_circle</mat-icon>
       </button>
     </mat-menu>
     <mat-menu #menu="matMenu">  

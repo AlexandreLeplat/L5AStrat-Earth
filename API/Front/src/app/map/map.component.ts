@@ -2,12 +2,13 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { MapsService, Map, MapTile } from '../services/maps.service';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
-import { PlayersService } from '../services/players.service';
+import { Player, PlayersService, PlayerStatus } from '../services/players.service';
 import { ActionType, OrdersService, OrdersSheet, Order, OrderStatus, OrdersSheetStatus } from '../services/orders.service';
 import { OptionsService } from '../services/options.service';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { I18nPluralPipe } from '@angular/common';
+import { CampaignsService } from '../services/campaigns.service';
 
 @Component({
   selector: 'app-map',
@@ -31,12 +32,13 @@ export class MapComponent implements OnInit {
   optionsList: { [inputLabel: string]: { [label: string]: string; }; } = {};
   selectableTilesIds: number[] = [];
   selectedParameterTileId: number;
+  playersList: Player[] = [];
 
   @ViewChild("zoomableMap") mapElement : ElementRef;
 
   constructor(private mapsService: MapsService, private playersService: PlayersService, private ordersService: OrdersService
-      , private optionsService: OptionsService, private matIconRegistry: MatIconRegistry, private domSanitizer: DomSanitizer
-      , private snackBar: MatSnackBar) {
+      , private optionsService: OptionsService, private campaignsService: CampaignsService
+      , private matIconRegistry: MatIconRegistry, private domSanitizer: DomSanitizer, private snackBar: MatSnackBar) {
     this.matIconRegistry.addSvgIcon('home', this.domSanitizer.bypassSecurityTrustResourceUrl('../../assets/torii.svg'));
     this.matIconRegistry.addSvgIcon('house', this.domSanitizer.bypassSecurityTrustResourceUrl('../../assets/house.svg'));
     this.matIconRegistry.addSvgIcon('tower', this.domSanitizer.bypassSecurityTrustResourceUrl('../../assets/tower.svg'));
@@ -44,7 +46,8 @@ export class MapComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.mapsService.getMapsList().subscribe(m => {
+    this.campaignsService.getCurrentCampaign().subscribe(c => this.campaignsService.workOnCampaign(c.id).subscribe(i => {
+      this.mapsService.getMapsList().subscribe(m => {
         this.mapsList = m;
         this.currentMap = m[0];
         this.mapsService.getMapTiles(this.currentMap.id).subscribe(t => {
@@ -70,7 +73,14 @@ export class MapComponent implements OnInit {
         p.hasNewMap = false;
         this.playersService.updatePlayer(p).subscribe();
       });
-    }
+    }));
+    this.playersService.getUserPlayers().subscribe(l => {
+      this.playersList = [];
+      l.forEach(p => {
+        if (p.status > PlayerStatus.none) this.playersList.push(p);
+      });
+    });
+  }
 
   onTileClick(tile: MapTile): void {
     if (this.actionMode) {
@@ -95,7 +105,14 @@ export class MapComponent implements OnInit {
   }
 
   selectMap(): void {
-    this.mapsService.getMapTiles(this.currentMap.id).subscribe(t => this.mapTiles = t);
+    this.mapsService.getMapTiles(this.currentMap.id).subscribe(t => {
+      this.mapTiles = t
+      if (this.ordersSheet.turn == this.currentMap.turn && this.ordersSheet.status == OrdersSheetStatus.Writing) {
+        Object.keys(this.actionTypes).forEach(k => {
+          this.intializeActions(this.actionTypes[k]);
+        });
+      }
+    });
     this.zoomOut();
   }
 

@@ -1,8 +1,7 @@
 <mat-dialog-content class="mat-typography" ngClass.xs="full-width-dialog">
-    <p>Vous avez des avertissements sur certains de vos ordres.</p>
-    <p>Voulez-vous vraiment valider ?</p>
+    {{message}}
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-  <button mat-button color="primary" mat-dialog-close>Annuler</button>
-  <button mat-raised-button color="primary" (click)="send()">Valider</button>
+  <button mat-button color="primary" mat-dialog-close="false">Annuler</button>
+  <button mat-raised-button color="primary" mat-dialog-close="true">Valider</button>
 </mat-dialog-actions>

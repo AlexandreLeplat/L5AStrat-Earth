@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Security.Claims;
@@ -31,16 +32,28 @@ namespace HostApp.Controllers
         {
             using (_dal)
             {
-                var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
+                var claim = User.Claims.Where(x => x.Type == ClaimTypes.PrimarySid).FirstOrDefault();
                 if (claim == null) return Unauthorized();
+                var userId = long.Parse(claim.Value);
 
                 // On récupère les joueurs ayant le même idUser que le joueur courant
                 var id = long.Parse(claim.Value);
-                var players = (from c in _dal.Players
-                              join p in _dal.Players on c.UserId equals p.UserId
-                              where c.Id == id
-                              select p).ToList();
-                if (players == null) return NotFound();
+                var playersList = (from p in _dal.Players
+                                   join c in _dal.Campaigns on p.CampaignId equals c.Id
+                                   where p.UserId == userId
+                                   select new Tuple<Player, string>(p, c.Name)).ToList();
+
+                var players = playersList.Select(t => new Player()
+                {
+                    Id = t.Item1.Id,
+                    Name = t.Item1.Name,
+                    Color = t.Item1.Color,
+                    UserId = t.Item1.UserId,
+                    CampaignId = t.Item1.CampaignId,
+                    CampaignName = t.Item2,
+                    IsCurrentPlayer = t.Item1.IsCurrentPlayer,
+                    Status = t.Item1.Status
+                }).ToList();
 
                 return Ok(players);
             }
@@ -57,7 +70,7 @@ namespace HostApp.Controllers
                 var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
                 if (claim == null) return Unauthorized();
 
-                // On récupère le joueur courant
+                // On récupère le joueurà  courant
                 var id = long.Parse(claim.Value);
                 var player = _dal.Players.FirstOrDefault(p => p.Id == id);
                 if (player == null) return NotFound();
@@ -72,7 +85,20 @@ namespace HostApp.Controllers
         [Authorize]
         public ActionResult Get(long? id)
         {
-            return NotFound();
+            var claim = User.Claims.Where(x => x.Type == ClaimTypes.Sid).FirstOrDefault();
+            if (claim == null) return Unauthorized();
+
+            // On récupère le joueur ciblé
+            var idCurrent = long.Parse(claim.Value);
+            var player = _dal.Players.FirstOrDefault(p => p.Id == id);
+            if (player == null) return NotFound();
+
+            if (player.Id != idCurrent)
+            {
+                player.Assets = new Dictionary<string, Dictionary<string, string>>();
+            }
+
+            return Ok(player);
         }
 
         // POST players permet de créer un joueur sur une campagne en préparation
@@ -94,7 +120,7 @@ namespace HostApp.Controllers
                 var userId = long.Parse(claim.Value);
 
                 // On vérifie l'existence de l'utilisateur
-                if (_dal.Users.Any(u => u.Id == userId))
+                if (!_dal.Users.Any(u => u.Id == userId))
                     return Unauthorized();
 
                 // On récupère la campagne ciblée pour vérifier les prérequis
@@ -119,14 +145,14 @@ namespace HostApp.Controllers
                     Name = model.Name.Trim(),
                     Color = model.Color,
                     CampaignId = campaign.Id,
-                    UserId = model.UserId,
+                    UserId = userId,
                     Assets = new Dictionary<string, Dictionary<string, string>>()
                 };
 
                 _dal.Players.Add(player);
                 _dal.SaveChanges();
 
-                return Ok(model);
+                return Ok(player);
             }
         }
 
@@ -158,7 +184,29 @@ namespace HostApp.Controllers
         [Authorize]
         public ActionResult Delete(int id)
         {
-            return NotFound();
+            using (_dal)
+            {
+                var claim = User.Claims.Where(x => x.Type == ClaimTypes.PrimarySid).FirstOrDefault();
+                if (claim == null) return Unauthorized();
+                var userId = long.Parse(claim.Value);
+
+                // On vérifie l'existence de l'utilisateur
+                if (!_dal.Users.Any(u => u.Id == userId))
+                    return Unauthorized();
+
+                var player = _dal.Players.FirstOrDefault(p => p.Id == id);
+                if (player == null) return NotFound();
+
+                var campaign = _dal.Campaigns.FirstOrDefault(c => c.Id == player.CampaignId);
+                if (campaign == null || campaign.Status != CampaignStatus.Preparation ||
+                        (player.UserId != userId && campaign.CreatorId != userId))
+                    return Unauthorized();
+
+                _dal.Remove(player);
+                _dal.SaveChanges();
+
+                return NoContent();
+            }
         }
     }
 }

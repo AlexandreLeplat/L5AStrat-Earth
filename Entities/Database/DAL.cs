@@ -161,7 +161,7 @@ namespace Entities.Database
                 {
                     Id = 4,
                     Label = "Renforts",
-                    Description = "Déployez une armée pour 5 points de Stratégie",
+                    Description = "Déployez une armée pour 4 points de Stratégie sur un point d'entrée, 5 sur un bâtiment militaire ou 6 sur un Village",
                     GameId = 1,
                     Form = new List<OrderInput>() {
                     { new OrderInput() {
@@ -230,12 +230,12 @@ namespace Entities.Database
                 {
                     Id = 8,
                     Label = "Commerce",
-                    Description = "Achetez un point d'Influence pour 5 points de Stratégie et 1 d'Infamie",
+                    Description = "Achetez un point d'Influence pour 4 points de Stratégie et 1 d'Infamie",
                     GameId = 1,
                     Form = new List<OrderInput>() {
                     { new OrderInput() {
                         Label = "Augmentation", Type = "Checkbox",
-                        Description = "Trafic d'influence : Vendez un point d'Influence et subissez un point d'Infamie pour acheter 5 points de Stratégie." } }
+                        Description = "Trafic d'influence : Vendez un point d'Influence et subissez un point d'Infamie pour acheter 4 points de Stratégie." } }
                     }
                 });
 
